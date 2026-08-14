@@ -1,0 +1,211 @@
+{
+  "metadata": {
+    "id": "certificate_01"
+  },
+  "canvas": {
+    "virtualSize": {
+      "width": 323,
+      "height": 192
+    },
+    "background": {
+      "type": "color",
+      "color": "#FFFFFF"
+    }
+  },
+  "assets": {
+    "background": {
+      "type": "image",
+      "src": "assets/bg/1.png"
+    },
+    "LibreBodoni": {
+      "type": "font",
+      "src": "assets/fonts/LibreBodoni-VariableFont_wght.ttf"
+    },
+    "LoveYaLikeASister": {
+      "type": "font",
+      "src": "assets/fonts/LoveYaLikeASister-Regular.ttf"
+    },
+    "OoohBaby": {
+      "type": "font",
+      "src": "assets/fonts/OoohBaby-Regular.ttf"
+    }
+  },
+  "scene": {
+    "layers": [
+      {
+        "id": "background",
+        "displayName": "Background",
+        "type": "frame",
+        "renderPass": "content",
+        "zIndex": 0,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 323,
+          "height": 192
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "placeholder": {
+          "assetId": "background",
+          "mediaType": "image"
+        },
+        "style": {
+          "effects": {
+            "blendMode": "normal",
+            "filters": {}
+          }
+        }
+      },
+      {
+        "id": "Text",
+        "displayName": "Text",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 17.58,
+          "y": 11,
+          "width": 49,
+          "height": 17
+        },
+        "transform": {
+          "rotation": -7.69,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "HAPPY",
+          "fontFamily": "LibreBodoni",
+          "fontSize": 13.28,
+          "color": "#FFFFFFFF",
+          "align": "left",
+          "fontWeight": "400",
+          "fontStyle": "normal  ",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "Text1",
+        "displayName": "Text",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 3.26,
+          "y": 23.54,
+          "width": 76,
+          "height": 26
+        },
+        "transform": {
+          "rotation": -9.72,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "Birthday",
+          "fontFamily": "OoohBaby",
+          "fontSize": 23.04,
+          "color": "#FFFFFFFF",
+          "align": "left",
+          "fontWeight": "400",
+          "fontStyle": "normal  ",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "Text2",
+        "displayName": "Text",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 37,
+          "y": 155,
+          "width": 42,
+          "height": 10
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "26.08.2026",
+          "fontFamily": "LoveYaLikeASister",
+          "fontSize": 9.68,
+          "color": "#FF000000",
+          "align": "left",
+          "fontWeight": "400",
+          "fontStyle": "normal  ",
+          "decoration": "none"
+        }
+      }
+    ]
+  }
+}
