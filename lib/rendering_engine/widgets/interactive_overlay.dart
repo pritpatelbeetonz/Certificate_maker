@@ -366,7 +366,7 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
                                 final double currentCroppedW = uncroppedW * (1.0 - widget.model.cropLeft - widget.model.cropRight);
                                 final double currentCroppedH = uncroppedH * (1.0 - widget.model.cropTop - widget.model.cropBottom);
 
-                                const double minSize = 30.0;
+                                const double minSize = 10.0;
                                 final double minScaleW = minSize / currentCroppedW.clamp(1.0, double.infinity);
                                 final double minScaleH = minSize / currentCroppedH.clamp(1.0, double.infinity);
                                 minScale = max(minScaleW, minScaleH).clamp(0.1, 8.0);
@@ -378,7 +378,7 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
                                 setState(() {
                                   widget.model.scale = targetScale;
                                 });
-                                _lastResizeDistance = currentDistance;
+                                _lastResizeDistance = _lastResizeDistance * distanceMultiplier;
                                 widget.onUpdate?.call();
                               }
                             }

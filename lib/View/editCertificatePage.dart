@@ -252,6 +252,25 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     final node = _document!.layers[index];
     if (node is TextNode) {
+      NodeBounds updatedBounds = node.bounds;
+      if (fontSize != null && node.fontSize > 0) {
+        final double scaleFactor = fontSize / node.fontSize;
+        final double newWidth = node.bounds.width * scaleFactor;
+        final double newHeight = node.bounds.height * scaleFactor;
+        
+        final double centerX = node.bounds.x + (node.bounds.width / 2.0);
+        final double centerY = node.bounds.y + (node.bounds.height / 2.0);
+        final double newX = centerX - (newWidth / 2.0);
+        final double newY = centerY - (newHeight / 2.0);
+        
+        updatedBounds = NodeBounds(
+          x: newX,
+          y: newY,
+          width: newWidth,
+          height: newHeight,
+        );
+      }
+
       final updatedNode = node.copyWith(
         fontFamily: fontFamily ?? node.fontFamily,
         fontSize: fontSize ?? node.fontSize,
@@ -259,6 +278,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         fontWeight: fontWeight ?? node.fontWeight,
         fontStyle: fontStyle ?? node.fontStyle,
         decoration: decoration ?? node.decoration,
+        bounds: updatedBounds,
       );
 
       setState(() {
@@ -505,7 +525,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           if (index != -1) {
             setState(() {
               final originalNode = _document!.layers[index] as TextNode;
+              final double newFontSize = (originalNode.fontSize * finalScale).clamp(6.0, 72.0);
               _document!.layers[index] = originalNode.copyWith(
+                fontSize: newFontSize,
                 bounds: NodeBounds(
                   x: newVirtualX,
                   y: newVirtualY,
