@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import '../rendering_engine/models/scene_node.dart';
 import '../rendering_engine/canvas/graphics_engine.dart';
@@ -285,6 +286,73 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         _document!.layers[index] = updatedNode;
       });
     }
+  }
+
+  void _showColorPickerDialog(BuildContext context) {
+    Color selectedColor = const Color(0xFF2563EB);
+    if (_document != null && _selectedNodeId != null) {
+      final index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+      if (index != -1) {
+        final node = _document!.layers[index];
+        if (node is TextNode) {
+          try {
+            String hex = node.color.replaceAll('#', '');
+            if (hex.length == 6) hex = 'FF$hex';
+            selectedColor = Color(int.parse(hex, radix: 16));
+          } catch (_) {}
+        }
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Choose Color', style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: selectedColor,
+              onColorChanged: (color) {
+                selectedColor = color;
+              },
+              showLabel: true,
+              pickerAreaHeightPercent: 0.8,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final hex = '#FF${selectedColor.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+                _onColorSelected(hex, selectedColor);
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5B21B6),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Select'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onColorSelected(String hex, Color color) {
+    final bool alreadyExists = _colorPalette.any((item) => item['hex'].toString().toUpperCase() == hex.toUpperCase());
+    if (!alreadyExists) {
+      setState(() {
+        _colorPalette.add({'color': color, 'hex': hex});
+      });
+    }
+    _updateSelectedTextProperty(color: hex);
+    _saveToHistory();
   }
 
 
@@ -663,16 +731,21 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                     itemCount: _colorPalette.length + 1,
                     itemBuilder: (context, index) {
                       if (index == _colorPalette.length) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 12.0),
-                          child: Container(
-                            width: 38,
-                            height: 38,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFF1F5F9),
-                              shape: BoxShape.circle,
+                        return GestureDetector(
+                          onTap: hasSelection
+                              ? () => _showColorPickerDialog(context)
+                              : null,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 12.0),
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF1F5F9),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.add, color: Color(0xFF64748B)),
                             ),
-                            child: const Icon(Icons.add, color: Color(0xFF64748B)),
                           ),
                         );
                       }
