@@ -537,7 +537,14 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                         ),
                       ),
                     ),
-                    _buildControlsPanel(selectedNode),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      child: selectedNode != null
+                          ? _buildControlsPanel(selectedNode)
+                          : const SizedBox.shrink(),
+                    ),
+                    _buildBottomNavigationBar(),
                   ],
                 ),
     );
@@ -652,280 +659,289 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             ),
           ),
           const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Flexible(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'Edit Text',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _addNewTextNode,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3E8FF),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.add, color: Color(0xFF7C3AED), size: 18),
-                            SizedBox(width: 4),
-                            Text(
-                              'New Text',
-                              style: TextStyle(
-                                color: Color(0xFF7C3AED),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: hasSelection ? Colors.white : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: TextField(
-                    controller: _textController,
-                    focusNode: _textFocusNode,
-                    enabled: hasSelection,
-                    onEditingComplete: _saveTextEditingState,
-                    decoration: InputDecoration(
-                      hintText: hasSelection ? 'Enter text...' : 'Select a text layer to edit',
-                      hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      suffixIcon: hasSelection
-                          ? IconButton(
-                              icon: const Icon(Icons.cancel, color: Color(0xFF94A3B8)),
-                              onPressed: () {
-                                _textController.clear();
-                                _onTextChanged();
-                              },
-                            )
-                          : null,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 48,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _colorPalette.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == _colorPalette.length) {
-                        return GestureDetector(
-                          onTap: hasSelection
-                              ? () => _showColorPickerDialog(context)
-                              : null,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 12.0),
-                            child: Container(
-                              width: 38,
-                              height: 38,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF1F5F9),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.add, color: Color(0xFF64748B)),
-                            ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Edit Text',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0F172A),
                           ),
-                        );
-                      }
-
-                      final palItem = _colorPalette[index];
-                      final Color col = palItem['color'];
-                      final String hex = palItem['hex'];
-
-                      final bool isSelected = hasSelection && node.color.toUpperCase() == hex.toUpperCase();
-
-                      return GestureDetector(
-                        onTap: hasSelection
-                            ? () {
-                                _updateSelectedTextProperty(color: hex);
-                                _saveToHistory();
-                              }
-                            : null,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 12.0),
+                        ),
+                        GestureDetector(
+                          onTap: _addNewTextNode,
                           child: Container(
-                            width: 38,
-                            height: 38,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: col,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE2E8F0),
-                                width: isSelected ? 3.0 : 1.0,
-                              ),
+                              color: const Color(0xFFF3E8FF),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.add, color: Color(0xFF7C3AED), size: 18),
+                                SizedBox(width: 4),
+                                Text(
+                                  'New Text',
+                                  style: TextStyle(
+                                    color: Color(0xFF7C3AED),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: hasSelection && _fontFamilies.contains(node.fontFamily)
-                          ? node.fontFamily
-                          : 'System',
-                      icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
-                      isExpanded: true,
-                      onChanged: hasSelection
-                          ? (String? newFont) {
-                              if (newFont != null) {
-                                _updateSelectedTextProperty(fontFamily: newFont);
-                                _saveToHistory();
-                              }
-                            }
-                          : null,
-                      items: _fontFamilies.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: TextStyle(
-                              fontFamily: value == 'System' ? null : value,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                      ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Text(
-                      'A-',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                    ),
-                    Expanded(
-                      child: SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: const Color(0xFF2563EB),
-                          inactiveTrackColor: const Color(0xFFE2E8F0),
-                          thumbColor: const Color(0xFF2563EB),
-                          overlayColor: const Color(0xFF2563EB).withOpacity(0.12),
-                          trackHeight: 4,
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                        ),
-                        child: Slider(
-                          value: hasSelection ? node.fontSize.clamp(6.0, 72.0) : 14.0,
-                          min: 6.0,
-                          max: 72.0,
-                          onChanged: hasSelection
-                              ? (double val) {
-                                  _updateSelectedTextProperty(fontSize: val);
-                                }
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: hasSelection ? Colors.white : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: TextField(
+                        controller: _textController,
+                        focusNode: _textFocusNode,
+                        enabled: hasSelection,
+                        onEditingComplete: _saveTextEditingState,
+                        decoration: InputDecoration(
+                          hintText: hasSelection ? 'Enter text...' : 'Select a text layer to edit',
+                          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          suffixIcon: hasSelection
+                              ? IconButton(
+                                  icon: const Icon(Icons.cancel, color: Color(0xFF94A3B8)),
+                                  onPressed: () {
+                                    _textController.clear();
+                                    _onTextChanged();
+                                  },
+                                )
                               : null,
-                          onChangeEnd: (_) => _saveToHistory(),
                         ),
                       ),
                     ),
-                    const Text(
-                      'A+',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 48,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _colorPalette.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == _colorPalette.length) {
+                            return GestureDetector(
+                              onTap: hasSelection
+                                  ? () => _showColorPickerDialog(context)
+                                  : null,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 12.0),
+                                child: Container(
+                                  width: 38,
+                                  height: 38,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFF1F5F9),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.add, color: Color(0xFF64748B)),
+                                ),
+                              ),
+                            );
+                          }
+
+                          final palItem = _colorPalette[index];
+                          final Color col = palItem['color'];
+                          final String hex = palItem['hex'];
+
+                          final bool isSelected = hasSelection && node.color.toUpperCase() == hex.toUpperCase();
+
+                          return GestureDetector(
+                            onTap: hasSelection
+                                ? () {
+                                    _updateSelectedTextProperty(color: hex);
+                                    _saveToHistory();
+                                  }
+                                : null,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: col,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE2E8F0),
+                                    width: isSelected ? 3.0 : 1.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(height: 16),
                     Container(
-                      width: 44,
-                      height: 36,
-                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        hasSelection ? node.fontSize.round().toString() : '14',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: hasSelection && _fontFamilies.contains(node.fontFamily)
+                              ? node.fontFamily
+                              : 'System',
+                          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
+                          isExpanded: true,
+                          onChanged: hasSelection
+                              ? (String? newFont) {
+                                  if (newFont != null) {
+                                    _updateSelectedTextProperty(fontFamily: newFont);
+                                    _saveToHistory();
+                                  }
+                                }
+                              : null,
+                          items: _fontFamilies.map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: TextStyle(
+                                  fontFamily: value == 'System' ? null : value,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    _buildStyleToggleButton(
-                      iconText: 'B',
-                      isActive: hasSelection && node.fontWeight == 'bold',
-                      onTap: hasSelection
-                          ? () {
-                              final newWeight = node.fontWeight == 'bold' ? 'normal' : 'bold';
-                              _updateSelectedTextProperty(fontWeight: newWeight);
-                              _saveToHistory();
-                            }
-                          : null,
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Text(
+                          'A-',
+                          style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                        ),
+                        Expanded(
+                          child: SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: const Color(0xFF2563EB),
+                              inactiveTrackColor: const Color(0xFFE2E8F0),
+                              thumbColor: const Color(0xFF2563EB),
+                              overlayColor: const Color(0xFF2563EB).withOpacity(0.12),
+                              trackHeight: 4,
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                            ),
+                            child: Slider(
+                              value: hasSelection ? node.fontSize.clamp(6.0, 72.0) : 14.0,
+                              min: 6.0,
+                              max: 72.0,
+                              onChanged: hasSelection
+                                  ? (double val) {
+                                      _updateSelectedTextProperty(fontSize: val);
+                                    }
+                                  : null,
+                              onChangeEnd: (_) => _saveToHistory(),
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          'A+',
+                          style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 44,
+                          height: 36,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            hasSelection ? node.fontSize.round().toString() : '14',
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        _buildStyleToggleButton(
+                          iconText: 'B',
+                          isActive: hasSelection && node.fontWeight == 'bold',
+                          onTap: hasSelection
+                              ? () {
+                                  final newWeight = node.fontWeight == 'bold' ? 'normal' : 'bold';
+                                  _updateSelectedTextProperty(fontWeight: newWeight);
+                                  _saveToHistory();
+                                }
+                              : null,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStyleToggleButton(
+                          iconText: 'I',
+                          isActive: hasSelection && node.fontStyle == 'italic',
+                          isItalic: true,
+                          onTap: hasSelection
+                              ? () {
+                                  final newStyle = node.fontStyle == 'italic' ? 'normal' : 'italic';
+                                  _updateSelectedTextProperty(fontStyle: newStyle);
+                                  _saveToHistory();
+                                }
+                              : null,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStyleToggleButton(
+                          iconText: 'U',
+                          isActive: hasSelection && node.decoration == 'underline',
+                          isUnderline: true,
+                          onTap: hasSelection
+                              ? () {
+                                  final newDeco = node.decoration == 'underline' ? 'none' : 'underline';
+                                  _updateSelectedTextProperty(decoration: newDeco);
+                                  _saveToHistory();
+                                }
+                              : null,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    _buildStyleToggleButton(
-                      iconText: 'I',
-                      isActive: hasSelection && node.fontStyle == 'italic',
-                      isItalic: true,
-                      onTap: hasSelection
-                          ? () {
-                              final newStyle = node.fontStyle == 'italic' ? 'normal' : 'italic';
-                              _updateSelectedTextProperty(fontStyle: newStyle);
-                              _saveToHistory();
-                            }
-                          : null,
-                    ),
-                    const SizedBox(width: 8),
-                    _buildStyleToggleButton(
-                      iconText: 'U',
-                      isActive: hasSelection && node.decoration == 'underline',
-                      isUnderline: true,
-                      onTap: hasSelection
-                          ? () {
-                              final newDeco = node.decoration == 'underline' ? 'none' : 'underline';
-                              _updateSelectedTextProperty(decoration: newDeco);
-                              _saveToHistory();
-                            }
-                          : null,
-                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-          Container(
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  _buildBottomTab(Icons.title, 'Text', isActive: true),
-                  _buildBottomTab(Icons.verified_user_outlined, 'Logo', isActive: false),
-                  _buildBottomTab(Icons.gesture, 'Signature', isActive: false),
-                ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    final bool hasSelection = _selectedNodeId != null;
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+        color: Colors.white,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            _buildBottomTab(Icons.title, 'Text', isActive: hasSelection),
+            _buildBottomTab(Icons.verified_user_outlined, 'Logo', isActive: false),
+            _buildBottomTab(Icons.gesture, 'Signature', isActive: false),
+          ],
+        ),
       ),
     );
   }
