@@ -16,6 +16,8 @@ dependencies:
   get: ^4.7.3
   flutter_svg: ^2.0.0
   path_provider: ^2.0.0
+  dotted_border: ^3.1.0
+
 
 dev_dependencies:
   flutter_test:
@@ -29,6 +31,18 @@ flutter:
     - assets/index.json
     - assets/bg/
     - assets/thumbnails/
+    - assets/cert_jsons/
 
   uses-material-design: true
+
+  fonts:
+    - family: LibreBodoni
+      fonts:
+        - asset: assets/fonts/LibreBodoni-VariableFont_wght.ttf
+    - family: LoveYaLikeASister
+      fonts:
+        - asset: assets/fonts/LoveYaLikeASister-Regular.ttf
+    - family: OoohBaby
+      fonts:
+        - asset: assets/fonts/OoohBaby-Regular.ttf
 

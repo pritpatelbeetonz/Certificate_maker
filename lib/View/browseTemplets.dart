@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'editCertificatePage.dart';
 
 class Browsetemplets extends StatefulWidget {
   const Browsetemplets({super.key});
@@ -158,12 +159,18 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                               final String thumbnail = item['thumbnail'] ?? '';
                               final String displaySubtitle = item['category'] ?? '';
 
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
+                              return GestureDetector(
+                                onTap: () {
+                                  Get.to(() => EditCertificatePage(
+                                        layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
+                                      ));
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
                                       // ignore: deprecated_member_use
                                       color: Colors.black.withOpacity(0.02),
                                       blurRadius: 8,
@@ -248,7 +255,7 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                                     ),
                                   ],
                                 ),
-                              );
+                              ));
                             },
                           ),
               ),

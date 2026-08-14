@@ -14,6 +14,7 @@ class $AssetsAssetsGen {
   const $AssetsAssetsGen();
 
   final $AssetsBgGen bg = const $AssetsBgGen();
+  final $AssetsCertJsonsGen certJsons = const $AssetsCertJsonsGen();
   final $AssetsThumbnailsGen thumbnails = const $AssetsThumbnailsGen();
 }
 
@@ -29,6 +30,13 @@ class $AssetsThumbnailsGen {
 
   final AssetGenImage a11 = const AssetGenImage('assets/thumbnails/1 1.png');
   final AssetGenImage a21 = const AssetGenImage('assets/thumbnails/2 1.png');
+}
+
+class $AssetsCertJsonsGen {
+  const $AssetsCertJsonsGen();
+
+  final String certificate01 = 'assets/cert_jsons/certificate_01.json';
+  final String certificate02 = 'assets/cert_jsons/certificate_02.json';
 }
 
 class AssetGenImage {

@@ -1,0 +1,950 @@
+// ignore_for_file: deprecated_member_use, unused_local_variable
+import 'dart:convert';
+import 'dart:math';
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+
+import '../rendering_engine/models/scene_node.dart';
+import '../rendering_engine/canvas/graphics_engine.dart';
+import '../rendering_engine/canvas/render_context.dart';
+import '../rendering_engine/canvas/viewport_transformer.dart';
+import '../rendering_engine/assets/asset_repository.dart';
+import '../rendering_engine/renderers/background_renderer.dart';
+import '../rendering_engine/models/background_state.dart';
+import '../rendering_engine/models/sticker_model.dart';
+import '../rendering_engine/widgets/interactive_overlay.dart';
+
+class EditCertificatePage extends StatefulWidget {
+  final String layoutPath;
+
+  const EditCertificatePage({
+    super.key,
+    required this.layoutPath,
+  });
+
+  @override
+  State<EditCertificatePage> createState() => _EditCertificatePageState();
+}
+
+class _EditCertificatePageState extends State<EditCertificatePage> {
+  SceneDocument? _document;
+  bool _isLoading = true;
+  String? _selectedNodeId;
+
+  // Image pool repository mapping assetId to loaded ui.Image
+  final Map<String, ui.Image> _imagePool = {};
+
+  // Undo/Redo history stacks (as json strings of SceneDocument)
+  final List<String> _history = [];
+  int _historyIndex = -1;
+
+  final TextEditingController _textController = TextEditingController();
+  final FocusNode _textFocusNode = FocusNode();
+
+  final List<Map<String, dynamic>> _colorPalette = [
+    {'color': const Color(0xFF2563EB), 'hex': '#FF2563EB'}, // Blue
+    {'color': const Color(0xFFEF4444), 'hex': '#FFEF4444'}, // Red
+    {'color': const Color(0xFFF59E0B), 'hex': '#FFF59E0B'}, // Yellow
+    {'color': const Color(0xFF10B981), 'hex': '#FF10B981'}, // Green
+    {'color': const Color(0xFF1F2937), 'hex': '#FF1F2937'}, // Black
+    {'color': const Color(0xFF8B5CF6), 'hex': '#FF8B5CF6'}, // Purple
+    {'color': const Color(0xFFFFFFFF), 'hex': '#FFFFFFFF'}, // White
+  ];
+
+  final List<String> _fontFamilies = [
+    'System',
+    'LibreBodoni',
+    'LoveYaLikeASister',
+    'OoohBaby',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLayoutAndAssets();
+    _textController.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    _textController.removeListener(_onTextChanged);
+    _textController.dispose();
+    _textFocusNode.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadLayoutAndAssets() async {
+    try {
+      final String jsonString = await rootBundle.loadString(widget.layoutPath);
+      final Map<String, dynamic> jsonMap = json.decode(jsonString);
+      final doc = SceneDocument.fromJson(jsonMap);
+
+      // Preload images from assets
+      for (var entry in doc.assets.entries) {
+        final assetId = entry.key;
+        final asset = entry.value;
+        if (asset.type == 'image') {
+          try {
+            final ui.Image img = await _loadUiImage(asset.src);
+            _imagePool[assetId] = img;
+          } catch (e) {
+            debugPrint("Failed to load image asset: ${asset.src} ($e)");
+          }
+        }
+      }
+
+      setState(() {
+        _document = doc;
+        _isLoading = false;
+        _saveToHistory();
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      debugPrint("Error loading editor data: $e");
+    }
+  }
+
+  Future<ui.Image> _loadUiImage(String assetPath) async {
+    final byteData = await rootBundle.load(assetPath);
+    final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  }
+
+  void _saveToHistory() {
+    if (_document == null) return;
+    final jsonStr = json.encode(_document!.toJson());
+
+    // Clean any forward history if we are in the middle of undo stack
+    if (_historyIndex < _history.length - 1) {
+      _history.removeRange(_historyIndex + 1, _history.length);
+    }
+
+    _history.add(jsonStr);
+    _historyIndex = _history.length - 1;
+  }
+
+  void _undo() {
+    if (_historyIndex > 0) {
+      setState(() {
+        _historyIndex--;
+        final jsonMap = json.decode(_history[_historyIndex]);
+        _document = SceneDocument.fromJson(jsonMap);
+        _updateSelectedNodeTextField();
+      });
+    }
+  }
+
+  void _redo() {
+    if (_historyIndex < _history.length - 1) {
+      setState(() {
+        _historyIndex++;
+        final jsonMap = json.decode(_history[_historyIndex]);
+        _document = SceneDocument.fromJson(jsonMap);
+        _updateSelectedNodeTextField();
+      });
+    }
+  }
+
+  void _onTextChanged() {
+    if (_document == null || _selectedNodeId == null) return;
+    final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+    if (index == -1) return;
+
+    final node = _document!.layers[index];
+    if (node is TextNode && node.text != _textController.text) {
+      final updatedNode = node.copyWith(text: _textController.text);
+      setState(() {
+        _document!.layers[index] = updatedNode;
+      });
+    }
+  }
+
+  void _saveTextEditingState() {
+    _saveToHistory();
+  }
+
+  void _updateSelectedNodeTextField() {
+    if (_selectedNodeId == null || _document == null) {
+      _textController.text = "";
+      return;
+    }
+    final node = _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    if (node is TextNode) {
+      _textController.text = node.text;
+    } else {
+      _textController.text = "";
+    }
+  }
+
+  void _selectNode(String? id) {
+    setState(() {
+      _selectedNodeId = id;
+      _updateSelectedNodeTextField();
+    });
+  }
+
+
+
+  void _deleteLayer(String id) {
+    if (_document == null) return;
+    setState(() {
+      _document!.layers.removeWhere((l) => l.id == id);
+      if (_selectedNodeId == id) {
+        _selectedNodeId = null;
+        _updateSelectedNodeTextField();
+      }
+      _saveToHistory();
+    });
+  }
+
+  void _addNewTextNode() {
+    if (_document == null) return;
+    final String newId = "text_${DateTime.now().millisecondsSinceEpoch}";
+    final newTextNode = TextNode(
+      id: newId,
+      displayName: "Text Layer",
+      text: "New Text",
+      fontFamily: 'System',
+      fontSize: 16.0,
+      color: '#FF1F2937', // Default black/dark grey
+      align: 'left',
+      fontWeight: '400',
+      fontStyle: 'normal',
+      decoration: 'none',
+      bounds: NodeBounds(
+        x: (_document!.canvas.virtualWidth / 2) - 50,
+        y: (_document!.canvas.virtualHeight / 2) - 15,
+        width: 100,
+        height: 30,
+      ),
+      transform: NodeTransform(
+        rotation: 0.0,
+        pivot: const Offset(0.5, 0.5),
+      ),
+      state: NodeState(visible: true, locked: false),
+      interaction: NodeInteraction(selectable: true, movable: true, editable: true),
+    );
+
+    setState(() {
+      _document!.layers.add(newTextNode);
+      _selectedNodeId = newId;
+      _updateSelectedNodeTextField();
+      _saveToHistory();
+    });
+  }
+
+  void _updateSelectedTextProperty({
+    String? fontFamily,
+    double? fontSize,
+    String? color,
+    String? fontWeight,
+    String? fontStyle,
+    String? decoration,
+  }) {
+    if (_document == null || _selectedNodeId == null) return;
+    final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+    if (index == -1) return;
+
+    final node = _document!.layers[index];
+    if (node is TextNode) {
+      final updatedNode = node.copyWith(
+        fontFamily: fontFamily ?? node.fontFamily,
+        fontSize: fontSize ?? node.fontSize,
+        color: color ?? node.color,
+        fontWeight: fontWeight ?? node.fontWeight,
+        fontStyle: fontStyle ?? node.fontStyle,
+        decoration: decoration ?? node.decoration,
+      );
+
+      setState(() {
+        _document!.layers[index] = updatedNode;
+      });
+    }
+  }
+
+
+
+  void _detectHitTest(Offset localTapPos, Size paintSize) {
+    if (_document == null) return;
+    final transformer = ViewportTransformer(
+      virtualWidth: _document!.canvas.virtualWidth,
+      virtualHeight: _document!.canvas.virtualHeight,
+      targetSize: paintSize,
+    );
+
+    final reversedLayers = List<SceneNode>.from(_document!.layers).reversed.toList();
+    for (final node in reversedLayers) {
+      if (node is! TextNode || !node.state.visible) continue;
+
+      final double sx = transformer.toScreenX(node.bounds.x);
+      final double sy = transformer.toScreenY(node.bounds.y);
+      final double sw = transformer.toScreenWidth(node.bounds.width);
+      final double sh = transformer.toScreenHeight(node.bounds.height);
+
+      final rect = Rect.fromLTWH(sx, sy, sw, sh);
+
+      if (node.transform.rotation != 0.0) {
+        final center = rect.center;
+        final angleRad = -node.transform.rotation * pi / 180.0;
+        
+        final rotatedTapX = cos(angleRad) * (localTapPos.dx - center.dx) -
+            sin(angleRad) * (localTapPos.dy - center.dy) +
+            center.dx;
+        final rotatedTapY = sin(angleRad) * (localTapPos.dx - center.dx) +
+            cos(angleRad) * (localTapPos.dy - center.dy) +
+            center.dy;
+
+        if (rect.contains(Offset(rotatedTapX, rotatedTapY))) {
+          _selectNode(node.id);
+          return;
+        }
+      } else {
+        if (rect.contains(localTapPos)) {
+          _selectNode(node.id);
+          return;
+        }
+      }
+    }
+
+    _selectNode(null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final TextNode? selectedNode = (_selectedNodeId != null && _document != null)
+        ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId) as TextNode?
+        : null;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFC),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
+          onPressed: () => Get.back(),
+        ),
+        title: const Text(
+          'Edit Certificate',
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.undo,
+              color: _historyIndex > 0 ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+            ),
+            onPressed: _historyIndex > 0 ? _undo : null,
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.redo,
+              color: _historyIndex < _history.length - 1 ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+            ),
+            onPressed: _historyIndex < _history.length - 1 ? _redo : null,
+          ),
+          const SizedBox(width: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            child: ElevatedButton(
+              onPressed: () {
+                Get.back(result: _document);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5B21B6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: const Text(
+                'Save',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _document == null
+              ? const Center(child: Text("Error loading layout"))
+              : Column(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        alignment: Alignment.center,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final double canvasRatio =
+                                _document!.canvas.virtualWidth / _document!.canvas.virtualHeight;
+
+                            double targetW = constraints.maxWidth;
+                            double targetH = targetW / canvasRatio;
+
+                            if (targetH > constraints.maxHeight) {
+                              targetH = constraints.maxHeight;
+                              targetW = targetH * canvasRatio;
+                            }
+
+                            final Size canvasPaintSize = Size(targetW, targetH);
+                            final transformer = ViewportTransformer(
+                              virtualWidth: _document!.canvas.virtualWidth,
+                              virtualHeight: _document!.canvas.virtualHeight,
+                              targetSize: canvasPaintSize,
+                            );
+
+                            return Container(
+                              width: targetW,
+                              height: targetH,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  GestureDetector(
+                                    onTapUp: (details) {
+                                      _detectHitTest(details.localPosition, canvasPaintSize);
+                                    },
+                                    child: CustomPaint(
+                                      size: canvasPaintSize,
+                                      painter: RealtimeCertificatePainter(
+                                        document: _document!,
+                                        loadedImages: _imagePool,
+                                        selectedNodeId: _selectedNodeId,
+                                      ),
+                                    ),
+                                  ),
+                                  if (selectedNode != null) ...[
+                                    _buildSelectedOverlay(selectedNode, transformer, canvasPaintSize),
+                                  ],
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    _buildControlsPanel(selectedNode),
+                  ],
+                ),
+    );
+  }
+
+  Widget _buildSelectedOverlay(TextNode node, ViewportTransformer transformer, Size paintSize) {
+    final double sx = transformer.toScreenX(node.bounds.x);
+    final double sy = transformer.toScreenY(node.bounds.y);
+    final double sw = transformer.toScreenWidth(node.bounds.width);
+    final double sh = transformer.toScreenHeight(node.bounds.height);
+
+    final double rotationAngleRad = node.transform.rotation * pi / 180.0;
+
+    final stickerModel = StickerModel(
+      left: sx,
+      top: sy,
+      angle: rotationAngleRad,
+      scale: 1.0,
+      isSelected: true,
+    );
+
+    return InteractiveOverlay(
+      model: stickerModel,
+      boundWidth: paintSize.width,
+      boundHeight: paintSize.height,
+      width: sw,
+      height: sh,
+      onUpdate: () {
+        final double finalScale = stickerModel.scale;
+        
+        final double virtualW = transformer.toVirtualWidth(sw * finalScale);
+        final double virtualH = transformer.toVirtualHeight(sh * finalScale);
+        
+        // Calculate center of original bounds in virtual coordinates
+        final double initialVirtualCenterX = node.bounds.x + (node.bounds.width / 2.0);
+        final double initialVirtualCenterY = node.bounds.y + (node.bounds.height / 2.0);
+        
+        // Calculate position drag offset (if any)
+        final double moveDxVirtual = transformer.toVirtualWidth(stickerModel.left - sx);
+        final double moveDyVirtual = transformer.toVirtualHeight(stickerModel.top - sy);
+        
+        final double currentVirtualCenterX = initialVirtualCenterX + moveDxVirtual;
+        final double currentVirtualCenterY = initialVirtualCenterY + moveDyVirtual;
+        
+        // Keep center fixed while scaling
+        final double newVirtualX = currentVirtualCenterX - (virtualW / 2.0);
+        final double newVirtualY = currentVirtualCenterY - (virtualH / 2.0);
+        
+        final double rotationDeg = stickerModel.angle * 180.0 / pi;
+
+        if (_document != null) {
+          final int index = _document!.layers.indexWhere((l) => l.id == node.id);
+          if (index != -1) {
+            setState(() {
+              final originalNode = _document!.layers[index] as TextNode;
+              _document!.layers[index] = originalNode.copyWith(
+                bounds: NodeBounds(
+                  x: newVirtualX,
+                  y: newVirtualY,
+                  width: virtualW,
+                  height: virtualH,
+                ),
+                transform: NodeTransform(
+                  rotation: rotationDeg,
+                  pivot: originalNode.transform.pivot,
+                  skew: originalNode.transform.skew,
+                  flipX: originalNode.transform.flipX,
+                  flipY: originalNode.transform.flipY,
+                ),
+              );
+            });
+          }
+        }
+      },
+      onCancel: () {
+        _deleteLayer(node.id);
+      },
+      onEdit: () {
+        _textFocusNode.requestFocus();
+      },
+      child: const SizedBox.expand(),
+    );
+  }
+
+  Widget _buildControlsPanel(TextNode? node) {
+    final bool hasSelection = node != null;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFCBD5E1),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Edit Text',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _addNewTextNode,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3E8FF),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.add, color: Color(0xFF7C3AED), size: 18),
+                            SizedBox(width: 4),
+                            Text(
+                              'New Text',
+                              style: TextStyle(
+                                color: Color(0xFF7C3AED),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: hasSelection ? Colors.white : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: TextField(
+                    controller: _textController,
+                    focusNode: _textFocusNode,
+                    enabled: hasSelection,
+                    onEditingComplete: _saveTextEditingState,
+                    decoration: InputDecoration(
+                      hintText: hasSelection ? 'Enter text...' : 'Select a text layer to edit',
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      suffixIcon: hasSelection
+                          ? IconButton(
+                              icon: const Icon(Icons.cancel, color: Color(0xFF94A3B8)),
+                              onPressed: () {
+                                _textController.clear();
+                                _onTextChanged();
+                              },
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 48,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _colorPalette.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == _colorPalette.length) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF1F5F9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.add, color: Color(0xFF64748B)),
+                          ),
+                        );
+                      }
+
+                      final palItem = _colorPalette[index];
+                      final Color col = palItem['color'];
+                      final String hex = palItem['hex'];
+
+                      final bool isSelected = hasSelection && node.color.toUpperCase() == hex.toUpperCase();
+
+                      return GestureDetector(
+                        onTap: hasSelection
+                            ? () {
+                                _updateSelectedTextProperty(color: hex);
+                                _saveToHistory();
+                              }
+                            : null,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: col,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE2E8F0),
+                                width: isSelected ? 3.0 : 1.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: hasSelection && _fontFamilies.contains(node.fontFamily)
+                          ? node.fontFamily
+                          : 'System',
+                      icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
+                      isExpanded: true,
+                      onChanged: hasSelection
+                          ? (String? newFont) {
+                              if (newFont != null) {
+                                _updateSelectedTextProperty(fontFamily: newFont);
+                                _saveToHistory();
+                              }
+                            }
+                          : null,
+                      items: _fontFamilies.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontFamily: value == 'System' ? null : value,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text(
+                      'A-',
+                      style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                    ),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: const Color(0xFF2563EB),
+                          inactiveTrackColor: const Color(0xFFE2E8F0),
+                          thumbColor: const Color(0xFF2563EB),
+                          overlayColor: const Color(0xFF2563EB).withOpacity(0.12),
+                          trackHeight: 4,
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                        ),
+                        child: Slider(
+                          value: hasSelection ? node.fontSize.clamp(6.0, 72.0) : 14.0,
+                          min: 6.0,
+                          max: 72.0,
+                          onChanged: hasSelection
+                              ? (double val) {
+                                  _updateSelectedTextProperty(fontSize: val);
+                                }
+                              : null,
+                          onChangeEnd: (_) => _saveToHistory(),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'A+',
+                      style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 44,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        hasSelection ? node.fontSize.round().toString() : '14',
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildStyleToggleButton(
+                      iconText: 'B',
+                      isActive: hasSelection && node.fontWeight == 'bold',
+                      onTap: hasSelection
+                          ? () {
+                              final newWeight = node.fontWeight == 'bold' ? 'normal' : 'bold';
+                              _updateSelectedTextProperty(fontWeight: newWeight);
+                              _saveToHistory();
+                            }
+                          : null,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildStyleToggleButton(
+                      iconText: 'I',
+                      isActive: hasSelection && node.fontStyle == 'italic',
+                      isItalic: true,
+                      onTap: hasSelection
+                          ? () {
+                              final newStyle = node.fontStyle == 'italic' ? 'normal' : 'italic';
+                              _updateSelectedTextProperty(fontStyle: newStyle);
+                              _saveToHistory();
+                            }
+                          : null,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildStyleToggleButton(
+                      iconText: 'U',
+                      isActive: hasSelection && node.decoration == 'underline',
+                      isUnderline: true,
+                      onTap: hasSelection
+                          ? () {
+                              final newDeco = node.decoration == 'underline' ? 'none' : 'underline';
+                              _updateSelectedTextProperty(decoration: newDeco);
+                              _saveToHistory();
+                            }
+                          : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+          Container(
+            decoration: const BoxDecoration(
+              border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  _buildBottomTab(Icons.title, 'Text', isActive: true),
+                  _buildBottomTab(Icons.verified_user_outlined, 'Logo', isActive: false),
+                  _buildBottomTab(Icons.gesture, 'Signature', isActive: false),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStyleToggleButton({
+    required String iconText,
+    required bool isActive,
+    bool isItalic = false,
+    bool isUnderline = false,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(8),
+          border: isActive ? Border.all(color: const Color(0xFF2563EB)) : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          iconText,
+          style: TextStyle(
+            fontWeight: iconText == 'B' ? FontWeight.bold : FontWeight.w600,
+            fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+            decoration: isUnderline ? TextDecoration.underline : TextDecoration.none,
+            color: isActive ? const Color(0xFF2563EB) : const Color(0xFF475569),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomTab(IconData icon, String label, {required bool isActive}) {
+    final Color col = isActive ? const Color(0xFF7C3AED) : const Color(0xFF64748B);
+    return Expanded(
+      child: InkWell(
+        onTap: () {},
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: col),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: col,
+                  fontSize: 12,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class RealtimeCertificatePainter extends CustomPainter {
+  final SceneDocument document;
+  final Map<String, ui.Image> loadedImages;
+  final String? selectedNodeId;
+
+  RealtimeCertificatePainter({
+    required this.document,
+    required this.loadedImages,
+    required this.selectedNodeId,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bgState = document.theme['background'] is BackgroundState
+        ? document.theme['background'] as BackgroundState
+        : document.theme['background'] is Map<String, dynamic>
+            ? BackgroundState.fromJson(Map<String, dynamic>.from(document.theme['background']))
+            : const BackgroundState(color: Colors.white);
+
+    BackgroundRenderer().paintToCanvas(
+      bgState,
+      canvas,
+      size,
+      imagePool: loadedImages,
+    );
+
+    final transformer = ViewportTransformer(
+      virtualWidth: document.canvas.virtualWidth,
+      virtualHeight: document.canvas.virtualHeight,
+      targetSize: size,
+    );
+
+    final context = RenderContext(
+      canvas: canvas,
+      size: size,
+      assetRepository: MapAssetRepository(loadedImages),
+      viewportTransformer: transformer,
+      picturePool: const {},
+      outerSpacing: document.canvas.outerSpacing,
+      innerSpacing: document.canvas.innerSpacing,
+      isEditorMode: true,
+    );
+
+    final graphicsEngine = GraphicsEngine();
+    graphicsEngine.renderScene(
+      context: context,
+      layers: document.layers,
+      selectedNodeId: selectedNodeId,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant RealtimeCertificatePainter oldDelegate) => true;
+}

@@ -16,8 +16,8 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
     debugPrint(
         "Global Scale = ${context.viewportTransformer.scaleX}"
     );
-    // 1. Clip content to bounds to prevent overflow
-    canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    // 1. Clip content to bounds to prevent overflow is disabled to prevent cutting off descenders/ascenders
+    // canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
 
     // 2. Parse styles from string formats
     final parsedColor = PaintFactory.parseHexColor(node.color);
