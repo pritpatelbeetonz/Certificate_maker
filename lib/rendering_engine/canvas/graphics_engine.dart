@@ -51,6 +51,9 @@ class GraphicsEngine {
     final double inner = context.innerSpacing;
 
     for (final node in sortedLayers) {
+      if (editingNodeId != null && node.id == editingNodeId) {
+        continue;
+      }
       double x = node.bounds.x;
       double y = node.bounds.y;
       double w = node.bounds.width;

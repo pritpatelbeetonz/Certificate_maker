@@ -7,11 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-
 import '../rendering_engine/models/scene_node.dart';
 import '../rendering_engine/canvas/viewport_transformer.dart';
 import '../rendering_engine/models/sticker_model.dart';
 import '../rendering_engine/widgets/interactive_overlay.dart';
+import '../rendering_engine/styles/paint_factory.dart';
 
 import 'widgets/realtime_certificate_painter.dart';
 import 'widgets/text_controls_panel.dart';
@@ -21,10 +21,7 @@ import 'widgets/signature_controls_panel.dart';
 class EditCertificatePage extends StatefulWidget {
   final String layoutPath;
 
-  const EditCertificatePage({
-    super.key,
-    required this.layoutPath,
-  });
+  const EditCertificatePage({super.key, required this.layoutPath});
 
   @override
   State<EditCertificatePage> createState() => _EditCertificatePageState();
@@ -34,13 +31,14 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   SceneDocument? _document;
   bool _isLoading = true;
   String? _selectedNodeId;
-  String _activeTab = 'Text';
+  String _activeTab = '';
   double _zoomScale = 1.0;
   double _zoomStartScale = 1.0;
   int _activePointers = 0;
   bool _isTouchOnNode = false;
   Size _lastCanvasPaintSize = Size.zero;
   final GlobalKey _canvasKey = GlobalKey();
+  String? _editingTextNodeId;
   String? _lastSelectedLogoId;
 
   final List<List<Offset>> _signatureStrokes = [];
@@ -48,7 +46,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   String _pickedLogoName = 'Creative logo.png';
   String _pickedLogoDimensions = '350 × 120 px';
-
 
   final Map<String, String> _logoNames = {};
   final Map<String, String> _logoDimensions = {};
@@ -87,6 +84,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     super.initState();
     _loadLayoutAndAssets();
     _textController.addListener(_onTextChanged);
+    _textFocusNode.addListener(() {
+      if (!_textFocusNode.hasFocus && _editingTextNodeId != null) {
+        _endEditing();
+      }
+    });
   }
 
   @override
@@ -97,13 +99,14 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final TextNode? selectedNode = (_selectedNodeId != null && _document != null)
-        ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId) as TextNode?
+    final TextNode? selectedNode =
+        (_selectedNodeId != null && _document != null)
+        ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
+              as TextNode?
         : null;
 
     return PopScope(
@@ -129,14 +132,18 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             IconButton(
               icon: Icon(
                 Icons.undo,
-                color: _historyIndex > 0 ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+                color: _historyIndex > 0
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFCBD5E1),
               ),
               onPressed: _historyIndex > 0 ? _undo : null,
             ),
             IconButton(
               icon: Icon(
                 Icons.redo,
-                color: _historyIndex < _history.length - 1 ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+                color: _historyIndex < _history.length - 1
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFCBD5E1),
               ),
               onPressed: _historyIndex < _history.length - 1 ? _redo : null,
             ),
@@ -170,165 +177,199 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             : _document == null
             ? const Center(child: Text("Error loading layout"))
             : Column(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                alignment: Alignment.center,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final double canvasRatio =
-                        _document!.canvas.virtualWidth / _document!.canvas.virtualHeight;
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      alignment: Alignment.center,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double canvasRatio =
+                              _document!.canvas.virtualWidth /
+                              _document!.canvas.virtualHeight;
 
-                    double targetW = constraints.maxWidth * _zoomScale;
-                    double targetH = (constraints.maxWidth / canvasRatio) * _zoomScale;
+                          double targetW = constraints.maxWidth * _zoomScale;
+                          double targetH =
+                              (constraints.maxWidth / canvasRatio) * _zoomScale;
 
-                    if (targetH > constraints.maxHeight * _zoomScale) {
-                      targetH = constraints.maxHeight * _zoomScale;
-                      targetW = targetH * canvasRatio;
-                    }
+                          if (targetH > constraints.maxHeight * _zoomScale) {
+                            targetH = constraints.maxHeight * _zoomScale;
+                            targetW = targetH * canvasRatio;
+                          }
 
-                    final Size canvasPaintSize = Size(targetW, targetH);
-                    final transformer = ViewportTransformer(
-                      virtualWidth: _document!.canvas.virtualWidth,
-                      virtualHeight: _document!.canvas.virtualHeight,
-                      targetSize: canvasPaintSize,
-                    );
-                    _lastCanvasPaintSize = canvasPaintSize;
+                          final Size canvasPaintSize = Size(targetW, targetH);
+                          final transformer = ViewportTransformer(
+                            virtualWidth: _document!.canvas.virtualWidth,
+                            virtualHeight: _document!.canvas.virtualHeight,
+                            targetSize: canvasPaintSize,
+                          );
+                          _lastCanvasPaintSize = canvasPaintSize;
 
-                    final scrollPhysics = (_isTouchOnNode || _activePointers > 1)
-                        ? const NeverScrollableScrollPhysics()
-                        : const BouncingScrollPhysics();
+                          final scrollPhysics =
+                              (_isTouchOnNode || _activePointers > 1)
+                              ? const NeverScrollableScrollPhysics()
+                              : const BouncingScrollPhysics();
 
-                    return Listener(
-                      onPointerDown: _onPointerDown,
-                      onPointerUp: _onPointerUp,
-                      onPointerCancel: _onPointerCancel,
-                      child: Center(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          physics: scrollPhysics,
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            physics: scrollPhysics,
-                            child: Container(
-                              key: _canvasKey,
-                              width: targetW,
-                              height: targetH,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  GestureDetector(
-                                    onTapUp: (details) {
-                                      _detectHitTest(
-                                        details.localPosition,
-                                        canvasPaintSize,
-                                      );
-                                    },
+                          return Listener(
+                            onPointerDown: _onPointerDown,
+                            onPointerUp: _onPointerUp,
+                            onPointerCancel: _onPointerCancel,
+                            child: Center(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.vertical,
+                                physics: scrollPhysics,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: scrollPhysics,
+                                  child: Container(
+                                    key: _canvasKey,
+                                    width: targetW,
+                                    height: targetH,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.08),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        GestureDetector(
+                                          onTapUp: (details) {
+                                            _detectHitTest(
+                                              details.localPosition,
+                                              canvasPaintSize,
+                                            );
+                                          },
+                                          onDoubleTapDown: (details) {
+                                            _detectDoubleTapHitTest(
+                                              details.localPosition,
+                                              canvasPaintSize,
+                                            );
+                                          },
 
-                                    onScaleStart: _onScaleStart,
+                                          onScaleStart: _onScaleStart,
 
-                                    onScaleUpdate: _onScaleUpdate,
+                                          onScaleUpdate: _onScaleUpdate,
 
-                                    child: CustomPaint(
-                                      size: canvasPaintSize,
-                                      painter: RealtimeCertificatePainter(
-                                        document: _document!,
-                                        loadedImages: _imagePool,
-                                        selectedNodeId: _selectedNodeId,
-                                      ),
+                                          child: CustomPaint(
+                                            size: canvasPaintSize,
+                                            painter: RealtimeCertificatePainter(
+                                              document: _document!,
+                                              loadedImages: _imagePool,
+                                              selectedNodeId: _selectedNodeId,
+                                              editingNodeId: _editingTextNodeId,
+                                            ),
+                                          ),
+                                        ),
+                                        if (selectedNode != null && _editingTextNodeId != selectedNode.id) ...[
+                                          _buildSelectedOverlay(
+                                            selectedNode,
+                                            transformer,
+                                            canvasPaintSize,
+                                          ),
+                                        ],
+                                        if (_editingTextNodeId != null) ...[
+                                          _buildInlineEditor(transformer),
+                                        ],
+                                      ],
                                     ),
                                   ),
-                                if (selectedNode != null) ...[
-                                  _buildSelectedOverlay(selectedNode, transformer, canvasPaintSize),
-                                ],
-                              ],
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ),
-                  );
-                  },
-                ),
-              ),
-            ),
-            // Floating Zoom Controls Capsule
-            Padding(
-              padding: const EdgeInsets.only(bottom: 5.0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                  ),
+                  // Floating Zoom Controls Capsule
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 5.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 0,
+                        vertical: 0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.remove,
+                              size: 20,
+                              color: Color(0xFF64748B),
+                            ),
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              setState(() {
+                                _zoomScale = (_zoomScale - 0.25).clamp(
+                                  0.5,
+                                  2.0,
+                                );
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '${(_zoomScale * 100).round()}%',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.add,
+                              size: 20,
+                              color: Color(0xFF64748B),
+                            ),
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              setState(() {
+                                _zoomScale = (_zoomScale + 0.25).clamp(
+                                  0.5,
+                                  3.0,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+                  if (_editingTextNodeId == null) ...[
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      child: _buildDynamicControlsPanel(selectedNode),
+                    ),
+                    _buildBottomNavigationBar(),
                   ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove, size: 20, color: Color(0xFF64748B)),
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        setState(() {
-                          _zoomScale = (_zoomScale - 0.25).clamp(0.5, 2.0);
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '${(_zoomScale * 100).round()}%',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                    ),
-                    const SizedBox(width: 12),
-                    IconButton(
-                      icon: const Icon(Icons.add, size: 20, color: Color(0xFF64748B)),
-                      constraints: const BoxConstraints(),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        setState(() {
-                          _zoomScale = (_zoomScale + 0.25).clamp(0.5, 3.0);
-                        });
-                      },
-                    ),
-                  ],
-                ),
+                ],
               ),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
-              child: _buildDynamicControlsPanel(selectedNode),
-            ),
-            _buildBottomNavigationBar(),
-          ],
-        ),
       ),
     );
   }
-
-
-
-
-
 
   void _onScaleStart(ScaleStartDetails details) {
     _zoomStartScale = _zoomScale;
@@ -339,8 +380,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       return;
     }
 
-    final double newZoom =
-    (_zoomStartScale * details.scale).clamp(0.5, 3.0);
+    final double newZoom = (_zoomStartScale * details.scale).clamp(0.5, 3.0);
 
     if ((newZoom - _zoomScale).abs() < 0.001) {
       return;
@@ -350,7 +390,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _zoomScale = newZoom;
     });
   }
-  bool _isPointNearSelectedNode(Offset localPos, TextNode node, ViewportTransformer transformer) {
+
+  bool _isPointNearSelectedNode(
+    Offset localPos,
+    TextNode node,
+    ViewportTransformer transformer,
+  ) {
     final double sx = transformer.toScreenX(node.bounds.x);
     final double sy = transformer.toScreenY(node.bounds.y);
     final double sw = transformer.toScreenWidth(node.bounds.width);
@@ -358,16 +403,23 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     // Padding to include handles (rotate, resize, delete buttons)
     const double padding = 45.0;
-    final rect = Rect.fromLTWH(sx - padding, sy - padding, sw + padding * 2, sh + padding * 2);
+    final rect = Rect.fromLTWH(
+      sx - padding,
+      sy - padding,
+      sw + padding * 2,
+      sh + padding * 2,
+    );
 
     if (node.transform.rotation != 0.0) {
       final center = Offset(sx + sw / 2, sy + sh / 2);
       final angleRad = -node.transform.rotation * pi / 180.0;
-      
-      final rotatedX = cos(angleRad) * (localPos.dx - center.dx) -
+
+      final rotatedX =
+          cos(angleRad) * (localPos.dx - center.dx) -
           sin(angleRad) * (localPos.dy - center.dy) +
           center.dx;
-      final rotatedY = sin(angleRad) * (localPos.dx - center.dx) +
+      final rotatedY =
+          sin(angleRad) * (localPos.dx - center.dx) +
           cos(angleRad) * (localPos.dy - center.dy) +
           center.dy;
 
@@ -379,12 +431,15 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   void _onPointerDown(PointerDownEvent event) {
     bool isTouchOnNode = false;
-    final TextNode? selectedNode = (_selectedNodeId != null && _document != null)
-        ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId) as TextNode?
+    final TextNode? selectedNode =
+        (_selectedNodeId != null && _document != null)
+        ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
+              as TextNode?
         : null;
 
     if (selectedNode != null && _lastCanvasPaintSize != Size.zero) {
-      final renderBox = _canvasKey.currentContext?.findRenderObject() as RenderBox?;
+      final renderBox =
+          _canvasKey.currentContext?.findRenderObject() as RenderBox?;
       if (renderBox != null) {
         final localPos = renderBox.globalToLocal(event.position);
         final transformer = ViewportTransformer(
@@ -392,8 +447,16 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           virtualHeight: _document!.canvas.virtualHeight,
           targetSize: _lastCanvasPaintSize,
         );
-        isTouchOnNode = _isPointNearSelectedNode(localPos, selectedNode, transformer);
+        isTouchOnNode = _isPointNearSelectedNode(
+          localPos,
+          selectedNode,
+          transformer,
+        );
       }
+    }
+
+    if (_editingTextNodeId != null && !isTouchOnNode) {
+      _endEditing();
     }
 
     setState(() {
@@ -418,6 +481,219 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         _isTouchOnNode = false;
       }
     });
+  }
+
+  void _endEditing() {
+    if (_editingTextNodeId == null) return;
+    setState(() {
+      _editingTextNodeId = null;
+    });
+    _textFocusNode.unfocus();
+    
+    // Only save history if the current state is different from the last history state
+    if (_document != null && _history.isNotEmpty) {
+      final currentJson = json.encode(_document!.toJson());
+      final lastJson = _history[_historyIndex];
+      if (currentJson != lastJson) {
+        _saveToHistory();
+      }
+    }
+  }
+
+  void _detectDoubleTapHitTest(Offset localTapPos, Size paintSize) {
+    if (_document == null) return;
+    final transformer = ViewportTransformer(
+      virtualWidth: _document!.canvas.virtualWidth,
+      virtualHeight: _document!.canvas.virtualHeight,
+      targetSize: paintSize,
+    );
+
+    final reversedLayers = List<SceneNode>.from(_document!.layers).reversed.toList();
+    for (final node in reversedLayers) {
+      if (node is! TextNode || !node.state.visible) continue;
+
+      final double sx = transformer.toScreenX(node.bounds.x);
+      final double sy = transformer.toScreenY(node.bounds.y);
+      final double sw = transformer.toScreenWidth(node.bounds.width);
+      final double sh = transformer.toScreenHeight(node.bounds.height);
+
+      final rect = Rect.fromLTWH(sx, sy, sw, sh);
+
+      bool hit = false;
+      if (node.transform.rotation != 0.0) {
+        final center = rect.center;
+        final angleRad = -node.transform.rotation * pi / 180.0;
+        
+        final rotatedTapX = cos(angleRad) * (localTapPos.dx - center.dx) -
+            sin(angleRad) * (localTapPos.dy - center.dy) +
+            center.dx;
+        final rotatedTapY = sin(angleRad) * (localTapPos.dx - center.dx) +
+            cos(angleRad) * (localTapPos.dy - center.dy) +
+            center.dy;
+
+        hit = rect.contains(Offset(rotatedTapX, rotatedTapY));
+      } else {
+        hit = rect.contains(localTapPos);
+      }
+
+      if (hit) {
+        setState(() {
+          _selectedNodeId = node.id;
+          _editingTextNodeId = node.id;
+          _textController.value = _textController.value.copyWith(
+            text: node.text,
+            selection: TextSelection(baseOffset: 0, extentOffset: node.text.length),
+            composing: TextRange.empty,
+          );
+          _activeTab = 'Text';
+        });
+        _textFocusNode.requestFocus();
+        return;
+      }
+    }
+  }
+
+  Widget _buildInlineEditor(ViewportTransformer transformer) {
+    if (_document == null || _editingTextNodeId == null) return const SizedBox.shrink();
+    final node = _document!.layers.firstWhereOrNull((l) => l.id == _editingTextNodeId);
+    if (node is! TextNode) return const SizedBox.shrink();
+
+    final double sx = transformer.toScreenX(node.bounds.x);
+    final double sy = transformer.toScreenY(node.bounds.y);
+    final double sw = transformer.toScreenWidth(node.bounds.width);
+    final double sh = transformer.toScreenHeight(node.bounds.height);
+
+    final double screenScale = transformer.scaleX;
+
+    final parsedColor = PaintFactory.parseHexColor(node.color);
+    final parsedFontWeight = _parseFontWeight(node.fontWeight);
+    final parsedFontStyle = _parseFontStyle(node.fontStyle);
+    final parsedTextAlign = _parseTextAlign(node.align);
+    final parsedTextDecoration = _parseTextDecoration(node.decoration);
+
+    Widget textField = TextField(
+      controller: _textController,
+      focusNode: _textFocusNode,
+      autofocus: true,
+      maxLines: null,
+      keyboardType: TextInputType.multiline,
+      textAlign: parsedTextAlign,
+      cursorColor: parsedColor,
+      style: TextStyle(
+        fontFamily: node.fontFamily == 'System' ? null : node.fontFamily,
+        fontSize: node.fontSize * screenScale,
+        color: parsedColor,
+        fontWeight: parsedFontWeight,
+        fontStyle: parsedFontStyle,
+        decoration: parsedTextDecoration,
+        letterSpacing: node.letterSpacing * screenScale,
+        height: node.lineHeight,
+      ),
+      decoration: const InputDecoration(
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.zero,
+        isCollapsed: true,
+      ),
+      onSubmitted: (_) {
+        _endEditing();
+      },
+    );
+
+    if (node.transform.rotation != 0.0) {
+      final double rotationAngleRad = node.transform.rotation * pi / 180.0;
+      textField = Transform.rotate(
+        angle: rotationAngleRad,
+        child: textField,
+      );
+    }
+
+    return Positioned(
+      left: sx,
+      top: sy,
+      width: sw,
+      height: sh,
+      child: textField,
+    );
+  }
+
+  FontWeight _parseFontWeight(String? weight) {
+    if (weight == null) return FontWeight.normal;
+    switch (weight.toLowerCase()) {
+      case 'bold':
+        return FontWeight.bold;
+      case 'w100':
+      case '100':
+        return FontWeight.w100;
+      case 'w200':
+      case '200':
+        return FontWeight.w200;
+      case 'w300':
+      case '300':
+        return FontWeight.w300;
+      case 'w400':
+      case '400':
+        return FontWeight.w400;
+      case 'w500':
+      case '500':
+        return FontWeight.w500;
+      case 'w600':
+      case '600':
+        return FontWeight.w600;
+      case 'w700':
+      case '700':
+        return FontWeight.w700;
+      case 'w800':
+      case '800':
+        return FontWeight.w800;
+      case 'w900':
+      case '900':
+        return FontWeight.w900;
+      case 'normal':
+      default:
+        return FontWeight.normal;
+    }
+  }
+
+  FontStyle _parseFontStyle(String? style) {
+    if (style == null) return FontStyle.normal;
+    switch (style.toLowerCase()) {
+      case 'italic':
+        return FontStyle.italic;
+      case 'normal':
+      default:
+        return FontStyle.normal;
+    }
+  }
+
+  TextAlign _parseTextAlign(String? align) {
+    if (align == null) return TextAlign.left;
+    switch (align.toLowerCase()) {
+      case 'center':
+        return TextAlign.center;
+      case 'right':
+        return TextAlign.right;
+      case 'justify':
+        return TextAlign.justify;
+      case 'left':
+      default:
+        return TextAlign.left;
+    }
+  }
+
+  TextDecoration _parseTextDecoration(String? decoration) {
+    if (decoration == null) return TextDecoration.none;
+    switch (decoration.toLowerCase()) {
+      case 'underline':
+        return TextDecoration.underline;
+      case 'linethrough':
+      case 'line-through':
+        return TextDecoration.lineThrough;
+      case 'overline':
+        return TextDecoration.overline;
+      case 'none':
+      default:
+        return TextDecoration.none;
+    }
   }
 
   Future<void> _loadLayoutAndAssets() async {
@@ -497,12 +773,54 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   void _onTextChanged() {
     if (_document == null || _selectedNodeId == null) return;
-    final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+    final int index = _document!.layers.indexWhere(
+      (l) => l.id == _selectedNodeId,
+    );
     if (index == -1) return;
 
     final node = _document!.layers[index];
     if (node is TextNode && node.text != _textController.text) {
-      final updatedNode = node.copyWith(text: _textController.text);
+      // Measure text width and height in virtual coordinates at node.fontSize
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: _textController.text,
+          style: TextStyle(
+            fontFamily: node.fontFamily == 'System' ? null : node.fontFamily,
+            fontSize: node.fontSize,
+            fontWeight: _parseFontWeight(node.fontWeight),
+            fontStyle: _parseFontStyle(node.fontStyle),
+            decoration: _parseTextDecoration(node.decoration),
+            letterSpacing: node.letterSpacing,
+            height: node.lineHeight,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      // Add a small safety buffer (e.g. 10 pixels in virtual coordinates)
+      final double newVirtualWidth = textPainter.width > 0 ? textPainter.width + 10.0 : 30.0;
+      final double newVirtualHeight = textPainter.height > 0 ? textPainter.height : node.bounds.height;
+
+      // Adjust X position based on alignment to keep the text correctly anchored
+      double newX = node.bounds.x;
+      if (node.align == 'center') {
+        final double centerX = node.bounds.x + (node.bounds.width / 2.0);
+        newX = centerX - (newVirtualWidth / 2.0);
+      } else if (node.align == 'right') {
+        final double rightX = node.bounds.x + node.bounds.width;
+        newX = rightX - newVirtualWidth;
+      }
+
+      final updatedNode = node.copyWith(
+        text: _textController.text,
+        bounds: NodeBounds(
+          x: newX,
+          y: node.bounds.y,
+          width: newVirtualWidth,
+          height: newVirtualHeight,
+        ),
+      );
+
       setState(() {
         _document!.layers[index] = updatedNode;
       });
@@ -518,7 +836,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _textController.text = "";
       return;
     }
-    final node = _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    final node = _document!.layers.firstWhereOrNull(
+      (l) => l.id == _selectedNodeId,
+    );
     if (node is TextNode) {
       _textController.text = node.text;
     } else {
@@ -527,6 +847,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   void _selectNode(String? id) {
+    if (_editingTextNodeId != null && _editingTextNodeId != id) {
+      final oldId = _editingTextNodeId;
+      _editingTextNodeId = null;
+      _textFocusNode.unfocus();
+      _saveToHistory();
+    }
     setState(() {
       _selectedNodeId = id;
       _updateSelectedNodeTextField();
@@ -537,7 +863,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         if (id.startsWith('logo') || (node?.id.startsWith('logo') ?? false)) {
           _activeTab = 'Logo';
           _lastSelectedLogoId = id;
-        } else if (id.startsWith('signature') || (node?.id.startsWith('signature') ?? false)) {
+        } else if (id.startsWith('signature') ||
+            (node?.id.startsWith('signature') ?? false)) {
           _activeTab = 'Signature';
         } else if (node is TextNode) {
           _activeTab = 'Text';
@@ -545,8 +872,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       }
     });
   }
-
-
 
   void _deleteLayer(String id) {
     if (_document == null) return;
@@ -580,12 +905,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         width: 100,
         height: 30,
       ),
-      transform: NodeTransform(
-        rotation: 0.0,
-        pivot: const Offset(0.5, 0.5),
-      ),
+      transform: NodeTransform(rotation: 0.0, pivot: const Offset(0.5, 0.5)),
       state: NodeState(visible: true, locked: false),
-      interaction: NodeInteraction(selectable: true, movable: true, editable: true),
+      interaction: NodeInteraction(
+        selectable: true,
+        movable: true,
+        editable: true,
+      ),
     );
 
     setState(() {
@@ -605,7 +931,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     String? decoration,
   }) {
     if (_document == null || _selectedNodeId == null) return;
-    final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+    final int index = _document!.layers.indexWhere(
+      (l) => l.id == _selectedNodeId,
+    );
     if (index == -1) return;
 
     final node = _document!.layers[index];
@@ -615,12 +943,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         final double scaleFactor = fontSize / node.fontSize;
         final double newWidth = node.bounds.width * scaleFactor;
         final double newHeight = node.bounds.height * scaleFactor;
-        
+
         final double centerX = node.bounds.x + (node.bounds.width / 2.0);
         final double centerY = node.bounds.y + (node.bounds.height / 2.0);
         final double newX = centerX - (newWidth / 2.0);
         final double newY = centerY - (newHeight / 2.0);
-        
+
         updatedBounds = NodeBounds(
           x: newX,
           y: newY,
@@ -645,10 +973,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     }
   }
 
-
-
   void _onColorSelected(String hex, Color color) {
-    final bool alreadyExists = _colorPalette.any((item) => item['hex'].toString().toUpperCase() == hex.toUpperCase());
+    final bool alreadyExists = _colorPalette.any(
+      (item) => item['hex'].toString().toUpperCase() == hex.toUpperCase(),
+    );
     if (!alreadyExists) {
       setState(() {
         _colorPalette.add({'color': color, 'hex': hex});
@@ -658,8 +986,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     _saveToHistory();
   }
 
-
-
   void _detectHitTest(Offset localTapPos, Size paintSize) {
     if (_document == null) return;
     final transformer = ViewportTransformer(
@@ -668,7 +994,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       targetSize: paintSize,
     );
 
-    final reversedLayers = List<SceneNode>.from(_document!.layers).reversed.toList();
+    final reversedLayers = List<SceneNode>.from(
+      _document!.layers,
+    ).reversed.toList();
     for (final node in reversedLayers) {
       if (node is! TextNode || !node.state.visible) continue;
 
@@ -682,11 +1010,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       if (node.transform.rotation != 0.0) {
         final center = rect.center;
         final angleRad = -node.transform.rotation * pi / 180.0;
-        
-        final rotatedTapX = cos(angleRad) * (localTapPos.dx - center.dx) -
+
+        final rotatedTapX =
+            cos(angleRad) * (localTapPos.dx - center.dx) -
             sin(angleRad) * (localTapPos.dy - center.dy) +
             center.dx;
-        final rotatedTapY = sin(angleRad) * (localTapPos.dx - center.dx) +
+        final rotatedTapY =
+            sin(angleRad) * (localTapPos.dx - center.dx) +
             cos(angleRad) * (localTapPos.dy - center.dy) +
             center.dy;
 
@@ -705,9 +1035,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     _selectNode(null);
   }
 
-
-
-  Widget _buildSelectedOverlay(TextNode node, ViewportTransformer transformer, Size paintSize) {
+  Widget _buildSelectedOverlay(
+    TextNode node,
+    ViewportTransformer transformer,
+    Size paintSize,
+  ) {
     final double sx = transformer.toScreenX(node.bounds.x);
     final double sy = transformer.toScreenY(node.bounds.y);
     final double sw = transformer.toScreenWidth(node.bounds.width);
@@ -731,33 +1063,44 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       height: sh,
       onUpdate: () {
         final double finalScale = stickerModel.scale;
-        
+
         final double virtualW = transformer.toVirtualWidth(sw * finalScale);
         final double virtualH = transformer.toVirtualHeight(sh * finalScale);
-        
+
         // Calculate center of original bounds in virtual coordinates
-        final double initialVirtualCenterX = node.bounds.x + (node.bounds.width / 2.0);
-        final double initialVirtualCenterY = node.bounds.y + (node.bounds.height / 2.0);
-        
+        final double initialVirtualCenterX =
+            node.bounds.x + (node.bounds.width / 2.0);
+        final double initialVirtualCenterY =
+            node.bounds.y + (node.bounds.height / 2.0);
+
         // Calculate position drag offset (if any)
-        final double moveDxVirtual = transformer.toVirtualWidth(stickerModel.left - sx);
-        final double moveDyVirtual = transformer.toVirtualHeight(stickerModel.top - sy);
-        
-        final double currentVirtualCenterX = initialVirtualCenterX + moveDxVirtual;
-        final double currentVirtualCenterY = initialVirtualCenterY + moveDyVirtual;
-        
+        final double moveDxVirtual = transformer.toVirtualWidth(
+          stickerModel.left - sx,
+        );
+        final double moveDyVirtual = transformer.toVirtualHeight(
+          stickerModel.top - sy,
+        );
+
+        final double currentVirtualCenterX =
+            initialVirtualCenterX + moveDxVirtual;
+        final double currentVirtualCenterY =
+            initialVirtualCenterY + moveDyVirtual;
+
         // Keep center fixed while scaling
         final double newVirtualX = currentVirtualCenterX - (virtualW / 2.0);
         final double newVirtualY = currentVirtualCenterY - (virtualH / 2.0);
-        
+
         final double rotationDeg = stickerModel.angle * 180.0 / pi;
 
         if (_document != null) {
-          final int index = _document!.layers.indexWhere((l) => l.id == node.id);
+          final int index = _document!.layers.indexWhere(
+            (l) => l.id == node.id,
+          );
           if (index != -1) {
             setState(() {
               final originalNode = _document!.layers[index] as TextNode;
-              final double newFontSize = (originalNode.fontSize * finalScale).clamp(6.0, 72.0);
+              final double newFontSize = (originalNode.fontSize * finalScale)
+                  .clamp(6.0, 72.0);
               _document!.layers[index] = originalNode.copyWith(
                 fontSize: newFontSize,
                 bounds: NodeBounds(
@@ -784,33 +1127,56 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       onEdit: () {
         _textFocusNode.requestFocus();
       },
+      onDoubleTap: () {
+        setState(() {
+          _selectedNodeId = node.id;
+          _editingTextNodeId = node.id;
+          _textController.value = _textController.value.copyWith(
+            text: node.text,
+            selection: TextSelection(baseOffset: 0, extentOffset: node.text.length),
+            composing: TextRange.empty,
+          );
+          _activeTab = 'Text';
+        });
+        _textFocusNode.requestFocus();
+      },
       child: const SizedBox.expand(),
     );
   }
 
+  void _closeActiveTab() {
+    setState(() {
+      _activeTab = '';
+      _selectedNodeId = null;
+    });
+  }
+
   Widget _buildDynamicControlsPanel(TextNode? selectedTextNode) {
     if (_activeTab == 'Text') {
-      if (selectedTextNode != null) {
-        return TextControlsPanel(
-          selectedNode: selectedTextNode,
-          textController: _textController,
-          textFocusNode: _textFocusNode,
-          colorPalette: _colorPalette,
-          fontFamilies: _fontFamilies,
-          onAddNewTextNode: _addNewTextNode,
-          onSaveTextEditingState: _saveTextEditingState,
-          onUpdateProperty: _updateSelectedTextProperty,
-          onColorSelected: _onColorSelected,
-        );
-      }
-      return const SizedBox.shrink();
+      return TextControlsPanel(
+        selectedNode: selectedTextNode,
+        textController: _textController,
+        textFocusNode: _textFocusNode,
+        colorPalette: _colorPalette,
+        fontFamilies: _fontFamilies,
+        onAddNewTextNode: _addNewTextNode,
+        onSaveTextEditingState: _saveTextEditingState,
+        onUpdateProperty: _updateSelectedTextProperty,
+        onColorSelected: _onColorSelected,
+        onDismiss: _closeActiveTab,
+      );
     } else if (_activeTab == 'Logo') {
-      final SceneNode? logoNode = _selectedNodeId != null && _selectedNodeId!.startsWith('logo')
+      final SceneNode? logoNode =
+          _selectedNodeId != null && _selectedNodeId!.startsWith('logo')
           ? _document?.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
           : _document?.layers.firstWhereOrNull((l) => l.id.startsWith('logo'));
       final bool hasLogo = logoNode != null;
-      final String currentLogoName = logoNode != null ? (_logoNames[logoNode.id] ?? _pickedLogoName) : _pickedLogoName;
-      final String currentLogoDimensions = logoNode != null ? (_logoDimensions[logoNode.id] ?? _pickedLogoDimensions) : _pickedLogoDimensions;
+      final String currentLogoName = logoNode != null
+          ? (_logoNames[logoNode.id] ?? _pickedLogoName)
+          : _pickedLogoName;
+      final String currentLogoDimensions = logoNode != null
+          ? (_logoDimensions[logoNode.id] ?? _pickedLogoDimensions)
+          : _pickedLogoDimensions;
 
       return LogoControlsPanel(
         hasLogo: hasLogo,
@@ -818,6 +1184,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         currentLogoDimensions: currentLogoDimensions,
         onAddNewLogo: _addNewLogo,
         onReplaceSelectedLogo: _replaceSelectedLogo,
+        onDismiss: _closeActiveTab,
       );
     } else if (_activeTab == 'Signature') {
       return SignatureControlsPanel(
@@ -826,6 +1193,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         onSignatureCleared: _clearSignature,
         initialStrokes: _signatureStrokes,
         initialColor: _currentSignatureColor,
+        onDismiss: _closeActiveTab,
       );
     }
     return const SizedBox.shrink();
@@ -834,7 +1202,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   void _clearSignature() {
     setState(() {
       _signatureStrokes.clear();
-      final sigNode = _document?.layers.firstWhereOrNull((l) => l.id.startsWith('signature'));
+      final sigNode = _document?.layers.firstWhereOrNull(
+        (l) => l.id.startsWith('signature'),
+      );
       if (sigNode != null) {
         _document?.layers.removeWhere((l) => l.id == sigNode.id);
         _selectedNodeId = null;
@@ -844,9 +1214,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   void _onSignatureExported(ui.Image img) {
-    String? sigId = _selectedNodeId != null && _selectedNodeId!.startsWith('signature')
+    String? sigId =
+        _selectedNodeId != null && _selectedNodeId!.startsWith('signature')
         ? _selectedNodeId
-        : _document!.layers.firstWhereOrNull((l) => l.id.startsWith('signature'))?.id;
+        : _document!.layers
+              .firstWhereOrNull((l) => l.id.startsWith('signature'))
+              ?.id;
 
     if (sigId == null) {
       sigId = 'signature_${DateTime.now().millisecondsSinceEpoch}';
@@ -871,12 +1244,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           width: width,
           height: height,
         ),
-        transform: NodeTransform(
-          rotation: 0.0,
-          pivot: const Offset(0.5, 0.5),
-        ),
+        transform: NodeTransform(rotation: 0.0, pivot: const Offset(0.5, 0.5)),
         state: NodeState(visible: true, locked: false),
-        interaction: NodeInteraction(selectable: true, movable: true, editable: true),
+        interaction: NodeInteraction(
+          selectable: true,
+          movable: true,
+          editable: true,
+        ),
       );
       _document!.layers.add(newSigNode);
     }
@@ -929,12 +1303,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           width: width,
           height: height,
         ),
-        transform: NodeTransform(
-          rotation: 0.0,
-          pivot: const Offset(0.5, 0.5),
-        ),
+        transform: NodeTransform(rotation: 0.0, pivot: const Offset(0.5, 0.5)),
         state: NodeState(visible: true, locked: false),
-        interaction: NodeInteraction(selectable: true, movable: true, editable: true),
+        interaction: NodeInteraction(
+          selectable: true,
+          movable: true,
+          editable: true,
+        ),
       );
 
       setState(() {
@@ -954,7 +1329,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   Future<void> _replaceSelectedLogo() async {
-    if (_document == null || _selectedNodeId == null || !_selectedNodeId!.startsWith('logo')) return;
+    if (_document == null ||
+        _selectedNodeId == null ||
+        !_selectedNodeId!.startsWith('logo'))
+      return;
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? file = await picker.pickImage(source: ImageSource.gallery);
@@ -970,7 +1348,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final String name = file.path.split(Platform.isWindows ? '\\' : '/').last;
       final String dimensions = 'PNG • ${uiImage.width} × ${uiImage.height} px';
 
-      final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+      final int index = _document!.layers.indexWhere(
+        (l) => l.id == _selectedNodeId,
+      );
       if (index != -1) {
         setState(() {
           final originalNode = _document!.layers[index] as TextNode;
@@ -1034,12 +1414,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           width: width,
           height: height,
         ),
-        transform: NodeTransform(
-          rotation: 0.0,
-          pivot: const Offset(0.5, 0.5),
-        ),
+        transform: NodeTransform(rotation: 0.0, pivot: const Offset(0.5, 0.5)),
         state: NodeState(visible: true, locked: false),
-        interaction: NodeInteraction(selectable: true, movable: true, editable: true),
+        interaction: NodeInteraction(
+          selectable: true,
+          movable: true,
+          editable: true,
+        ),
       );
 
       setState(() {
@@ -1055,10 +1436,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       debugPrint("Error adding signature: $e");
     }
   }
-
-
-
-
 
   Widget _buildBottomNavigationBar() {
     return Container(
@@ -1076,10 +1453,17 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               isActive: _activeTab == 'Text',
               onTap: () {
                 setState(() {
-                  _activeTab = 'Text';
-                  final node = _document?.layers.firstWhereOrNull((l) => l.id == _selectedNodeId);
-                  if (node is! TextNode) {
+                  if (_activeTab == 'Text') {
+                    _activeTab = '';
                     _selectedNodeId = null;
+                  } else {
+                    _activeTab = 'Text';
+                    final node = _document?.layers.firstWhereOrNull(
+                      (l) => l.id == _selectedNodeId,
+                    );
+                    if (node is! TextNode) {
+                      _selectedNodeId = null;
+                    }
                   }
                 });
               },
@@ -1090,14 +1474,25 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               isActive: _activeTab == 'Logo',
               onTap: () {
                 setState(() {
-                  _activeTab = 'Logo';
-                  final bool hasLastLogo = _lastSelectedLogoId != null &&
-                      (_document?.layers.any((l) => l.id == _lastSelectedLogoId) ?? false);
-                  if (hasLastLogo) {
-                    _selectedNodeId = _lastSelectedLogoId;
+                  if (_activeTab == 'Logo') {
+                    _activeTab = '';
+                    _selectedNodeId = null;
                   } else {
-                    final logoNode = _document?.layers.firstWhereOrNull((l) => l.id.startsWith('logo'));
-                    _selectedNodeId = logoNode?.id;
+                    _activeTab = 'Logo';
+                    final bool hasLastLogo =
+                        _lastSelectedLogoId != null &&
+                        (_document?.layers.any(
+                              (l) => l.id == _lastSelectedLogoId,
+                            ) ??
+                            false);
+                    if (hasLastLogo) {
+                      _selectedNodeId = _lastSelectedLogoId;
+                    } else {
+                      final logoNode = _document?.layers.firstWhereOrNull(
+                        (l) => l.id.startsWith('logo'),
+                      );
+                      _selectedNodeId = logoNode?.id;
+                    }
                   }
                 });
               },
@@ -1108,9 +1503,16 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               isActive: _activeTab == 'Signature',
               onTap: () {
                 setState(() {
-                  _activeTab = 'Signature';
-                  final sigNode = _document?.layers.firstWhereOrNull((l) => l.id.startsWith('signature'));
-                  _selectedNodeId = sigNode?.id;
+                  if (_activeTab == 'Signature') {
+                    _activeTab = '';
+                    _selectedNodeId = null;
+                  } else {
+                    _activeTab = 'Signature';
+                    final sigNode = _document?.layers.firstWhereOrNull(
+                      (l) => l.id.startsWith('signature'),
+                    );
+                    _selectedNodeId = sigNode?.id;
+                  }
                 });
               },
             ),
@@ -1120,8 +1522,15 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     );
   }
 
-  Widget _buildBottomTab(IconData icon, String label, {required bool isActive, VoidCallback? onTap}) {
-    final Color col = isActive ? const Color(0xFF7C3AED) : const Color(0xFF64748B);
+  Widget _buildBottomTab(
+    IconData icon,
+    String label, {
+    required bool isActive,
+    VoidCallback? onTap,
+  }) {
+    final Color col = isActive
+        ? const Color(0xFF7C3AED)
+        : const Color(0xFF64748B);
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -1147,5 +1556,3 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     );
   }
 }
-
-

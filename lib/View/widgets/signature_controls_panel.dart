@@ -9,6 +9,7 @@ class SignatureControlsPanel extends StatefulWidget {
   final VoidCallback onSignatureCleared;
   final List<List<Offset>> initialStrokes;
   final Color initialColor;
+  final VoidCallback onDismiss;
 
   const SignatureControlsPanel({
     super.key,
@@ -17,6 +18,7 @@ class SignatureControlsPanel extends StatefulWidget {
     required this.onSignatureCleared,
     required this.initialStrokes,
     required this.initialColor,
+    required this.onDismiss,
   });
 
   @override
@@ -177,16 +179,29 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 8),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFCBD5E1),
-              borderRadius: BorderRadius.circular(2),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onVerticalDragUpdate: (details) {
+              if (details.delta.dy > 4.0) {
+                widget.onDismiss();
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 2),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(

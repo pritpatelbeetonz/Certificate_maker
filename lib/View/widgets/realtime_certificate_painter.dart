@@ -13,11 +13,13 @@ class RealtimeCertificatePainter extends CustomPainter {
   final SceneDocument document;
   final Map<String, ui.Image> loadedImages;
   final String? selectedNodeId;
+  final String? editingNodeId;
 
   RealtimeCertificatePainter({
     required this.document,
     required this.loadedImages,
     required this.selectedNodeId,
+    this.editingNodeId,
   });
 
   @override
@@ -57,6 +59,7 @@ class RealtimeCertificatePainter extends CustomPainter {
       context: context,
       layers: document.layers,
       selectedNodeId: selectedNodeId,
+      editingNodeId: editingNodeId,
     );
   }
 

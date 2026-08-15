@@ -6,6 +6,7 @@ class LogoControlsPanel extends StatelessWidget {
   final String currentLogoDimensions;
   final VoidCallback onAddNewLogo;
   final VoidCallback onReplaceSelectedLogo;
+  final VoidCallback onDismiss;
 
   const LogoControlsPanel({
     super.key,
@@ -14,6 +15,7 @@ class LogoControlsPanel extends StatelessWidget {
     required this.currentLogoDimensions,
     required this.onAddNewLogo,
     required this.onReplaceSelectedLogo,
+    required this.onDismiss,
   });
 
   @override
@@ -33,16 +35,29 @@ class LogoControlsPanel extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 8),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFCBD5E1),
-              borderRadius: BorderRadius.circular(2),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onVerticalDragUpdate: (details) {
+              if (details.delta.dy > 4.0) {
+                onDismiss();
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 2),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(

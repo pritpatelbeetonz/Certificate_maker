@@ -19,6 +19,7 @@ class TextControlsPanel extends StatelessWidget {
     String? decoration,
   }) onUpdateProperty;
   final Function(String hex, Color color) onColorSelected;
+  final VoidCallback onDismiss;
 
   const TextControlsPanel({
     super.key,
@@ -31,6 +32,7 @@ class TextControlsPanel extends StatelessWidget {
     required this.onSaveTextEditingState,
     required this.onUpdateProperty,
     required this.onColorSelected,
+    required this.onDismiss,
   });
 
   void _showColorPickerDialog(BuildContext context) {
@@ -102,16 +104,29 @@ class TextControlsPanel extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 8),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFCBD5E1),
-              borderRadius: BorderRadius.circular(2),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onVerticalDragUpdate: (details) {
+              if (details.delta.dy > 4.0) {
+                onDismiss();
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 2),
           Flexible(
             child: SingleChildScrollView(
               child: Padding(
@@ -155,34 +170,6 @@ class TextControlsPanel extends StatelessWidget {
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: hasSelection ? Colors.white : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: TextField(
-                        controller: textController,
-                        focusNode: textFocusNode,
-                        enabled: hasSelection,
-                        onEditingComplete: onSaveTextEditingState,
-                        decoration: InputDecoration(
-                          hintText: hasSelection ? 'Enter text...' : 'Select a text layer to edit',
-                          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          suffixIcon: hasSelection
-                              ? IconButton(
-                                  icon: const Icon(Icons.cancel, color: Color(0xFF94A3B8)),
-                                  onPressed: () {
-                                    textController.clear();
-                                  },
-                                )
-                              : null,
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
