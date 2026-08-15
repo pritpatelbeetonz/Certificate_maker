@@ -5,17 +5,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../rendering_engine/models/scene_node.dart';
-import '../rendering_engine/canvas/graphics_engine.dart';
-import '../rendering_engine/canvas/render_context.dart';
 import '../rendering_engine/canvas/viewport_transformer.dart';
-import '../rendering_engine/assets/asset_repository.dart';
-import '../rendering_engine/renderers/background_renderer.dart';
-import '../rendering_engine/models/background_state.dart';
 import '../rendering_engine/models/sticker_model.dart';
 import '../rendering_engine/widgets/interactive_overlay.dart';
 
@@ -44,23 +38,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   double _zoomScale = 1.0;
   String? _lastSelectedLogoId;
 
-  List<List<Offset>> _signatureStrokes = [];
-  Color _currentSignatureColor = const Color(0xFF2563EB);
-
-  final List<Color> _presetSignatureColors = [
-    const Color(0xFF2563EB),
-    const Color(0xFFEF4444),
-    const Color(0xFFF59E0B),
-    const Color(0xFF10B981),
-    const Color(0xFF0F172A),
-    const Color(0xFF8B5CF6),
-    const Color(0xFFFFFFFF),
-  ];
+  final List<List<Offset>> _signatureStrokes = [];
+  final Color _currentSignatureColor = const Color(0xFF2563EB);
 
   String _pickedLogoName = 'Creative logo.png';
   String _pickedLogoDimensions = '350 × 120 px';
-  String _pickedSignatureName = 'Signature.png';
-  String _pickedSignatureDimensions = '200 × 80 px';
+
 
   final Map<String, String> _logoNames = {};
   final Map<String, String> _logoDimensions = {};
@@ -334,61 +317,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     }
   }
 
-  void _showColorPickerDialog(BuildContext context) {
-    Color selectedColor = const Color(0xFF2563EB);
-    if (_document != null && _selectedNodeId != null) {
-      final index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
-      if (index != -1) {
-        final node = _document!.layers[index];
-        if (node is TextNode) {
-          try {
-            String hex = node.color.replaceAll('#', '');
-            if (hex.length == 6) hex = 'FF$hex';
-            selectedColor = Color(int.parse(hex, radix: 16));
-          } catch (_) {}
-        }
-      }
-    }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Choose Color', style: TextStyle(fontWeight: FontWeight.bold)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          content: SingleChildScrollView(
-            child: ColorPicker(
-              pickerColor: selectedColor,
-              onColorChanged: (color) {
-                selectedColor = color;
-              },
-              showLabel: true,
-              pickerAreaHeightPercent: 0.8,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final hex = '#FF${selectedColor.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
-                _onColorSelected(hex, selectedColor);
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5B21B6),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('Select'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   void _onColorSelected(String hex, Color color) {
     final bool alreadyExists = _colorPalette.any((item) => item['hex'].toString().toUpperCase() == hex.toUpperCase());
@@ -782,8 +711,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       if (sigNode != null) {
         _document?.layers.removeWhere((l) => l.id == sigNode.id);
         _selectedNodeId = null;
-        _pickedSignatureName = 'Signature.png';
-        _pickedSignatureDimensions = '200 × 80 px';
       }
       _saveToHistory();
     });
@@ -833,8 +760,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     setState(() {
       _selectedNodeId = sigId;
-      _pickedSignatureName = 'Drawn Signature';
-      _pickedSignatureDimensions = 'PNG • ${img.width} × ${img.height} px';
       _saveToHistory();
     });
   }
@@ -993,8 +918,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       setState(() {
         _signatureNames[sigId] = name;
         _signatureDimensions[sigId] = dimensions;
-        _pickedSignatureName = name;
-        _pickedSignatureDimensions = dimensions;
         _document!.layers.add(newSigNode);
         _selectedNodeId = sigId;
         _activeTab = 'Signature';
@@ -1006,48 +929,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     }
   }
 
-  Future<void> _replaceSelectedSignature() async {
-    if (_document == null || _selectedNodeId == null || !_selectedNodeId!.startsWith('signature')) return;
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
-      if (file == null) return;
 
-      final Uint8List bytes = await File(file.path).readAsBytes();
-      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
-      final ui.FrameInfo frame = await codec.getNextFrame();
-      final ui.Image uiImage = frame.image;
-
-      _imagePool[_selectedNodeId!] = uiImage;
-
-      final String name = file.path.split(Platform.isWindows ? '\\' : '/').last;
-      final String dimensions = 'PNG • ${uiImage.width} × ${uiImage.height} px';
-
-      final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
-      if (index != -1) {
-        setState(() {
-          final originalNode = _document!.layers[index] as TextNode;
-          final double width = originalNode.bounds.width;
-          final double height = (width / uiImage.width) * uiImage.height;
-          _document!.layers[index] = originalNode.copyWith(
-            bounds: NodeBounds(
-              x: originalNode.bounds.x,
-              y: originalNode.bounds.y,
-              width: width,
-              height: height,
-            ),
-          );
-          _signatureNames[_selectedNodeId!] = name;
-          _signatureDimensions[_selectedNodeId!] = dimensions;
-          _pickedSignatureName = name;
-          _pickedSignatureDimensions = dimensions;
-          _saveToHistory();
-        });
-      }
-    } catch (e) {
-      debugPrint("Error replacing signature: $e");
-    }
-  }
 
 
 
