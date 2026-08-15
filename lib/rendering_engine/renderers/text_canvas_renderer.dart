@@ -62,8 +62,8 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
 
     final double baseVirtualWidth = baseTextPainter.width > 0 ? baseTextPainter.width : 1.0;
 
-    // 4. Calculate scale relative to the base virtual width
-    final double scale = node.bounds.width / baseVirtualWidth;
+    // 4. Set scale to 1.0 to keep font size consistent and prevent text from stretching/shrinking when typed
+    final double scale = 1.0;
 
     // 5. Get current screen scale factor (mapping virtual to screen space)
     final double screenScale = context.viewportTransformer.scaleX;

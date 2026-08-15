@@ -36,6 +36,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   String? _selectedNodeId;
   String _activeTab = 'Text';
   double _zoomScale = 1.0;
+  double _zoomStartScale = 1.0;
+  int _activePointers = 0;
+  bool _isTouchOnNode = false;
+  Size _lastCanvasPaintSize = Size.zero;
+  final GlobalKey _canvasKey = GlobalKey();
   String? _lastSelectedLogoId;
 
   final List<List<Offset>> _signatureStrokes = [];
@@ -90,6 +95,329 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     _textController.dispose();
     _textFocusNode.dispose();
     super.dispose();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final TextNode? selectedNode = (_selectedNodeId != null && _document != null)
+        ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId) as TextNode?
+        : null;
+
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF9FAFC),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
+            onPressed: () => Get.back(),
+          ),
+          title: const Text(
+            'Edit Certificate',
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(
+                Icons.undo,
+                color: _historyIndex > 0 ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+              ),
+              onPressed: _historyIndex > 0 ? _undo : null,
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.redo,
+                color: _historyIndex < _history.length - 1 ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+              ),
+              onPressed: _historyIndex < _history.length - 1 ? _redo : null,
+            ),
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.back(result: _document);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5B21B6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                child: const Text(
+                  'Save',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _document == null
+            ? const Center(child: Text("Error loading layout"))
+            : Column(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                alignment: Alignment.center,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final double canvasRatio =
+                        _document!.canvas.virtualWidth / _document!.canvas.virtualHeight;
+
+                    double targetW = constraints.maxWidth * _zoomScale;
+                    double targetH = (constraints.maxWidth / canvasRatio) * _zoomScale;
+
+                    if (targetH > constraints.maxHeight * _zoomScale) {
+                      targetH = constraints.maxHeight * _zoomScale;
+                      targetW = targetH * canvasRatio;
+                    }
+
+                    final Size canvasPaintSize = Size(targetW, targetH);
+                    final transformer = ViewportTransformer(
+                      virtualWidth: _document!.canvas.virtualWidth,
+                      virtualHeight: _document!.canvas.virtualHeight,
+                      targetSize: canvasPaintSize,
+                    );
+                    _lastCanvasPaintSize = canvasPaintSize;
+
+                    final scrollPhysics = (_isTouchOnNode || _activePointers > 1)
+                        ? const NeverScrollableScrollPhysics()
+                        : const BouncingScrollPhysics();
+
+                    return Listener(
+                      onPointerDown: _onPointerDown,
+                      onPointerUp: _onPointerUp,
+                      onPointerCancel: _onPointerCancel,
+                      child: Center(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          physics: scrollPhysics,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: scrollPhysics,
+                            child: Container(
+                              key: _canvasKey,
+                              width: targetW,
+                              height: targetH,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  GestureDetector(
+                                    onTapUp: (details) {
+                                      _detectHitTest(
+                                        details.localPosition,
+                                        canvasPaintSize,
+                                      );
+                                    },
+
+                                    onScaleStart: _onScaleStart,
+
+                                    onScaleUpdate: _onScaleUpdate,
+
+                                    child: CustomPaint(
+                                      size: canvasPaintSize,
+                                      painter: RealtimeCertificatePainter(
+                                        document: _document!,
+                                        loadedImages: _imagePool,
+                                        selectedNodeId: _selectedNodeId,
+                                      ),
+                                    ),
+                                  ),
+                                if (selectedNode != null) ...[
+                                  _buildSelectedOverlay(selectedNode, transformer, canvasPaintSize),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                  },
+                ),
+              ),
+            ),
+            // Floating Zoom Controls Capsule
+            Padding(
+              padding: const EdgeInsets.only(bottom: 5.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove, size: 20, color: Color(0xFF64748B)),
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        setState(() {
+                          _zoomScale = (_zoomScale - 0.25).clamp(0.5, 2.0);
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '${(_zoomScale * 100).round()}%',
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                    ),
+                    const SizedBox(width: 12),
+                    IconButton(
+                      icon: const Icon(Icons.add, size: 20, color: Color(0xFF64748B)),
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        setState(() {
+                          _zoomScale = (_zoomScale + 0.25).clamp(0.5, 3.0);
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              child: _buildDynamicControlsPanel(selectedNode),
+            ),
+            _buildBottomNavigationBar(),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+
+
+
+  void _onScaleStart(ScaleStartDetails details) {
+    _zoomStartScale = _zoomScale;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    if (_activePointers < 2) {
+      return;
+    }
+
+    final double newZoom =
+    (_zoomStartScale * details.scale).clamp(0.5, 3.0);
+
+    if ((newZoom - _zoomScale).abs() < 0.001) {
+      return;
+    }
+
+    setState(() {
+      _zoomScale = newZoom;
+    });
+  }
+  bool _isPointNearSelectedNode(Offset localPos, TextNode node, ViewportTransformer transformer) {
+    final double sx = transformer.toScreenX(node.bounds.x);
+    final double sy = transformer.toScreenY(node.bounds.y);
+    final double sw = transformer.toScreenWidth(node.bounds.width);
+    final double sh = transformer.toScreenHeight(node.bounds.height);
+
+    // Padding to include handles (rotate, resize, delete buttons)
+    const double padding = 45.0;
+    final rect = Rect.fromLTWH(sx - padding, sy - padding, sw + padding * 2, sh + padding * 2);
+
+    if (node.transform.rotation != 0.0) {
+      final center = Offset(sx + sw / 2, sy + sh / 2);
+      final angleRad = -node.transform.rotation * pi / 180.0;
+      
+      final rotatedX = cos(angleRad) * (localPos.dx - center.dx) -
+          sin(angleRad) * (localPos.dy - center.dy) +
+          center.dx;
+      final rotatedY = sin(angleRad) * (localPos.dx - center.dx) +
+          cos(angleRad) * (localPos.dy - center.dy) +
+          center.dy;
+
+      return rect.contains(Offset(rotatedX, rotatedY));
+    }
+
+    return rect.contains(localPos);
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    bool isTouchOnNode = false;
+    final TextNode? selectedNode = (_selectedNodeId != null && _document != null)
+        ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId) as TextNode?
+        : null;
+
+    if (selectedNode != null && _lastCanvasPaintSize != Size.zero) {
+      final renderBox = _canvasKey.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        final localPos = renderBox.globalToLocal(event.position);
+        final transformer = ViewportTransformer(
+          virtualWidth: _document!.canvas.virtualWidth,
+          virtualHeight: _document!.canvas.virtualHeight,
+          targetSize: _lastCanvasPaintSize,
+        );
+        isTouchOnNode = _isPointNearSelectedNode(localPos, selectedNode, transformer);
+      }
+    }
+
+    setState(() {
+      _activePointers++;
+      _isTouchOnNode = isTouchOnNode;
+    });
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    setState(() {
+      _activePointers = (_activePointers - 1).clamp(0, 10);
+      if (_activePointers == 0) {
+        _isTouchOnNode = false;
+      }
+    });
+  }
+
+  void _onPointerCancel(PointerCancelEvent event) {
+    setState(() {
+      _activePointers = (_activePointers - 1).clamp(0, 10);
+      if (_activePointers == 0) {
+        _isTouchOnNode = false;
+      }
+    });
   }
 
   Future<void> _loadLayoutAndAssets() async {
@@ -377,208 +705,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     _selectNode(null);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
 
-    final TextNode? selectedNode = (_selectedNodeId != null && _document != null)
-        ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId) as TextNode?
-        : null;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-          onPressed: () => Get.back(),
-        ),
-        title: const Text(
-          'Edit Certificate',
-          style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.undo,
-              color: _historyIndex > 0 ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
-            ),
-            onPressed: _historyIndex > 0 ? _undo : null,
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.redo,
-              color: _historyIndex < _history.length - 1 ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
-            ),
-            onPressed: _historyIndex < _history.length - 1 ? _redo : null,
-          ),
-          const SizedBox(width: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-            child: ElevatedButton(
-              onPressed: () {
-                Get.back(result: _document);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5B21B6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-              child: const Text(
-                'Save',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _document == null
-              ? const Center(child: Text("Error loading layout"))
-              : Column(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        alignment: Alignment.center,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final double canvasRatio =
-                                _document!.canvas.virtualWidth / _document!.canvas.virtualHeight;
-
-                            double targetW = constraints.maxWidth * _zoomScale;
-                            double targetH = (constraints.maxWidth / canvasRatio) * _zoomScale;
-
-                            if (targetH > constraints.maxHeight * _zoomScale) {
-                               targetH = constraints.maxHeight * _zoomScale;
-                               targetW = targetH * canvasRatio;
-                            }
-
-                            final Size canvasPaintSize = Size(targetW, targetH);
-                            final transformer = ViewportTransformer(
-                              virtualWidth: _document!.canvas.virtualWidth,
-                              virtualHeight: _document!.canvas.virtualHeight,
-                              targetSize: canvasPaintSize,
-                            );
-
-                            return Center(
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.vertical,
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Container(
-                                    width: targetW,
-                                    height: targetH,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.08),
-                                          blurRadius: 20,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Stack(
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        GestureDetector(
-                                          onTapUp: (details) {
-                                            _detectHitTest(details.localPosition, canvasPaintSize);
-                                          },
-                                          child: CustomPaint(
-                                            size: canvasPaintSize,
-                                            painter: RealtimeCertificatePainter(
-                                              document: _document!,
-                                              loadedImages: _imagePool,
-                                              selectedNodeId: _selectedNodeId,
-                                            ),
-                                          ),
-                                        ),
-                                        if (selectedNode != null) ...[
-                                          _buildSelectedOverlay(selectedNode, transformer, canvasPaintSize),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    // Floating Zoom Controls Capsule
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove, size: 20, color: Color(0xFF64748B)),
-                              constraints: const BoxConstraints(),
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                setState(() {
-                                  _zoomScale = (_zoomScale - 0.25).clamp(0.5, 2.0);
-                                });
-                              },
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              '${(_zoomScale * 100).round()}%',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                            ),
-                            const SizedBox(width: 12),
-                            IconButton(
-                              icon: const Icon(Icons.add, size: 20, color: Color(0xFF64748B)),
-                              constraints: const BoxConstraints(),
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                setState(() {
-                                  _zoomScale = (_zoomScale + 0.25).clamp(0.5, 2.0);
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOut,
-                      child: _buildDynamicControlsPanel(selectedNode),
-                    ),
-                    _buildBottomNavigationBar(),
-                  ],
-                ),
-    );
-  }
 
   Widget _buildSelectedOverlay(TextNode node, ViewportTransformer transformer, Size paintSize) {
     final double sx = transformer.toScreenX(node.bounds.x);
