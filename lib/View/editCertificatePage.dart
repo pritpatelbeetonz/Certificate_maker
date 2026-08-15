@@ -40,6 +40,19 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   final GlobalKey _canvasKey = GlobalKey();
   String? _editingTextNodeId;
   String? _lastSelectedLogoId;
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
+  Offset? _startFocalPoint;
+  double _startScrollX = 0.0;
+  double _startScrollY = 0.0;
+  bool _showHorizontalGuideline = false;
+  bool _showVerticalGuideline = false;
+  bool _isCenterHorizontalGuideline = false;
+  bool _isCenterVerticalGuideline = false;
+  bool _hasVibratedX = false;
+  bool _hasVibratedY = false;
+  bool _isInteracting = false;
+  bool _hasVibratedRotation = false;
 
   final List<List<Offset>> _signatureStrokes = [];
   final Color _currentSignatureColor = const Color(0xFF2563EB);
@@ -96,6 +109,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     _textController.removeListener(_onTextChanged);
     _textController.dispose();
     _textFocusNode.dispose();
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -214,70 +229,95 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                             onPointerDown: _onPointerDown,
                             onPointerUp: _onPointerUp,
                             onPointerCancel: _onPointerCancel,
-                            child: Center(
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.vertical,
-                                physics: scrollPhysics,
+                            child: SingleChildScrollView(
+                              controller: _verticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              physics: scrollPhysics,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                ),
                                 child: SingleChildScrollView(
+                                  controller: _horizontalScrollController,
                                   scrollDirection: Axis.horizontal,
                                   physics: scrollPhysics,
-                                  child: Container(
-                                    key: _canvasKey,
-                                    width: targetW,
-                                    height: targetH,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.08),
-                                          blurRadius: 20,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                      ],
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minWidth: constraints.maxWidth,
                                     ),
-                                    child: Stack(
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        GestureDetector(
-                                          onTapUp: (details) {
-                                            _detectHitTest(
-                                              details.localPosition,
-                                              canvasPaintSize,
-                                            );
-                                          },
-                                          onDoubleTapDown: (details) {
-                                            _detectDoubleTapHitTest(
-                                              details.localPosition,
-                                              canvasPaintSize,
-                                            );
-                                          },
-
-                                          onScaleStart: _onScaleStart,
-
-                                          onScaleUpdate: _onScaleUpdate,
-
-                                          child: CustomPaint(
-                                            size: canvasPaintSize,
-                                            painter: RealtimeCertificatePainter(
-                                              document: _document!,
-                                              loadedImages: _imagePool,
-                                              selectedNodeId: _selectedNodeId,
-                                              editingNodeId: _editingTextNodeId,
+                                    child: Align(
+                                      alignment: Alignment.center,
+                                      child: Container(
+                                        key: _canvasKey,
+                                        width: targetW,
+                                        height: targetH,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(16),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.08),
+                                              blurRadius: 20,
+                                              offset: const Offset(0, 8),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                        if (selectedNode != null && _editingTextNodeId != selectedNode.id) ...[
-                                          _buildSelectedOverlay(
-                                            selectedNode,
-                                            transformer,
-                                            canvasPaintSize,
-                                          ),
-                                        ],
-                                        if (_editingTextNodeId != null) ...[
-                                          _buildInlineEditor(transformer),
-                                        ],
-                                      ],
+                                        child: Stack(
+                                          clipBehavior: Clip.none,
+                                          children: [
+                                            GestureDetector(
+                                              onTapUp: (details) {
+                                                _detectHitTest(
+                                                  details.localPosition,
+                                                  canvasPaintSize,
+                                                );
+                                              },
+                                              onDoubleTapDown: (details) {
+                                                _detectDoubleTapHitTest(
+                                                  details.localPosition,
+                                                  canvasPaintSize,
+                                                );
+                                              },
+                                              onScaleStart: _onScaleStart,
+                                              onScaleUpdate: _onScaleUpdate,
+                                              child: CustomPaint(
+                                                size: canvasPaintSize,
+                                                painter: RealtimeCertificatePainter(
+                                                  document: _document!,
+                                                  loadedImages: _imagePool,
+                                                  selectedNodeId: _selectedNodeId,
+                                                  editingNodeId: _editingTextNodeId,
+                                                ),
+                                              ),
+                                            ),
+                                              if (_isInteracting || _showHorizontalGuideline || _showVerticalGuideline)
+                                                IgnorePointer(
+                                                  child: CustomPaint(
+                                                    size: canvasPaintSize,
+                                                    painter: GuidelinePainter(
+                                                      showHorizontal: _isInteracting || _showHorizontalGuideline,
+                                                      showVertical: _isInteracting || _showVerticalGuideline,
+                                                      horizontalY: canvasPaintSize.height / 2.0,
+                                                      verticalX: canvasPaintSize.width / 2.0,
+                                                      isCenterHorizontal: _showHorizontalGuideline && _isCenterHorizontalGuideline,
+                                                      isCenterVertical: _showVerticalGuideline && _isCenterVerticalGuideline,
+                                                      showGrid: _isInteracting,
+                                                    ),
+                                                  ),
+                                                ),
+                                              if (selectedNode != null && _editingTextNodeId != selectedNode.id) ...[
+                                              _buildSelectedOverlay(
+                                                selectedNode,
+                                                transformer,
+                                                canvasPaintSize,
+                                              ),
+                                            ],
+                                            if (_editingTextNodeId != null) ...[
+                                              _buildInlineEditor(transformer),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -318,14 +358,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                             ),
                             constraints: const BoxConstraints(),
                             padding: EdgeInsets.zero,
-                            onPressed: () {
-                              setState(() {
-                                _zoomScale = (_zoomScale - 0.25).clamp(
-                                  0.5,
-                                  2.0,
-                                );
-                              });
-                            },
+                             onPressed: () {
+                               _zoomTo((_zoomScale - 0.25).clamp(0.5, 3.0));
+                             },
                           ),
                           const SizedBox(width: 12),
                           Text(
@@ -344,14 +379,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                             ),
                             constraints: const BoxConstraints(),
                             padding: EdgeInsets.zero,
-                            onPressed: () {
-                              setState(() {
-                                _zoomScale = (_zoomScale + 0.25).clamp(
-                                  0.5,
-                                  3.0,
-                                );
-                              });
-                            },
+                             onPressed: () {
+                               _zoomTo((_zoomScale + 0.25).clamp(0.5, 3.0));
+                             },
                           ),
                         ],
                       ),
@@ -371,12 +401,53 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     );
   }
 
+  void _zoomTo(double newZoom, [Offset? customFocalPoint]) {
+    if ((newZoom - _zoomScale).abs() < 0.001) return;
+
+    final RenderBox? viewportBox = context.findRenderObject() as RenderBox?;
+    if (viewportBox == null) return;
+    
+    final Offset focal = customFocalPoint ?? Offset(viewportBox.size.width / 2, viewportBox.size.height / 2);
+    final double currentScrollX = _horizontalScrollController.hasClients ? _horizontalScrollController.offset : 0.0;
+    final double currentScrollY = _verticalScrollController.hasClients ? _verticalScrollController.offset : 0.0;
+    
+    final double ratio = newZoom / _zoomScale;
+    final double targetScrollX = (currentScrollX + focal.dx) * ratio - focal.dx;
+    final double targetScrollY = (currentScrollY + focal.dy) * ratio - focal.dy;
+
+    setState(() {
+      _zoomScale = newZoom;
+    });
+
+    if (_horizontalScrollController.hasClients) {
+      _horizontalScrollController.jumpTo(targetScrollX);
+    }
+    if (_verticalScrollController.hasClients) {
+      _verticalScrollController.jumpTo(targetScrollY);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_horizontalScrollController.hasClients) {
+        _horizontalScrollController.jumpTo(targetScrollX.clamp(0.0, _horizontalScrollController.position.maxScrollExtent));
+      }
+      if (_verticalScrollController.hasClients) {
+        _verticalScrollController.jumpTo(targetScrollY.clamp(0.0, _verticalScrollController.position.maxScrollExtent));
+      }
+    });
+  }
+
   void _onScaleStart(ScaleStartDetails details) {
     _zoomStartScale = _zoomScale;
+    final RenderBox? viewportBox = context.findRenderObject() as RenderBox?;
+    if (viewportBox != null) {
+      _startFocalPoint = viewportBox.globalToLocal(details.focalPoint);
+      _startScrollX = _horizontalScrollController.hasClients ? _horizontalScrollController.offset : 0.0;
+      _startScrollY = _verticalScrollController.hasClients ? _verticalScrollController.offset : 0.0;
+    }
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    if (_activePointers < 2) {
+    if (_activePointers < 2 || _startFocalPoint == null) {
       return;
     }
 
@@ -386,8 +457,28 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       return;
     }
 
+    final double ratio = newZoom / _zoomStartScale;
+    final double targetScrollX = (_startScrollX + _startFocalPoint!.dx) * ratio - _startFocalPoint!.dx;
+    final double targetScrollY = (_startScrollY + _startFocalPoint!.dy) * ratio - _startFocalPoint!.dy;
+
     setState(() {
       _zoomScale = newZoom;
+    });
+
+    if (_horizontalScrollController.hasClients) {
+      _horizontalScrollController.jumpTo(targetScrollX);
+    }
+    if (_verticalScrollController.hasClients) {
+      _verticalScrollController.jumpTo(targetScrollY);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_horizontalScrollController.hasClients) {
+        _horizontalScrollController.jumpTo(targetScrollX.clamp(0.0, _horizontalScrollController.position.maxScrollExtent));
+      }
+      if (_verticalScrollController.hasClients) {
+        _verticalScrollController.jumpTo(targetScrollY.clamp(0.0, _verticalScrollController.position.maxScrollExtent));
+      }
     });
   }
 
@@ -462,6 +553,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     setState(() {
       _activePointers++;
       _isTouchOnNode = isTouchOnNode;
+      _isInteracting = isTouchOnNode;
     });
   }
 
@@ -470,7 +562,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _activePointers = (_activePointers - 1).clamp(0, 10);
       if (_activePointers == 0) {
         _isTouchOnNode = false;
+        _isInteracting = false;
       }
+      _showHorizontalGuideline = false;
+      _showVerticalGuideline = false;
+      _hasVibratedX = false;
+      _hasVibratedY = false;
+      _hasVibratedRotation = false;
     });
   }
 
@@ -479,7 +577,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _activePointers = (_activePointers - 1).clamp(0, 10);
       if (_activePointers == 0) {
         _isTouchOnNode = false;
+        _isInteracting = false;
       }
+      _showHorizontalGuideline = false;
+      _showVerticalGuideline = false;
+      _hasVibratedX = false;
+      _hasVibratedY = false;
+      _hasVibratedRotation = false;
     });
   }
 
@@ -696,6 +800,29 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     }
   }
 
+  double _calculateTextNodeHeight(TextNode node, double virtualWidth) {
+    if (node.id.startsWith('logo') || node.id.startsWith('signature')) {
+      return node.bounds.height;
+    }
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: node.text,
+        style: TextStyle(
+          fontFamily: node.fontFamily == 'System' ? null : node.fontFamily,
+          fontSize: node.fontSize,
+          fontWeight: _parseFontWeight(node.fontWeight),
+          fontStyle: _parseFontStyle(node.fontStyle),
+          decoration: _parseTextDecoration(node.decoration),
+          letterSpacing: node.letterSpacing,
+          height: node.lineHeight,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout(maxWidth: virtualWidth);
+    return textPainter.height > 0 ? textPainter.height : 10.0;
+  }
+
   Future<void> _loadLayoutAndAssets() async {
     try {
       final String jsonString = await rootBundle.loadString(widget.layoutPath);
@@ -799,7 +926,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
       // Add a small safety buffer (e.g. 10 pixels in virtual coordinates)
       final double newVirtualWidth = textPainter.width > 0 ? textPainter.width + 10.0 : 30.0;
-      final double newVirtualHeight = textPainter.height > 0 ? textPainter.height : node.bounds.height;
+      
+      final tempNode = node.copyWith(
+        text: _textController.text,
+      );
+      final double newVirtualHeight = _calculateTextNodeHeight(tempNode, newVirtualWidth);
 
       // Adjust X position based on alignment to keep the text correctly anchored
       double newX = node.bounds.x;
@@ -929,6 +1060,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     String? fontWeight,
     String? fontStyle,
     String? decoration,
+    String? align,
   }) {
     if (_document == null || _selectedNodeId == null) return;
     final int index = _document!.layers.indexWhere(
@@ -938,33 +1070,40 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     final node = _document!.layers[index];
     if (node is TextNode) {
-      NodeBounds updatedBounds = node.bounds;
+      final double newFontSize = fontSize ?? node.fontSize;
+      
+      // Calculate updated width based on font size scaling if font size changed
+      double newWidth = node.bounds.width;
       if (fontSize != null && node.fontSize > 0) {
         final double scaleFactor = fontSize / node.fontSize;
-        final double newWidth = node.bounds.width * scaleFactor;
-        final double newHeight = node.bounds.height * scaleFactor;
+        newWidth = node.bounds.width * scaleFactor;
+      }
 
-        final double centerX = node.bounds.x + (node.bounds.width / 2.0);
-        final double centerY = node.bounds.y + (node.bounds.height / 2.0);
-        final double newX = centerX - (newWidth / 2.0);
-        final double newY = centerY - (newHeight / 2.0);
+      // Create a temporary node to calculate the correct height
+      final tempNode = node.copyWith(
+        fontFamily: fontFamily ?? node.fontFamily,
+        fontSize: newFontSize,
+        fontWeight: fontWeight ?? node.fontWeight,
+        fontStyle: fontStyle ?? node.fontStyle,
+        decoration: decoration ?? node.decoration,
+        align: align ?? node.align,
+      );
 
-        updatedBounds = NodeBounds(
+      final double newHeight = _calculateTextNodeHeight(tempNode, newWidth);
+
+      // Keep center fixed
+      final double centerX = node.bounds.x + (node.bounds.width / 2.0);
+      final double centerY = node.bounds.y + (node.bounds.height / 2.0);
+      final double newX = centerX - (newWidth / 2.0);
+      final double newY = centerY - (newHeight / 2.0);
+
+      final updatedNode = tempNode.copyWith(
+        bounds: NodeBounds(
           x: newX,
           y: newY,
           width: newWidth,
           height: newHeight,
-        );
-      }
-
-      final updatedNode = node.copyWith(
-        fontFamily: fontFamily ?? node.fontFamily,
-        fontSize: fontSize ?? node.fontSize,
-        color: color ?? node.color,
-        fontWeight: fontWeight ?? node.fontWeight,
-        fontStyle: fontStyle ?? node.fontStyle,
-        decoration: decoration ?? node.decoration,
-        bounds: updatedBounds,
+        ),
       );
 
       setState(() {
@@ -1062,24 +1201,93 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       width: sw,
       height: sh,
       onUpdate: () {
-        final double finalScale = stickerModel.scale;
+        final TextNode originalNode = (_document != null)
+            ? _document!.layers.firstWhereOrNull((l) => l.id == node.id) as TextNode? ?? node
+            : node;
 
-        final double virtualW = transformer.toVirtualWidth(sw * finalScale);
-        final double virtualH = transformer.toVirtualHeight(sh * finalScale);
+        final double currentVirtualW = originalNode.bounds.width;
+        final double currentVirtualH = originalNode.bounds.height;
+        final double currentVirtualX = originalNode.bounds.x;
+        final double currentVirtualY = originalNode.bounds.y;
 
-        // Calculate center of original bounds in virtual coordinates
-        final double initialVirtualCenterX =
-            node.bounds.x + (node.bounds.width / 2.0);
-        final double initialVirtualCenterY =
-            node.bounds.y + (node.bounds.height / 2.0);
+        final double currentSw = transformer.toScreenWidth(currentVirtualW);
+        final double currentSh = transformer.toScreenHeight(currentVirtualH);
+        final double currentSx = transformer.toScreenX(currentVirtualX);
+        final double currentSy = transformer.toScreenY(currentVirtualY);
+
+        double finalAppliedScale = stickerModel.scale;
+
+        double rotationDeg = stickerModel.angle * 180.0 / pi;
+        final double snappedDeg = (rotationDeg / 90.0).round() * 90.0;
+        if ((rotationDeg - snappedDeg).abs() < 3.0) {
+          rotationDeg = snappedDeg;
+          stickerModel.angle = snappedDeg * pi / 180.0;
+          if (!_hasVibratedRotation) {
+            HapticFeedback.lightImpact();
+            _hasVibratedRotation = true;
+          }
+        } else {
+          _hasVibratedRotation = false;
+        }
+
+        final double finalScale = finalAppliedScale;
+
+        final double virtualW = currentVirtualW * finalScale;
+        final double virtualH = currentVirtualH * finalScale;
+
+        final double snapThresholdScreen = 6.0;
+        final double canvasCenterScreenX = transformer.toScreenX(_document!.canvas.virtualWidth / 2.0);
+        final double canvasCenterScreenY = transformer.toScreenY(_document!.canvas.virtualHeight / 2.0);
+        
+        double nodeCenterScreenX = stickerModel.left + (currentSw * finalScale) / 2.0;
+        double nodeCenterScreenY = stickerModel.top + (currentSh * finalScale) / 2.0;
+
+        bool showVertical = false;
+        bool showHorizontal = false;
+        bool isCenterVert = false;
+        bool isCenterHoriz = false;
+
+        if ((nodeCenterScreenX - canvasCenterScreenX).abs() < snapThresholdScreen) {
+          nodeCenterScreenX = canvasCenterScreenX;
+          stickerModel.left = nodeCenterScreenX - (currentSw * finalScale) / 2.0;
+          showVertical = true;
+          isCenterVert = true;
+          
+          if (!_hasVibratedX) {
+            HapticFeedback.lightImpact();
+            _hasVibratedX = true;
+          }
+        } else {
+          _hasVibratedX = false;
+        }
+
+        if ((nodeCenterScreenY - canvasCenterScreenY).abs() < snapThresholdScreen) {
+          nodeCenterScreenY = canvasCenterScreenY;
+          stickerModel.top = nodeCenterScreenY - (currentSh * finalScale) / 2.0;
+          showHorizontal = true;
+          isCenterHoriz = true;
+          
+          if (!_hasVibratedY) {
+            HapticFeedback.lightImpact();
+            _hasVibratedY = true;
+          }
+        } else {
+          _hasVibratedY = false;
+        }
 
         // Calculate position drag offset (if any)
         final double moveDxVirtual = transformer.toVirtualWidth(
-          stickerModel.left - sx,
+          stickerModel.left - currentSx,
         );
         final double moveDyVirtual = transformer.toVirtualHeight(
-          stickerModel.top - sy,
+          stickerModel.top - currentSy,
         );
+
+        // Calculate center of original bounds in virtual coordinates
+        final double initialVirtualCenterX =
+            currentVirtualX + (currentVirtualW / 2.0);
+        final double initialVirtualCenterY =
+            currentVirtualY + (currentVirtualH / 2.0);
 
         final double currentVirtualCenterX =
             initialVirtualCenterX + moveDxVirtual;
@@ -1090,7 +1298,14 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         final double newVirtualX = currentVirtualCenterX - (virtualW / 2.0);
         final double newVirtualY = currentVirtualCenterY - (virtualH / 2.0);
 
-        final double rotationDeg = stickerModel.angle * 180.0 / pi;
+        rotationDeg = stickerModel.angle * 180.0 / pi;
+
+        setState(() {
+          _showVerticalGuideline = showVertical;
+          _showHorizontalGuideline = showHorizontal;
+          _isCenterVerticalGuideline = isCenterVert;
+          _isCenterHorizontalGuideline = isCenterHoriz;
+        });
 
         if (_document != null) {
           final int index = _document!.layers.indexWhere(
@@ -1098,25 +1313,60 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           );
           if (index != -1) {
             setState(() {
-              final originalNode = _document!.layers[index] as TextNode;
-              final double newFontSize = (originalNode.fontSize * finalScale)
-                  .clamp(6.0, 72.0);
-              _document!.layers[index] = originalNode.copyWith(
-                fontSize: newFontSize,
-                bounds: NodeBounds(
-                  x: newVirtualX,
-                  y: newVirtualY,
-                  width: virtualW,
-                  height: virtualH,
-                ),
-                transform: NodeTransform(
-                  rotation: rotationDeg,
-                  pivot: originalNode.transform.pivot,
-                  skew: originalNode.transform.skew,
-                  flipX: originalNode.transform.flipX,
-                  flipY: originalNode.transform.flipY,
-                ),
-              );
+              if (originalNode.id.startsWith('logo') || originalNode.id.startsWith('signature')) {
+                // Logos and signatures: proportional scale bounds only
+                final double scaledW = currentVirtualW * finalScale;
+                final double scaledH = currentVirtualH * finalScale;
+                
+                final double logoX = currentVirtualCenterX - (scaledW / 2.0);
+                final double logoY = currentVirtualCenterY - (scaledH / 2.0);
+
+                _document!.layers[index] = originalNode.copyWith(
+                  bounds: NodeBounds(
+                    x: logoX,
+                    y: logoY,
+                    width: scaledW,
+                    height: scaledH,
+                  ),
+                  transform: NodeTransform(
+                    rotation: rotationDeg,
+                    pivot: originalNode.transform.pivot,
+                    skew: originalNode.transform.skew,
+                    flipX: originalNode.transform.flipX,
+                    flipY: originalNode.transform.flipY,
+                  ),
+                );
+              } else {
+                // Actual text nodes: dynamic height wrapper based on text layout
+                final double newFontSize = (originalNode.fontSize * finalScale)
+                    .clamp(6.0, 72.0);
+                
+                final double textW = currentVirtualW * finalScale;
+                final double textX = currentVirtualCenterX - (textW / 2.0);
+
+                final tempNode = originalNode.copyWith(
+                  fontSize: newFontSize,
+                );
+                final double calculatedVirtualH = _calculateTextNodeHeight(tempNode, textW);
+                final double dynamicVirtualY = currentVirtualCenterY - (calculatedVirtualH / 2.0);
+
+                _document!.layers[index] = originalNode.copyWith(
+                  fontSize: newFontSize,
+                  bounds: NodeBounds(
+                    x: textX,
+                    y: dynamicVirtualY,
+                    width: textW,
+                    height: calculatedVirtualH,
+                  ),
+                  transform: NodeTransform(
+                    rotation: rotationDeg,
+                    pivot: originalNode.transform.pivot,
+                    skew: originalNode.transform.skew,
+                    flipX: originalNode.transform.flipX,
+                    flipY: originalNode.transform.flipY,
+                  ),
+                );
+              }
             });
           }
         }
@@ -1217,16 +1467,14 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     String? sigId =
         _selectedNodeId != null && _selectedNodeId!.startsWith('signature')
         ? _selectedNodeId
-        : _document!.layers
-              .firstWhereOrNull((l) => l.id.startsWith('signature'))
-              ?.id;
+        : null;
+
+    final double aspect = img.height.toDouble() / img.width.toDouble();
 
     if (sigId == null) {
       sigId = 'signature_${DateTime.now().millisecondsSinceEpoch}';
-      const double padW = 320.0;
-      const double padH = 160.0;
       const double width = 100.0;
-      final double height = (width / padW) * padH;
+      final double height = width * aspect;
       final newSigNode = TextNode(
         id: sigId,
         displayName: 'Signature',
@@ -1253,6 +1501,20 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         ),
       );
       _document!.layers.add(newSigNode);
+    } else {
+      final int index = _document!.layers.indexWhere((l) => l.id == sigId);
+      if (index != -1) {
+        final node = _document!.layers[index] as TextNode;
+        final double newHeight = node.bounds.width * aspect;
+        _document!.layers[index] = node.copyWith(
+          bounds: NodeBounds(
+            x: node.bounds.x,
+            y: node.bounds.y + (node.bounds.height - newHeight) / 2.0,
+            width: node.bounds.width,
+            height: newHeight,
+          ),
+        );
+      }
     }
 
     _imagePool[sigId] = img;
@@ -1508,10 +1770,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                     _selectedNodeId = null;
                   } else {
                     _activeTab = 'Signature';
-                    final sigNode = _document?.layers.firstWhereOrNull(
-                      (l) => l.id.startsWith('signature'),
-                    );
-                    _selectedNodeId = sigNode?.id;
+                    if (_selectedNodeId == null || !_selectedNodeId!.startsWith('signature')) {
+                      _selectedNodeId = null;
+                    }
                   }
                 });
               },
@@ -1556,3 +1817,97 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     );
   }
 }
+
+class GuidelinePainter extends CustomPainter {
+  final bool showHorizontal;
+  final bool showVertical;
+  final double horizontalY;
+  final double verticalX;
+  final bool isCenterHorizontal;
+  final bool isCenterVertical;
+  final bool showGrid;
+
+  GuidelinePainter({
+    required this.showHorizontal,
+    required this.showVertical,
+    required this.horizontalY,
+    required this.verticalX,
+    required this.isCenterHorizontal,
+    required this.isCenterVertical,
+    this.showGrid = false,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint normalPaint = Paint()
+      ..color = const Color(0xFF94A3B8)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final Paint centerPaint = Paint()
+      ..color = const Color(0xFF7C3AED)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    // Rule-of-thirds grid paint — very subtle
+    final Paint gridPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.2)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    const double dashWidth = 5.0;
+    const double dashSpace = 4.0;
+
+    void drawDottedLine(Offset p1, Offset p2, Paint paint) {
+      final double totalLength = (p2 - p1).distance;
+      if (totalLength <= 0) return;
+      final Offset direction = (p2 - p1) / totalLength;
+      double currentLength = 0.0;
+      while (currentLength < totalLength) {
+        final double end = (currentLength + dashWidth).clamp(0.0, totalLength);
+        canvas.drawLine(
+          p1 + direction * currentLength,
+          p1 + direction * end,
+          paint,
+        );
+        currentLength += dashWidth + dashSpace;
+      }
+    }
+
+    // Draw rule-of-thirds grid (3x3) when interacting
+    if (showGrid) {
+      final double thirdW = size.width / 3.0;
+      final double thirdH = size.height / 3.0;
+      // 2 vertical lines
+      drawDottedLine(Offset(thirdW, 0), Offset(thirdW, size.height), gridPaint);
+      drawDottedLine(Offset(thirdW * 2, 0), Offset(thirdW * 2, size.height), gridPaint);
+      // 2 horizontal lines
+      drawDottedLine(Offset(0, thirdH), Offset(size.width, thirdH), gridPaint);
+      drawDottedLine(Offset(0, thirdH * 2), Offset(size.width, thirdH * 2), gridPaint);
+    }
+
+    // Center snap vertical guideline
+    if (showVertical && verticalX >= 0 && verticalX <= size.width) {
+      final paint = isCenterVertical ? centerPaint : normalPaint;
+      drawDottedLine(Offset(verticalX, 0), Offset(verticalX, size.height), paint);
+    }
+
+    // Center snap horizontal guideline
+    if (showHorizontal && horizontalY >= 0 && horizontalY <= size.height) {
+      final paint = isCenterHorizontal ? centerPaint : normalPaint;
+      drawDottedLine(Offset(0, horizontalY), Offset(size.width, horizontalY), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant GuidelinePainter oldDelegate) {
+    return oldDelegate.showHorizontal != showHorizontal ||
+        oldDelegate.showVertical != showVertical ||
+        oldDelegate.horizontalY != horizontalY ||
+        oldDelegate.verticalX != verticalX ||
+        oldDelegate.isCenterHorizontal != isCenterHorizontal ||
+        oldDelegate.isCenterVertical != isCenterVertical ||
+        oldDelegate.showGrid != showGrid;
+  }
+}
+

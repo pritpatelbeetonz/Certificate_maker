@@ -1,0 +1,146 @@
+{
+  "metadata": {
+    "id": "certificate_02"
+  },
+  "canvas": {
+    "virtualSize": {
+      "width": 323,
+      "height": 192
+    },
+    "background": {
+      "type": "color",
+      "color": "#FFFFFF"
+    }
+  },
+  "assets": {
+    "background": {
+      "type": "image",
+      "src": "assets/bg/2.png"
+    },
+    "LibreBodoni": {
+      "type": "font",
+      "src": "assets/fonts/LibreBodoni-VariableFont_wght.ttf"
+    }
+  },
+  "scene": {
+    "layers": [
+      {
+        "id": "background",
+        "displayName": "Background",
+        "type": "frame",
+        "renderPass": "content",
+        "zIndex": 0,
+        "state": {
+          "visible": true,
+          "locked": true
+        },
+        "interaction": {
+          "selectable": false,
+          "movable": false,
+          "editable": false
+        },
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 323,
+          "height": 192
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "placeholder": {
+          "assetId": "background",
+          "mediaType": "image"
+        },
+        "style": {
+          "effects": {
+            "blendMode": "normal",
+            "filters": {}
+          }
+        }
+      },
+      {
+        "id": "main_title",
+        "displayName": "Main Title",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 10,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 80,
+          "y": 40,
+          "width": 163,
+          "height": 20
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "CERTIFICATE",
+          "fontFamily": "LibreBodoni",
+          "fontSize": 16,
+          "color": "#000000",
+          "align": "center",
+          "fontWeight": "700",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "recipient_name",
+        "displayName": "Recipient Name",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 10,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 80,
+          "y": 90,
+          "width": 163,
+          "height": 15
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "Recipient Name",
+          "fontFamily": "LibreBodoni",
+          "fontSize": 12,
+          "color": "#000000",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      }
+    ]
+  }
+}

@@ -112,9 +112,16 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
 
     textPainter.layout(maxWidth: size.width + 2); // add minor layout tolerance
     
-    // 7. Center the text horizontally and vertically within the bounding box
-    final double xOffset = (size.width - textPainter.width) / 2;
-    final double yOffset = (size.height - textPainter.height) / 2;
+    // 7. Align the text horizontally based on parsedTextAlign and center vertically within the bounding box
+    double xOffset = 0.0;
+    if (parsedTextAlign == TextAlign.center) {
+      xOffset = (size.width - textPainter.width) / 2.0;
+    } else if (parsedTextAlign == TextAlign.right) {
+      xOffset = size.width - textPainter.width;
+    } else {
+      xOffset = 0.0; // Left and justify
+    }
+    final double yOffset = (size.height - textPainter.height) / 2.0;
     textPainter.paint(canvas, Offset(xOffset, yOffset));
 
     canvas.restore();

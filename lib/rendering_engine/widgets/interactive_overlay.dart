@@ -126,22 +126,15 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
 
               setState(() {
                 if (details.pointerCount > 1) {
-                  final double rotMag = details.rotation.abs();
-                  final double scaleMag = (details.scale - 1.0).abs();
+                  double scaleMultiplier = _lastScale == 0.0 ? 1.0 : (details.scale / _lastScale);
+                  double rotationDelta = details.rotation - _lastRotation;
 
-                  double currentScaleFactor = details.scale;
-                  double currentRotationFactor = details.rotation;
+                  // Apply direct damping / sensitivity to two-finger scaling and rotation
+                  const double twoFingerScaleSensitivity = 0.3;
+                  const double twoFingerRotationSensitivity = 0.4;
 
-                  if (rotMag > scaleMag * 1.5) {
-                    final double scaleDelta = currentScaleFactor - _lastScale;
-                    currentScaleFactor = _lastScale + scaleDelta * 0.2;
-                  } else if (scaleMag > rotMag * 1.5) {
-                    final double rotationDelta = currentRotationFactor - _lastRotation;
-                    currentRotationFactor = _lastRotation + rotationDelta * 0.2;
-                  }
-
-                  final double scaleMultiplier = _lastScale == 0.0 ? 1.0 : (currentScaleFactor / _lastScale);
-                  final double rotationDelta = currentRotationFactor - _lastRotation;
+                  scaleMultiplier = 1.0 + (scaleMultiplier - 1.0) * twoFingerScaleSensitivity;
+                  rotationDelta = rotationDelta * twoFingerRotationSensitivity;
 
                   final renderBox = context.findRenderObject() as RenderBox?;
                   double minScale = 0.1;
@@ -352,7 +345,7 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
                                 distanceMultiplier = 1.0 + (distanceMultiplier - 1.0) * dampingFactor;
                               }
 
-                              const double globalSensitivity = 0.5;
+                              const double globalSensitivity = 0.4;
                               distanceMultiplier = 1.0 + (distanceMultiplier - 1.0) * globalSensitivity;
 
                               final renderBox = context.findRenderObject() as RenderBox?;
@@ -378,7 +371,7 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
                                 setState(() {
                                   widget.model.scale = targetScale;
                                 });
-                                _lastResizeDistance = _lastResizeDistance * distanceMultiplier;
+                                _lastResizeDistance = currentDistance;
                                 widget.onUpdate?.call();
                               }
                             }

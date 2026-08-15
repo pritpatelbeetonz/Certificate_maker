@@ -218,19 +218,40 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                         color: Color(0xFF0F172A),
                       ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: widget.onAddNewSignature,
-                      icon: const Icon(Icons.download, size: 16),
-                      label: const Text('Import Signature'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF3E8FF),
-                        foregroundColor: const Color(0xFF7C3AED),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
+                     Row(
+                       mainAxisSize: MainAxisSize.min,
+                       children: [
+                         ElevatedButton.icon(
+                           onPressed: _showFullscreenSignatureDialog,
+                           icon: const Icon(Icons.gesture, size: 16),
+                           label: const Text('Draw'),
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: const Color(0xFFF3E8FF),
+                             foregroundColor: const Color(0xFF7C3AED),
+                             elevation: 0,
+                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                             shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(12),
+                             ),
+                           ),
+                         ),
+                         const SizedBox(width: 6),
+                         ElevatedButton.icon(
+                           onPressed: widget.onAddNewSignature,
+                           icon: const Icon(Icons.download, size: 16),
+                           label: const Text('Import'),
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: const Color(0xFFF1F5F9),
+                             foregroundColor: const Color(0xFF475569),
+                             elevation: 0,
+                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                             shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(12),
+                             ),
+                           ),
+                         ),
+                       ],
+                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -261,12 +282,14 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                           onPanEnd: (details) {
                             _exportSignatureDrawing();
                           },
-                          child: CustomPaint(
-                            painter: SignaturePadPainter(
-                              strokes: _signatureStrokes,
-                              strokeColor: _currentSignatureColor,
+                          child: ClipRect(
+                            child: CustomPaint(
+                              painter: SignaturePadPainter(
+                                strokes: _signatureStrokes,
+                                strokeColor: _currentSignatureColor,
+                              ),
+                              child: const SizedBox.expand(),
                             ),
-                            child: const SizedBox.expand(),
                           ),
                         ),
                       ),
@@ -323,6 +346,206 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<ui.Image?> _exportStrokesToImage(List<List<Offset>> strokes, Color color) async {
+    if (strokes.isEmpty) return null;
+
+    double minX = double.infinity;
+    double maxX = -double.infinity;
+    double minY = double.infinity;
+    double maxY = -double.infinity;
+
+    for (final stroke in strokes) {
+      for (final pt in stroke) {
+        if (pt.dx < minX) minX = pt.dx;
+        if (pt.dx > maxX) maxX = pt.dx;
+        if (pt.dy < minY) minY = pt.dy;
+        if (pt.dy > maxY) maxY = pt.dy;
+      }
+    }
+
+    const double padding = 15.0;
+    minX = (minX - padding).clamp(0.0, double.infinity);
+    minY = (minY - padding).clamp(0.0, double.infinity);
+    
+    double drawWidth = (maxX - minX) + padding * 2;
+    double drawHeight = (maxY - minY) + padding * 2;
+
+    if (drawWidth <= 0) drawWidth = 320.0;
+    if (drawHeight <= 0) drawHeight = 160.0;
+
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder, Rect.fromLTWH(0, 0, drawWidth, drawHeight));
+
+    final Paint drawPaint = Paint()
+      ..color = color
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = 4.5
+      ..style = PaintingStyle.stroke;
+
+    for (final stroke in strokes) {
+      if (stroke.isEmpty) continue;
+      final Path path = Path();
+      path.moveTo(stroke.first.dx - minX, stroke.first.dy - minY);
+      for (int i = 1; i < stroke.length; i++) {
+        path.lineTo(stroke[i].dx - minX, stroke[i].dy - minY);
+      }
+      canvas.drawPath(path, drawPaint);
+    }
+
+    final ui.Picture picture = recorder.endRecording();
+    return await picture.toImage(drawWidth.toInt(), drawHeight.toInt());
+  }
+
+  void _showFullscreenSignatureDialog() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      pageBuilder: (context, anim1, anim2) {
+        List<List<Offset>> tempStrokes = [];
+        Color tempColor = _currentSignatureColor;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Scaffold(
+              backgroundColor: Colors.white,
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.close, color: Color(0xFF0F172A)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: const Text(
+                  'Draw Signature',
+                  style: TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: tempStrokes.isEmpty
+                        ? null
+                        : () async {
+                            final img = await _exportStrokesToImage(tempStrokes, tempColor);
+                            if (img != null) {
+                              widget.onSignatureExported(img);
+                            }
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                          },
+                    child: Text(
+                      'Done',
+                      style: TextStyle(
+                        color: tempStrokes.isEmpty ? Colors.grey : const Color(0xFF7C3AED),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              body: Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: GestureDetector(
+                              onPanStart: (details) {
+                                setDialogState(() {
+                                  tempStrokes.add([details.localPosition]);
+                                });
+                              },
+                              onPanUpdate: (details) {
+                                if (tempStrokes.isNotEmpty) {
+                                  setDialogState(() {
+                                    tempStrokes.last.add(details.localPosition);
+                                  });
+                                }
+                              },
+                              child: ClipRect(
+                                child: CustomPaint(
+                                  painter: SignaturePadPainter(
+                                    strokes: tempStrokes,
+                                    strokeColor: tempColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 16,
+                            right: 16,
+                            child: IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              onPressed: () {
+                                setDialogState(() {
+                                  tempStrokes.clear();
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24.0, left: 16, right: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ..._presetSignatureColors.map((color) {
+                          final bool isSelected = tempColor.value == color.value;
+                          return GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                tempColor = color;
+                              });
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFFCBD5E1),
+                                  width: isSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? Icon(
+                                      Icons.check,
+                                      color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
+                                      size: 16,
+                                    )
+                                  : null,
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
