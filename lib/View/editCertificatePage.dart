@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 import '../rendering_engine/models/scene_node.dart';
 import '../rendering_engine/canvas/graphics_engine.dart';
@@ -16,6 +18,11 @@ import '../rendering_engine/renderers/background_renderer.dart';
 import '../rendering_engine/models/background_state.dart';
 import '../rendering_engine/models/sticker_model.dart';
 import '../rendering_engine/widgets/interactive_overlay.dart';
+
+import 'widgets/realtime_certificate_painter.dart';
+import 'widgets/text_controls_panel.dart';
+import 'widgets/logo_controls_panel.dart';
+import 'widgets/signature_controls_panel.dart';
 
 class EditCertificatePage extends StatefulWidget {
   final String layoutPath;
@@ -33,6 +40,32 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   SceneDocument? _document;
   bool _isLoading = true;
   String? _selectedNodeId;
+  String _activeTab = 'Text';
+  double _zoomScale = 1.0;
+  String? _lastSelectedLogoId;
+
+  List<List<Offset>> _signatureStrokes = [];
+  Color _currentSignatureColor = const Color(0xFF2563EB);
+
+  final List<Color> _presetSignatureColors = [
+    const Color(0xFF2563EB),
+    const Color(0xFFEF4444),
+    const Color(0xFFF59E0B),
+    const Color(0xFF10B981),
+    const Color(0xFF0F172A),
+    const Color(0xFF8B5CF6),
+    const Color(0xFFFFFFFF),
+  ];
+
+  String _pickedLogoName = 'Creative logo.png';
+  String _pickedLogoDimensions = '350 × 120 px';
+  String _pickedSignatureName = 'Signature.png';
+  String _pickedSignatureDimensions = '200 × 80 px';
+
+  final Map<String, String> _logoNames = {};
+  final Map<String, String> _logoDimensions = {};
+  final Map<String, String> _signatureNames = {};
+  final Map<String, String> _signatureDimensions = {};
 
   // Image pool repository mapping assetId to loaded ui.Image
   final Map<String, ui.Image> _imagePool = {};
@@ -186,6 +219,19 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     setState(() {
       _selectedNodeId = id;
       _updateSelectedNodeTextField();
+      if (id == null) {
+        _activeTab = '';
+      } else if (_document != null) {
+        final node = _document!.layers.firstWhereOrNull((l) => l.id == id);
+        if (id.startsWith('logo') || (node?.id.startsWith('logo') ?? false)) {
+          _activeTab = 'Logo';
+          _lastSelectedLogoId = id;
+        } else if (id.startsWith('signature') || (node?.id.startsWith('signature') ?? false)) {
+          _activeTab = 'Signature';
+        } else if (node is TextNode) {
+          _activeTab = 'Text';
+        }
+      }
     });
   }
 
@@ -482,12 +528,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                             final double canvasRatio =
                                 _document!.canvas.virtualWidth / _document!.canvas.virtualHeight;
 
-                            double targetW = constraints.maxWidth;
-                            double targetH = targetW / canvasRatio;
+                            double targetW = constraints.maxWidth * _zoomScale;
+                            double targetH = (constraints.maxWidth / canvasRatio) * _zoomScale;
 
-                            if (targetH > constraints.maxHeight) {
-                              targetH = constraints.maxHeight;
-                              targetW = targetH * canvasRatio;
+                            if (targetH > constraints.maxHeight * _zoomScale) {
+                               targetH = constraints.maxHeight * _zoomScale;
+                               targetW = targetH * canvasRatio;
                             }
 
                             final Size canvasPaintSize = Size(targetW, targetH);
@@ -497,52 +543,107 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                               targetSize: canvasPaintSize,
                             );
 
-                            return Container(
-                              width: targetW,
-                              height: targetH,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  GestureDetector(
-                                    onTapUp: (details) {
-                                      _detectHitTest(details.localPosition, canvasPaintSize);
-                                    },
-                                    child: CustomPaint(
-                                      size: canvasPaintSize,
-                                      painter: RealtimeCertificatePainter(
-                                        document: _document!,
-                                        loadedImages: _imagePool,
-                                        selectedNodeId: _selectedNodeId,
-                                      ),
+                            return Center(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.vertical,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Container(
+                                    width: targetW,
+                                    height: targetH,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.08),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        GestureDetector(
+                                          onTapUp: (details) {
+                                            _detectHitTest(details.localPosition, canvasPaintSize);
+                                          },
+                                          child: CustomPaint(
+                                            size: canvasPaintSize,
+                                            painter: RealtimeCertificatePainter(
+                                              document: _document!,
+                                              loadedImages: _imagePool,
+                                              selectedNodeId: _selectedNodeId,
+                                            ),
+                                          ),
+                                        ),
+                                        if (selectedNode != null) ...[
+                                          _buildSelectedOverlay(selectedNode, transformer, canvasPaintSize),
+                                        ],
+                                      ],
                                     ),
                                   ),
-                                  if (selectedNode != null) ...[
-                                    _buildSelectedOverlay(selectedNode, transformer, canvasPaintSize),
-                                  ],
-                                ],
+                                ),
                               ),
                             );
                           },
                         ),
                       ),
                     ),
+                    // Floating Zoom Controls Capsule
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove, size: 20, color: Color(0xFF64748B)),
+                              constraints: const BoxConstraints(),
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                setState(() {
+                                  _zoomScale = (_zoomScale - 0.25).clamp(0.5, 2.0);
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              '${(_zoomScale * 100).round()}%',
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                            ),
+                            const SizedBox(width: 12),
+                            IconButton(
+                              icon: const Icon(Icons.add, size: 20, color: Color(0xFF64748B)),
+                              constraints: const BoxConstraints(),
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                setState(() {
+                                  _zoomScale = (_zoomScale + 0.25).clamp(0.5, 2.0);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     AnimatedSize(
                       duration: const Duration(milliseconds: 250),
                       curve: Curves.easeInOut,
-                      child: selectedNode != null
-                          ? _buildControlsPanel(selectedNode)
-                          : const SizedBox.shrink(),
+                      child: _buildDynamicControlsPanel(selectedNode),
                     ),
                     _buildBottomNavigationBar(),
                   ],
@@ -631,303 +732,326 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     );
   }
 
-  Widget _buildControlsPanel(TextNode? node) {
-    final bool hasSelection = node != null;
+  Widget _buildDynamicControlsPanel(TextNode? selectedTextNode) {
+    if (_activeTab == 'Text') {
+      if (selectedTextNode != null) {
+        return TextControlsPanel(
+          selectedNode: selectedTextNode,
+          textController: _textController,
+          textFocusNode: _textFocusNode,
+          colorPalette: _colorPalette,
+          fontFamilies: _fontFamilies,
+          onAddNewTextNode: _addNewTextNode,
+          onSaveTextEditingState: _saveTextEditingState,
+          onUpdateProperty: _updateSelectedTextProperty,
+          onColorSelected: _onColorSelected,
+        );
+      }
+      return const SizedBox.shrink();
+    } else if (_activeTab == 'Logo') {
+      final SceneNode? logoNode = _selectedNodeId != null && _selectedNodeId!.startsWith('logo')
+          ? _document?.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
+          : _document?.layers.firstWhereOrNull((l) => l.id.startsWith('logo'));
+      final bool hasLogo = logoNode != null;
+      final String currentLogoName = logoNode != null ? (_logoNames[logoNode.id] ?? _pickedLogoName) : _pickedLogoName;
+      final String currentLogoDimensions = logoNode != null ? (_logoDimensions[logoNode.id] ?? _pickedLogoDimensions) : _pickedLogoDimensions;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 8),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFCBD5E1),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Flexible(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Edit Text',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: _addNewTextNode,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF3E8FF),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.add, color: Color(0xFF7C3AED), size: 18),
-                                SizedBox(width: 4),
-                                Text(
-                                  'New Text',
-                                  style: TextStyle(
-                                    color: Color(0xFF7C3AED),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: hasSelection ? Colors.white : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: TextField(
-                        controller: _textController,
-                        focusNode: _textFocusNode,
-                        enabled: hasSelection,
-                        onEditingComplete: _saveTextEditingState,
-                        decoration: InputDecoration(
-                          hintText: hasSelection ? 'Enter text...' : 'Select a text layer to edit',
-                          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          suffixIcon: hasSelection
-                              ? IconButton(
-                                  icon: const Icon(Icons.cancel, color: Color(0xFF94A3B8)),
-                                  onPressed: () {
-                                    _textController.clear();
-                                    _onTextChanged();
-                                  },
-                                )
-                              : null,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 48,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _colorPalette.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == _colorPalette.length) {
-                            return GestureDetector(
-                              onTap: hasSelection
-                                  ? () => _showColorPickerDialog(context)
-                                  : null,
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 12.0),
-                                child: Container(
-                                  width: 38,
-                                  height: 38,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF1F5F9),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.add, color: Color(0xFF64748B)),
-                                ),
-                              ),
-                            );
-                          }
-
-                          final palItem = _colorPalette[index];
-                          final Color col = palItem['color'];
-                          final String hex = palItem['hex'];
-
-                          final bool isSelected = hasSelection && node.color.toUpperCase() == hex.toUpperCase();
-
-                          return GestureDetector(
-                            onTap: hasSelection
-                                ? () {
-                                    _updateSelectedTextProperty(color: hex);
-                                    _saveToHistory();
-                                  }
-                                : null,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 12.0),
-                              child: Container(
-                                width: 38,
-                                height: 38,
-                                decoration: BoxDecoration(
-                                  color: col,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE2E8F0),
-                                    width: isSelected ? 3.0 : 1.0,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: hasSelection && _fontFamilies.contains(node.fontFamily)
-                              ? node.fontFamily
-                              : 'System',
-                          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
-                          isExpanded: true,
-                          onChanged: hasSelection
-                              ? (String? newFont) {
-                                  if (newFont != null) {
-                                    _updateSelectedTextProperty(fontFamily: newFont);
-                                    _saveToHistory();
-                                  }
-                                }
-                              : null,
-                          items: _fontFamilies.map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: TextStyle(
-                                  fontFamily: value == 'System' ? null : value,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Text(
-                          'A-',
-                          style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                        ),
-                        Expanded(
-                          child: SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: const Color(0xFF2563EB),
-                              inactiveTrackColor: const Color(0xFFE2E8F0),
-                              thumbColor: const Color(0xFF2563EB),
-                              overlayColor: const Color(0xFF2563EB).withOpacity(0.12),
-                              trackHeight: 4,
-                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                            ),
-                            child: Slider(
-                              value: hasSelection ? node.fontSize.clamp(6.0, 72.0) : 14.0,
-                              min: 6.0,
-                              max: 72.0,
-                              onChanged: hasSelection
-                                  ? (double val) {
-                                      _updateSelectedTextProperty(fontSize: val);
-                                    }
-                                  : null,
-                              onChangeEnd: (_) => _saveToHistory(),
-                            ),
-                          ),
-                        ),
-                        const Text(
-                          'A+',
-                          style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 44,
-                          height: 36,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            hasSelection ? node.fontSize.round().toString() : '14',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildStyleToggleButton(
-                          iconText: 'B',
-                          isActive: hasSelection && node.fontWeight == 'bold',
-                          onTap: hasSelection
-                              ? () {
-                                  final newWeight = node.fontWeight == 'bold' ? 'normal' : 'bold';
-                                  _updateSelectedTextProperty(fontWeight: newWeight);
-                                  _saveToHistory();
-                                }
-                              : null,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildStyleToggleButton(
-                          iconText: 'I',
-                          isActive: hasSelection && node.fontStyle == 'italic',
-                          isItalic: true,
-                          onTap: hasSelection
-                              ? () {
-                                  final newStyle = node.fontStyle == 'italic' ? 'normal' : 'italic';
-                                  _updateSelectedTextProperty(fontStyle: newStyle);
-                                  _saveToHistory();
-                                }
-                              : null,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildStyleToggleButton(
-                          iconText: 'U',
-                          isActive: hasSelection && node.decoration == 'underline',
-                          isUnderline: true,
-                          onTap: hasSelection
-                              ? () {
-                                  final newDeco = node.decoration == 'underline' ? 'none' : 'underline';
-                                  _updateSelectedTextProperty(decoration: newDeco);
-                                  _saveToHistory();
-                                }
-                              : null,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+      return LogoControlsPanel(
+        hasLogo: hasLogo,
+        currentLogoName: currentLogoName,
+        currentLogoDimensions: currentLogoDimensions,
+        onAddNewLogo: _addNewLogo,
+        onReplaceSelectedLogo: _replaceSelectedLogo,
+      );
+    } else if (_activeTab == 'Signature') {
+      return SignatureControlsPanel(
+        onAddNewSignature: _addNewSignature,
+        onSignatureExported: _onSignatureExported,
+        onSignatureCleared: _clearSignature,
+        initialStrokes: _signatureStrokes,
+        initialColor: _currentSignatureColor,
+      );
+    }
+    return const SizedBox.shrink();
   }
 
+  void _clearSignature() {
+    setState(() {
+      _signatureStrokes.clear();
+      final sigNode = _document?.layers.firstWhereOrNull((l) => l.id.startsWith('signature'));
+      if (sigNode != null) {
+        _document?.layers.removeWhere((l) => l.id == sigNode.id);
+        _selectedNodeId = null;
+        _pickedSignatureName = 'Signature.png';
+        _pickedSignatureDimensions = '200 × 80 px';
+      }
+      _saveToHistory();
+    });
+  }
+
+  void _onSignatureExported(ui.Image img) {
+    String? sigId = _selectedNodeId != null && _selectedNodeId!.startsWith('signature')
+        ? _selectedNodeId
+        : _document!.layers.firstWhereOrNull((l) => l.id.startsWith('signature'))?.id;
+
+    if (sigId == null) {
+      sigId = 'signature_${DateTime.now().millisecondsSinceEpoch}';
+      const double padW = 320.0;
+      const double padH = 160.0;
+      const double width = 100.0;
+      final double height = (width / padW) * padH;
+      final newSigNode = TextNode(
+        id: sigId,
+        displayName: 'Signature',
+        text: 'Signature',
+        fontFamily: 'System',
+        fontSize: 14.0,
+        color: '#FF000000',
+        align: 'center',
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        decoration: 'none',
+        bounds: NodeBounds(
+          x: (_document!.canvas.virtualWidth / 2) - (width / 2),
+          y: (_document!.canvas.virtualHeight / 2) - (height / 2) + 40,
+          width: width,
+          height: height,
+        ),
+        transform: NodeTransform(
+          rotation: 0.0,
+          pivot: const Offset(0.5, 0.5),
+        ),
+        state: NodeState(visible: true, locked: false),
+        interaction: NodeInteraction(selectable: true, movable: true, editable: true),
+      );
+      _document!.layers.add(newSigNode);
+    }
+
+    _imagePool[sigId] = img;
+    _signatureNames[sigId] = 'Drawn Signature';
+    _signatureDimensions[sigId] = 'PNG • ${img.width} × ${img.height} px';
+
+    setState(() {
+      _selectedNodeId = sigId;
+      _pickedSignatureName = 'Drawn Signature';
+      _pickedSignatureDimensions = 'PNG • ${img.width} × ${img.height} px';
+      _saveToHistory();
+    });
+  }
+
+  Future<void> _addNewLogo() async {
+    if (_document == null) return;
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return;
+
+      final Uint8List bytes = await File(file.path).readAsBytes();
+      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+      final ui.FrameInfo frame = await codec.getNextFrame();
+      final ui.Image uiImage = frame.image;
+
+      final String logoId = 'logo_${DateTime.now().millisecondsSinceEpoch}';
+      _imagePool[logoId] = uiImage;
+
+      final String name = file.path.split(Platform.isWindows ? '\\' : '/').last;
+      final String dimensions = 'PNG • ${uiImage.width} × ${uiImage.height} px';
+
+      final double width = 80.0;
+      final double height = (width / uiImage.width) * uiImage.height;
+
+      final newLogoNode = TextNode(
+        id: logoId,
+        displayName: 'Logo',
+        text: 'Logo',
+        fontFamily: 'System',
+        fontSize: 14.0,
+        color: '#FF000000',
+        align: 'center',
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        decoration: 'none',
+        bounds: NodeBounds(
+          x: (_document!.canvas.virtualWidth / 2) - (width / 2),
+          y: (_document!.canvas.virtualHeight / 2) - (height / 2),
+          width: width,
+          height: height,
+        ),
+        transform: NodeTransform(
+          rotation: 0.0,
+          pivot: const Offset(0.5, 0.5),
+        ),
+        state: NodeState(visible: true, locked: false),
+        interaction: NodeInteraction(selectable: true, movable: true, editable: true),
+      );
+
+      setState(() {
+        _logoNames[logoId] = name;
+        _logoDimensions[logoId] = dimensions;
+        _pickedLogoName = name;
+        _pickedLogoDimensions = dimensions;
+        _document!.layers.add(newLogoNode);
+        _selectedNodeId = logoId;
+        _activeTab = 'Logo';
+        _updateSelectedNodeTextField();
+        _saveToHistory();
+      });
+    } catch (e) {
+      debugPrint("Error adding logo: $e");
+    }
+  }
+
+  Future<void> _replaceSelectedLogo() async {
+    if (_document == null || _selectedNodeId == null || !_selectedNodeId!.startsWith('logo')) return;
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return;
+
+      final Uint8List bytes = await File(file.path).readAsBytes();
+      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+      final ui.FrameInfo frame = await codec.getNextFrame();
+      final ui.Image uiImage = frame.image;
+
+      _imagePool[_selectedNodeId!] = uiImage;
+
+      final String name = file.path.split(Platform.isWindows ? '\\' : '/').last;
+      final String dimensions = 'PNG • ${uiImage.width} × ${uiImage.height} px';
+
+      final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+      if (index != -1) {
+        setState(() {
+          final originalNode = _document!.layers[index] as TextNode;
+          final double width = originalNode.bounds.width;
+          final double height = (width / uiImage.width) * uiImage.height;
+          _document!.layers[index] = originalNode.copyWith(
+            bounds: NodeBounds(
+              x: originalNode.bounds.x,
+              y: originalNode.bounds.y,
+              width: width,
+              height: height,
+            ),
+          );
+          _logoNames[_selectedNodeId!] = name;
+          _logoDimensions[_selectedNodeId!] = dimensions;
+          _pickedLogoName = name;
+          _pickedLogoDimensions = dimensions;
+          _saveToHistory();
+        });
+      }
+    } catch (e) {
+      debugPrint("Error replacing logo: $e");
+    }
+  }
+
+  Future<void> _addNewSignature() async {
+    if (_document == null) return;
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return;
+
+      final Uint8List bytes = await File(file.path).readAsBytes();
+      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+      final ui.FrameInfo frame = await codec.getNextFrame();
+      final ui.Image uiImage = frame.image;
+
+      final String sigId = 'signature_${DateTime.now().millisecondsSinceEpoch}';
+      _imagePool[sigId] = uiImage;
+
+      final String name = file.path.split(Platform.isWindows ? '\\' : '/').last;
+      final String dimensions = 'PNG • ${uiImage.width} × ${uiImage.height} px';
+
+      final double width = 80.0;
+      final double height = (width / uiImage.width) * uiImage.height;
+
+      final newSigNode = TextNode(
+        id: sigId,
+        displayName: 'Signature',
+        text: 'Signature',
+        fontFamily: 'System',
+        fontSize: 14.0,
+        color: '#FF000000',
+        align: 'center',
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        decoration: 'none',
+        bounds: NodeBounds(
+          x: (_document!.canvas.virtualWidth / 2) - (width / 2),
+          y: (_document!.canvas.virtualHeight / 2) - (height / 2) + 40,
+          width: width,
+          height: height,
+        ),
+        transform: NodeTransform(
+          rotation: 0.0,
+          pivot: const Offset(0.5, 0.5),
+        ),
+        state: NodeState(visible: true, locked: false),
+        interaction: NodeInteraction(selectable: true, movable: true, editable: true),
+      );
+
+      setState(() {
+        _signatureNames[sigId] = name;
+        _signatureDimensions[sigId] = dimensions;
+        _pickedSignatureName = name;
+        _pickedSignatureDimensions = dimensions;
+        _document!.layers.add(newSigNode);
+        _selectedNodeId = sigId;
+        _activeTab = 'Signature';
+        _updateSelectedNodeTextField();
+        _saveToHistory();
+      });
+    } catch (e) {
+      debugPrint("Error adding signature: $e");
+    }
+  }
+
+  Future<void> _replaceSelectedSignature() async {
+    if (_document == null || _selectedNodeId == null || !_selectedNodeId!.startsWith('signature')) return;
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return;
+
+      final Uint8List bytes = await File(file.path).readAsBytes();
+      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+      final ui.FrameInfo frame = await codec.getNextFrame();
+      final ui.Image uiImage = frame.image;
+
+      _imagePool[_selectedNodeId!] = uiImage;
+
+      final String name = file.path.split(Platform.isWindows ? '\\' : '/').last;
+      final String dimensions = 'PNG • ${uiImage.width} × ${uiImage.height} px';
+
+      final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+      if (index != -1) {
+        setState(() {
+          final originalNode = _document!.layers[index] as TextNode;
+          final double width = originalNode.bounds.width;
+          final double height = (width / uiImage.width) * uiImage.height;
+          _document!.layers[index] = originalNode.copyWith(
+            bounds: NodeBounds(
+              x: originalNode.bounds.x,
+              y: originalNode.bounds.y,
+              width: width,
+              height: height,
+            ),
+          );
+          _signatureNames[_selectedNodeId!] = name;
+          _signatureDimensions[_selectedNodeId!] = dimensions;
+          _pickedSignatureName = name;
+          _pickedSignatureDimensions = dimensions;
+          _saveToHistory();
+        });
+      }
+    } catch (e) {
+      debugPrint("Error replacing signature: $e");
+    }
+  }
+
+
+
   Widget _buildBottomNavigationBar() {
-    final bool hasSelection = _selectedNodeId != null;
     return Container(
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
@@ -937,51 +1061,61 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         top: false,
         child: Row(
           children: [
-            _buildBottomTab(Icons.title, 'Text', isActive: hasSelection),
-            _buildBottomTab(Icons.verified_user_outlined, 'Logo', isActive: false),
-            _buildBottomTab(Icons.gesture, 'Signature', isActive: false),
+            _buildBottomTab(
+              Icons.title,
+              'Text',
+              isActive: _activeTab == 'Text',
+              onTap: () {
+                setState(() {
+                  _activeTab = 'Text';
+                  final node = _document?.layers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+                  if (node is! TextNode) {
+                    _selectedNodeId = null;
+                  }
+                });
+              },
+            ),
+            _buildBottomTab(
+              Icons.verified_user_outlined,
+              'Logo',
+              isActive: _activeTab == 'Logo',
+              onTap: () {
+                setState(() {
+                  _activeTab = 'Logo';
+                  final bool hasLastLogo = _lastSelectedLogoId != null &&
+                      (_document?.layers.any((l) => l.id == _lastSelectedLogoId) ?? false);
+                  if (hasLastLogo) {
+                    _selectedNodeId = _lastSelectedLogoId;
+                  } else {
+                    final logoNode = _document?.layers.firstWhereOrNull((l) => l.id.startsWith('logo'));
+                    _selectedNodeId = logoNode?.id;
+                  }
+                });
+              },
+            ),
+            _buildBottomTab(
+              Icons.gesture,
+              'Signature',
+              isActive: _activeTab == 'Signature',
+              onTap: () {
+                setState(() {
+                  _activeTab = 'Signature';
+                  final sigNode = _document?.layers.firstWhereOrNull((l) => l.id.startsWith('signature'));
+                  _selectedNodeId = sigNode?.id;
+                });
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStyleToggleButton({
-    required String iconText,
-    required bool isActive,
-    bool isItalic = false,
-    bool isUnderline = false,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(8),
-          border: isActive ? Border.all(color: const Color(0xFF2563EB)) : null,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          iconText,
-          style: TextStyle(
-            fontWeight: iconText == 'B' ? FontWeight.bold : FontWeight.w600,
-            fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
-            decoration: isUnderline ? TextDecoration.underline : TextDecoration.none,
-            color: isActive ? const Color(0xFF2563EB) : const Color(0xFF475569),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomTab(IconData icon, String label, {required bool isActive}) {
+  Widget _buildBottomTab(IconData icon, String label, {required bool isActive, VoidCallback? onTap}) {
     final Color col = isActive ? const Color(0xFF7C3AED) : const Color(0xFF64748B);
     return Expanded(
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12.0),
           child: Column(
@@ -1005,57 +1139,4 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 }
 
-class RealtimeCertificatePainter extends CustomPainter {
-  final SceneDocument document;
-  final Map<String, ui.Image> loadedImages;
-  final String? selectedNodeId;
 
-  RealtimeCertificatePainter({
-    required this.document,
-    required this.loadedImages,
-    required this.selectedNodeId,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bgState = document.theme['background'] is BackgroundState
-        ? document.theme['background'] as BackgroundState
-        : document.theme['background'] is Map<String, dynamic>
-            ? BackgroundState.fromJson(Map<String, dynamic>.from(document.theme['background']))
-            : const BackgroundState(color: Colors.white);
-
-    BackgroundRenderer().paintToCanvas(
-      bgState,
-      canvas,
-      size,
-      imagePool: loadedImages,
-    );
-
-    final transformer = ViewportTransformer(
-      virtualWidth: document.canvas.virtualWidth,
-      virtualHeight: document.canvas.virtualHeight,
-      targetSize: size,
-    );
-
-    final context = RenderContext(
-      canvas: canvas,
-      size: size,
-      assetRepository: MapAssetRepository(loadedImages),
-      viewportTransformer: transformer,
-      picturePool: const {},
-      outerSpacing: document.canvas.outerSpacing,
-      innerSpacing: document.canvas.innerSpacing,
-      isEditorMode: true,
-    );
-
-    final graphicsEngine = GraphicsEngine();
-    graphicsEngine.renderScene(
-      context: context,
-      layers: document.layers,
-      selectedNodeId: selectedNodeId,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant RealtimeCertificatePainter oldDelegate) => true;
-}

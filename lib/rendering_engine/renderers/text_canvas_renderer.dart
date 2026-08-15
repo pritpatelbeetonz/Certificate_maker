@@ -12,6 +12,23 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
 
   @override
   void drawNodeContent(Canvas canvas, Size size, TextNode node, RenderContext context) {
+    if (node.id.startsWith('logo') || node.id.startsWith('signature')) {
+      final image = context.assetRepository.getImage(node.id);
+      if (image != null) {
+        final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+        final dstRect = Rect.fromLTWH(0, 0, size.width, size.height);
+        canvas.drawImageRect(
+          image,
+          srcRect,
+          dstRect,
+          Paint()
+            ..isAntiAlias = true
+            ..filterQuality = ui.FilterQuality.high,
+        );
+        return;
+      }
+    }
+
     canvas.save();
     debugPrint(
         "Global Scale = ${context.viewportTransformer.scaleX}"

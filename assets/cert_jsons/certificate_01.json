@@ -72,8 +72,8 @@
         }
       },
       {
-        "id": "Text",
-        "displayName": "Text",
+        "id": "certificate_subtitle",
+        "displayName": "Certificate Subtitle",
         "type": "text",
         "renderPass": "content",
         "zIndex": 60,
@@ -87,100 +87,10 @@
           "editable": true
         },
         "bounds": {
-          "x": 17.58,
-          "y": 11,
-          "width": 49,
-          "height": 17
-        },
-        "transform": {
-          "rotation": -7.69,
-          "pivot": {
-            "x": 0.5,
-            "y": 0.5
-          },
-          "skew": {
-            "x": 0,
-            "y": 0
-          },
-          "flipX": false,
-          "flipY": false
-        },
-        "content": {
-          "text": "HAPPY",
-          "fontFamily": "LibreBodoni",
-          "fontSize": 13.28,
-          "color": "#FFFFFFFF",
-          "align": "left",
-          "fontWeight": "400",
-          "fontStyle": "normal  ",
-          "decoration": "none"
-        }
-      },
-      {
-        "id": "Text1",
-        "displayName": "Text",
-        "type": "text",
-        "renderPass": "content",
-        "zIndex": 60,
-        "state": {
-          "visible": true,
-          "locked": false
-        },
-        "interaction": {
-          "selectable": true,
-          "movable": true,
-          "editable": true
-        },
-        "bounds": {
-          "x": 3.26,
-          "y": 23.54,
-          "width": 76,
-          "height": 26
-        },
-        "transform": {
-          "rotation": -9.72,
-          "pivot": {
-            "x": 0.5,
-            "y": 0.5
-          },
-          "skew": {
-            "x": 0,
-            "y": 0
-          },
-          "flipX": false,
-          "flipY": false
-        },
-        "content": {
-          "text": "Birthday",
-          "fontFamily": "OoohBaby",
-          "fontSize": 23.04,
-          "color": "#FFFFFFFF",
-          "align": "left",
-          "fontWeight": "400",
-          "fontStyle": "normal  ",
-          "decoration": "none"
-        }
-      },
-      {
-        "id": "Text2",
-        "displayName": "Text",
-        "type": "text",
-        "renderPass": "content",
-        "zIndex": 60,
-        "state": {
-          "visible": true,
-          "locked": false
-        },
-        "interaction": {
-          "selectable": true,
-          "movable": true,
-          "editable": true
-        },
-        "bounds": {
-          "x": 37,
-          "y": 155,
-          "width": 42,
-          "height": 10
+          "x": 130,
+          "y": 48,
+          "width": 64,
+          "height": 8
         },
         "transform": {
           "rotation": 0,
@@ -196,13 +106,148 @@
           "flipY": false
         },
         "content": {
-          "text": "26.08.2026",
-          "fontFamily": "LoveYaLikeASister",
-          "fontSize": 9.68,
-          "color": "#FF000000",
-          "align": "left",
+          "text": "OF EXCELLENCE",
+          "fontFamily": "LibreBodoni",
+          "fontSize": 5.4,
+          "color": "#B08A3E",
+          "align": "center",
+          "fontWeight": "600",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "recipient_name",
+        "displayName": "Recipient Name",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 121,
+          "y": 87,
+          "width": 81,
+          "height": 12
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "Name Surname",
+          "fontFamily": "LibreBodoni",
+          "fontSize": 10.8,
+          "color": "#102D3E",
+          "align": "center",
           "fontWeight": "400",
-          "fontStyle": "normal  ",
+          "fontStyle": "italic",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "achievement_title",
+        "displayName": "Achievement Title",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 94,
+          "y": 115,
+          "width": 135,
+          "height": 7
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR",
+          "fontFamily": "LibreBodoni",
+          "fontSize": 4.8,
+          "color": "#B08A3E",
+          "align": "center",
+          "fontWeight": "600",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "description",
+        "displayName": "Description",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 72,
+          "y": 125,
+          "width": 179,
+          "height": 14
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit,\neiusmod tempor incididunt ut labore et dolore magna aliqua. Laboris nisi.",
+          "fontFamily": "LibreBodoni",
+          "fontSize": 4.2,
+          "color": "#173A50",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
           "decoration": "none"
         }
       }
