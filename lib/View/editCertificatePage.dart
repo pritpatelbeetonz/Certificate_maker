@@ -13,6 +13,8 @@ import '../rendering_engine/models/sticker_model.dart';
 import '../rendering_engine/widgets/interactive_overlay.dart';
 import '../rendering_engine/styles/paint_factory.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:hive/hive.dart';
+import 'HomePage.dart';
 
 import 'widgets/realtime_certificate_painter.dart';
 import 'widgets/text_controls_panel.dart';
@@ -127,6 +129,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     return PopScope(
       canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _onBackPress();
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFFF9FAFC),
         appBar: AppBar(
@@ -134,7 +140,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-            onPressed: () => Get.back(),
+            onPressed: _onBackPress,
           ),
           title: const Text(
             'Edit Certificate',
@@ -1939,6 +1945,219 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _onBackPress() {
+    _showExitConfirmationDialog();
+  }
+
+  void _showExitConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            'Save Changes?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text('Would you like to save your project before leaving?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Get.offAll(() => const Homepage());
+              },
+              child: const Text('No', style: TextStyle(color: Colors.redAccent)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showSaveNameDialog();
+              },
+              child: const Text('Yes', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSaveNameDialog() {
+    final int projectCount = Hive.box('saved_projects').length;
+    final TextEditingController nameController = TextEditingController(
+      text: 'Project ${projectCount + 1}',
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Name Project',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Give your project name so you can find it later.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F3F5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: nameController,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onChanged: (val) {
+                                setDialogState(() {});
+                              },
+                            ),
+                          ),
+                          if (nameController.text.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                nameController.clear();
+                                setDialogState(() {});
+                              },
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE5E7EB),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Get.offAll(() => const Homepage());
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4C00C6),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final String name = nameController.text.trim().isEmpty
+                                    ? 'Project ${projectCount + 1}'
+                                    : nameController.text.trim();
+                                
+                                // Show loading indicator dialog
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => const Center(
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4C00C6)),
+                                    ),
+                                  ),
+                                );
+
+                                final box = Hive.box('saved_projects');
+                                final projectData = {
+                                  'name': name,
+                                  'document': _document?.toJson(),
+                                  'layoutPath': widget.layoutPath,
+                                  'updatedAt': DateTime.now().toIso8601String(),
+                                };
+                                await box.put(name, projectData);
+                                
+                                if (context.mounted) {
+                                  // Pop the loading dialog
+                                  Navigator.of(context).pop();
+                                  // Pop the project naming dialog
+                                  Navigator.of(context).pop();
+                                }
+                                Get.offAll(() => const Homepage());
+                              },
+                              child: const Text(
+                                'Save name',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

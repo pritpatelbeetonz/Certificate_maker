@@ -1,8 +1,12 @@
 import 'package:certificate_maker/View/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox('saved_projects');
   runApp(const MyApp());
 }
 

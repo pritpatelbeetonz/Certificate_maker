@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -12,6 +13,17 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  @override
+  void initState() {
+    super.initState();
+    final box = Hive.box('saved_projects');
+    debugPrint("=== Saved Projects in Hive Database ===");
+    for (var key in box.keys) {
+      debugPrint("Project Name: $key, Data: ${box.get(key)}");
+    }
+    debugPrint("=======================================");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
