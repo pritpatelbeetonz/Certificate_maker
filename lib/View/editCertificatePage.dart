@@ -15,6 +15,7 @@ import '../rendering_engine/styles/paint_factory.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:hive/hive.dart';
 import 'HomePage.dart';
+import 'previewCertificatePage.dart';
 
 import 'widgets/realtime_certificate_painter.dart';
 import 'widgets/text_controls_panel.dart';
@@ -180,7 +181,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               child: ElevatedButton(
                 onPressed: () {
-                  Get.back(result: _document);
+                  if (_document == null) return;
+                  Get.to(() => PreviewCertificatePage(
+                        document: _document!,
+                        imagePool: _imagePool,
+                        layoutPath: widget.layoutPath,
+                      ));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF5B21B6),
@@ -190,7 +196,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
                 child: const Text(
-                  'Save',
+                  'Export',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
