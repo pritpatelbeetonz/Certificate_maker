@@ -240,20 +240,16 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
         File(_renderedImagePath!).readAsBytesSync(),
       );
 
-      final double width = widget.document.canvas.virtualWidth;
-      final double height = widget.document.canvas.virtualHeight;
-      final bool isLandscape = width >= height;
 
       pdf.addPage(
         pw.Page(
-          pageFormat: isLandscape
-              ? PdfPageFormat.a4.landscape
-              : PdfPageFormat.a4.portrait,
+          pageFormat: PdfPageFormat(
+            image.width!.toDouble(),
+            image.height!.toDouble(),
+          ),
           margin: pw.EdgeInsets.zero,
           build: (pw.Context context) {
-            return pw.Center(
-              child: pw.Image(image, fit: pw.BoxFit.contain),
-            );
+            return pw.Image(image, fit: pw.BoxFit.fill);
           },
         ),
       );

@@ -155,6 +155,21 @@ class SceneExportService {
           }
         }
 
+        for (final entry in doc.assets.entries) {
+          final asset = entry.value;
+          if (asset.type == 'svg') {
+            try {
+              final PictureInfo pictureInfo = await vg.loadPicture(
+                SvgAssetLoader(asset.src),
+                null,
+              );
+              picturePool[entry.key] = pictureInfo.picture;
+            } catch (e) {
+              debugPrint('Error preloading SVG sticker for export: ${asset.src} | $e');
+            }
+          }
+        }
+
         // Check if there are image frames (non-video) that should have loaded
         final hasImageFrames = resolvedNodes.any((n) {
           if (n is FrameNode) {

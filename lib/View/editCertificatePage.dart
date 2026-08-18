@@ -6,21 +6,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
 import '../rendering_engine/models/scene_node.dart';
 import '../rendering_engine/canvas/viewport_transformer.dart';
 import '../rendering_engine/models/sticker_model.dart';
 import '../rendering_engine/widgets/interactive_overlay.dart';
 import '../rendering_engine/styles/paint_factory.dart';
+import '../rendering_engine/assets/dynamic_font_manager.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:hive/hive.dart';
 import 'HomePage.dart';
 import 'previewCertificatePage.dart';
+import 'fullScreenViewerPage.dart';
 
 import 'widgets/realtime_certificate_painter.dart';
 import 'widgets/text_controls_panel.dart';
 import 'widgets/logo_controls_panel.dart';
 import 'widgets/signature_controls_panel.dart';
+import 'widgets/stickers_controls_panel.dart';
 
 class EditCertificatePage extends StatefulWidget {
   final String layoutPath;
@@ -72,6 +76,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   // Image pool repository mapping assetId to loaded ui.Image
   final Map<String, ui.Image> _imagePool = {};
 
+  // Picture pool repository mapping assetId to loaded ui.Picture (for SVGs)
+  final Map<String, ui.Picture> _picturePool = {};
+
   // Undo/Redo history stacks (as json strings of SceneDocument)
   final List<String> _history = [];
   int _historyIndex = -1;
@@ -122,11 +129,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final TextNode? selectedNode =
-        (_selectedNodeId != null && _document != null)
+    final selectedLayer = (_selectedNodeId != null && _document != null)
         ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
-              as TextNode?
         : null;
+    final TextNode? selectedNode = selectedLayer is TextNode ? selectedLayer : null;
 
     return PopScope(
       canPop: false,
@@ -176,6 +182,24 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                 onPressed: _historyIndex < _history.length - 1 ? _redo : null,
               ),
             ),
+            if (_selectedNodeId == null)
+              IconButton(
+                icon: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
+                tooltip: 'Preview Landscape',
+                onPressed: () async {
+                  if (_document == null) return;
+                  await Get.to(() => FullScreenViewerPage(
+                        document: _document!,
+                        imagePool: _imagePool,
+                        picturePool: _picturePool,
+                      ));
+                  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                  await SystemChrome.setPreferredOrientations([
+                    DeviceOrientation.portraitUp,
+                  ]);
+                  setState(() {});
+                },
+              ),
             const SizedBox(width: 8),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -304,6 +328,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                                 painter: RealtimeCertificatePainter(
                                                   document: _document!,
                                                   loadedImages: _imagePool,
+                                                  picturePool: _picturePool,
                                                   selectedNodeId: _selectedNodeId,
                                                   editingNodeId: _editingTextNodeId,
                                                 ),
@@ -324,13 +349,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                                     ),
                                                   ),
                                                 ),
-                                              if (selectedNode != null && _editingTextNodeId != selectedNode.id) ...[
-                                              _buildSelectedOverlay(
-                                                selectedNode,
-                                                transformer,
-                                                canvasPaintSize,
-                                              ),
-                                            ],
+                                              if (selectedLayer != null && _editingTextNodeId != selectedLayer.id) ...[
+                                               _buildSelectedOverlay(
+                                                 selectedLayer,
+                                                 transformer,
+                                                 canvasPaintSize,
+                                               ),
+                                             ],
                                             if (_editingTextNodeId != null) ...[
                                               _buildInlineEditor(transformer),
                                             ],
@@ -503,7 +528,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   bool _isPointNearSelectedNode(
     Offset localPos,
-    TextNode node,
+    SceneNode node,
     ViewportTransformer transformer,
   ) {
     final double sx = transformer.toScreenX(node.bounds.x);
@@ -541,13 +566,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   void _onPointerDown(PointerDownEvent event) {
     bool isTouchOnNode = false;
-    final TextNode? selectedNode =
-        (_selectedNodeId != null && _document != null)
+    final selectedLayer = (_selectedNodeId != null && _document != null)
         ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
-              as TextNode?
         : null;
+    final TextNode? selectedNode = selectedLayer is TextNode ? selectedLayer : null;
 
-    if (selectedNode != null && _lastCanvasPaintSize != Size.zero) {
+    if (selectedLayer != null && _lastCanvasPaintSize != Size.zero) {
       final renderBox =
           _canvasKey.currentContext?.findRenderObject() as RenderBox?;
       if (renderBox != null) {
@@ -559,7 +583,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         );
         isTouchOnNode = _isPointNearSelectedNode(
           localPos,
-          selectedNode,
+          selectedLayer,
           transformer,
         );
       }
@@ -893,7 +917,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       final doc = SceneDocument.fromJson(jsonMap);
 
-      // Preload images from assets
+      // Preload images and fonts from assets
       for (var entry in doc.assets.entries) {
         final assetId = entry.key;
         final asset = entry.value;
@@ -903,6 +927,25 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             _imagePool[assetId] = img;
           } catch (e) {
             debugPrint("Failed to load image asset: ${asset.src} ($e)");
+          }
+        } else if (asset.type == 'svg') {
+          try {
+            final PictureInfo pictureInfo = await vg.loadPicture(
+              SvgAssetLoader(asset.src),
+              null,
+            );
+            _picturePool[assetId] = pictureInfo.picture;
+          } catch (e) {
+            debugPrint("Failed to load SVG asset: ${asset.src} ($e)");
+          }
+        } else if (asset.type == 'font') {
+          try {
+            await DynamicFontManager.instance.loadFont(assetId, asset.src);
+            if (!_fontFamilies.contains(assetId)) {
+              _fontFamilies.add(assetId);
+            }
+          } catch (e) {
+            debugPrint("Failed to load font asset: ${asset.src} ($e)");
           }
         }
       }
@@ -1104,6 +1147,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     });
   }
 
+  int _getNextTopZIndex() {
+    if (_document == null || _document!.layers.isEmpty) return 1;
+    final maxZ = _document!.layers.map((l) => l.zIndex).reduce(max);
+    return maxZ + 1;
+  }
+
   void _addNewTextNode() {
     if (_document == null) return;
     final String newId = "text_${DateTime.now().millisecondsSinceEpoch}";
@@ -1229,7 +1278,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _document!.layers,
     ).reversed.toList();
     for (final node in reversedLayers) {
-      if (node is! TextNode || !node.state.visible) continue;
+      if ((node is! TextNode && node is! StickerNode) || !node.state.visible) continue;
 
       final double sx = transformer.toScreenX(node.bounds.x);
       final double sy = transformer.toScreenY(node.bounds.y);
@@ -1267,7 +1316,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   Widget _buildSelectedOverlay(
-    TextNode node,
+    SceneNode node,
     ViewportTransformer transformer,
     Size paintSize,
   ) {
@@ -1286,10 +1335,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       isSelected: true,
     );
 
-    final bool isLogoOrSig = node.id.startsWith('logo') || node.id.startsWith('signature');
-    final int lineCount = _calculateTextNodeLineCount(node, node.bounds.width);
-    final bool isMultiLine = lineCount > 1 || node.text.contains('\n');
-    final bool showTopBottom = isLogoOrSig ? true : isMultiLine;
+    final bool isLogoOrSigOrSticker = node.id.startsWith('logo') || node.id.startsWith('signature') || node is StickerNode;
+    final int lineCount = node is TextNode ? _calculateTextNodeLineCount(node, node.bounds.width) : 1;
+    final bool isMultiLine = node is TextNode ? (lineCount > 1 || node.text.contains('\n')) : false;
+    final bool showTopBottom = isLogoOrSigOrSticker ? true : isMultiLine;
 
     return InteractiveOverlay(
       model: stickerModel,
@@ -1300,8 +1349,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       isEditingText: _editingTextNodeId == node.id,
       showTopBottomHandles: showTopBottom,
       onUpdate: () {
-        final TextNode originalNode = (_document != null)
-            ? _document!.layers.firstWhereOrNull((l) => l.id == node.id) as TextNode? ?? node
+        final SceneNode originalNode = (_document != null)
+            ? _document!.layers.firstWhereOrNull((l) => l.id == node.id) ?? node
             : node;
 
         final double currentVirtualW = originalNode.bounds.width;
@@ -1412,67 +1461,87 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           );
           if (index != -1) {
             setState(() {
-              if (originalNode.id.startsWith('logo') || originalNode.id.startsWith('signature')) {
-                // Logos and signatures: proportional scale bounds only
+              if (originalNode is StickerNode) {
                 final double scaledW = currentVirtualW * finalScale;
                 final double scaledH = currentVirtualH * finalScale;
-                
-                final double logoX = currentVirtualCenterX - (scaledW / 2.0);
-                final double logoY = currentVirtualCenterY - (scaledH / 2.0);
+                final double stickerX = currentVirtualCenterX - (scaledW / 2.0);
+                final double stickerY = currentVirtualCenterY - (scaledH / 2.0);
 
                 _document!.layers[index] = originalNode.copyWith(
                   bounds: NodeBounds(
-                    x: logoX,
-                    y: logoY,
+                    x: stickerX,
+                    y: stickerY,
                     width: scaledW,
                     height: scaledH,
                   ),
                   transform: NodeTransform(
                     rotation: rotationDeg,
                     pivot: originalNode.transform.pivot,
-                    skew: originalNode.transform.skew,
-                    flipX: originalNode.transform.flipX,
-                    flipY: originalNode.transform.flipY,
                   ),
                 );
-              } else {
-                // Actual text nodes: dynamic height wrapper based on text layout
-                final double newFontSize = (originalNode.fontSize * finalScale)
-                    .clamp(6.0, 72.0);
-                
-                final double textW = currentVirtualW * finalScale;
-                final double textX = currentVirtualCenterX - (textW / 2.0);
+              } else if (originalNode is TextNode) {
+                if (originalNode.id.startsWith('logo') || originalNode.id.startsWith('signature')) {
+                  // Logos and signatures: proportional scale bounds only
+                  final double scaledW = currentVirtualW * finalScale;
+                  final double scaledH = currentVirtualH * finalScale;
+                  
+                  final double logoX = currentVirtualCenterX - (scaledW / 2.0);
+                  final double logoY = currentVirtualCenterY - (scaledH / 2.0);
 
-                final tempNode = originalNode.copyWith(
-                  fontSize: newFontSize,
-                );
-                final double calculatedVirtualH = _calculateTextNodeHeight(tempNode, textW);
-                final double dynamicVirtualY = currentVirtualCenterY - (calculatedVirtualH / 2.0);
+                  _document!.layers[index] = originalNode.copyWith(
+                    bounds: NodeBounds(
+                      x: logoX,
+                      y: logoY,
+                      width: scaledW,
+                      height: scaledH,
+                    ),
+                    transform: NodeTransform(
+                      rotation: rotationDeg,
+                      pivot: originalNode.transform.pivot,
+                      skew: originalNode.transform.skew,
+                      flipX: originalNode.transform.flipX,
+                      flipY: originalNode.transform.flipY,
+                    ),
+                  );
+                } else {
+                  // Actual text nodes: dynamic height wrapper based on text layout
+                  final double newFontSize = (originalNode.fontSize * finalScale)
+                      .clamp(6.0, 72.0);
+                  
+                  final double textW = currentVirtualW * finalScale;
+                  final double textX = currentVirtualCenterX - (textW / 2.0);
 
-                _document!.layers[index] = originalNode.copyWith(
-                  fontSize: newFontSize,
-                  bounds: NodeBounds(
-                    x: textX,
-                    y: dynamicVirtualY,
-                    width: textW,
-                    height: calculatedVirtualH,
-                  ),
-                  transform: NodeTransform(
-                    rotation: rotationDeg,
-                    pivot: originalNode.transform.pivot,
-                    skew: originalNode.transform.skew,
-                    flipX: originalNode.transform.flipX,
-                    flipY: originalNode.transform.flipY,
-                  ),
-                );
+                  final tempNode = originalNode.copyWith(
+                    fontSize: newFontSize,
+                  );
+                  final double calculatedVirtualH = _calculateTextNodeHeight(tempNode, textW);
+                  final double dynamicVirtualY = currentVirtualCenterY - (calculatedVirtualH / 2.0);
+
+                  _document!.layers[index] = originalNode.copyWith(
+                    fontSize: newFontSize,
+                    bounds: NodeBounds(
+                      x: textX,
+                      y: dynamicVirtualY,
+                      width: textW,
+                      height: calculatedVirtualH,
+                    ),
+                    transform: NodeTransform(
+                      rotation: rotationDeg,
+                      pivot: originalNode.transform.pivot,
+                      skew: originalNode.transform.skew,
+                      flipX: originalNode.transform.flipX,
+                      flipY: originalNode.transform.flipY,
+                    ),
+                  );
+                }
               }
             });
           }
         }
       },
       onResize: (newLeft, newTop, newWidth, newHeight) {
-        final TextNode originalNode = (_document != null)
-            ? _document!.layers.firstWhereOrNull((l) => l.id == node.id) as TextNode? ?? node
+        final SceneNode originalNode = (_document != null)
+            ? _document!.layers.firstWhereOrNull((l) => l.id == node.id) ?? node
             : node;
         
         final int index = _document!.layers.indexWhere((l) => l.id == node.id);
@@ -1484,20 +1553,31 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             final double virtualW = transformer.toVirtualWidth(newWidth);
             final double virtualH = transformer.toVirtualHeight(newHeight);
 
-            // Recalculate wrapping height for text layers dynamically
-            double calculatedVirtualH = virtualH;
-            if (!originalNode.id.startsWith('logo') && !originalNode.id.startsWith('signature')) {
-              calculatedVirtualH = _calculateTextNodeHeight(originalNode, virtualW);
-            }
+            if (originalNode is StickerNode) {
+              _document!.layers[index] = originalNode.copyWith(
+                bounds: NodeBounds(
+                  x: virtualX,
+                  y: virtualY,
+                  width: virtualW,
+                  height: virtualH,
+                ),
+              );
+            } else if (originalNode is TextNode) {
+              // Recalculate wrapping height for text layers dynamically
+              double calculatedVirtualH = virtualH;
+              if (!originalNode.id.startsWith('logo') && !originalNode.id.startsWith('signature')) {
+                calculatedVirtualH = _calculateTextNodeHeight(originalNode, virtualW);
+              }
 
-            _document!.layers[index] = originalNode.copyWith(
-              bounds: NodeBounds(
-                x: virtualX,
-                y: virtualY,
-                width: virtualW,
-                height: calculatedVirtualH,
-              ),
-            );
+              _document!.layers[index] = originalNode.copyWith(
+                bounds: NodeBounds(
+                  x: virtualX,
+                  y: virtualY,
+                  width: virtualW,
+                  height: calculatedVirtualH,
+                ),
+              );
+            }
           });
         }
       },
@@ -1511,17 +1591,19 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         _textFocusNode.requestFocus();
       },
       onDoubleTap: () {
-        setState(() {
-          _selectedNodeId = node.id;
-          _editingTextNodeId = node.id;
-          _textController.value = _textController.value.copyWith(
-            text: node.text,
-            selection: TextSelection.collapsed(offset: node.text.length),
-            composing: TextRange.empty,
-          );
-          _activeTab = 'Text';
-        });
-        _textFocusNode.requestFocus();
+        if (node is TextNode) {
+          setState(() {
+            _selectedNodeId = node.id;
+            _editingTextNodeId = node.id;
+            _textController.value = _textController.value.copyWith(
+              text: node.text,
+              selection: TextSelection.collapsed(offset: node.text.length),
+              composing: TextRange.empty,
+            );
+            _activeTab = 'Text';
+          });
+          _textFocusNode.requestFocus();
+        }
       },
       child: const SizedBox.expand(),
     );
@@ -1578,6 +1660,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         initialColor: _currentSignatureColor,
         onDismiss: _closeActiveTab,
       );
+    } else if (_activeTab == 'Stickers') {
+      return StickersControlsPanel(
+        onStickerSelected: _addSticker,
+      );
     }
     return const SizedBox.shrink();
   }
@@ -1619,6 +1705,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         fontWeight: 'normal',
         fontStyle: 'normal',
         decoration: 'none',
+        zIndex: _getNextTopZIndex(),
         bounds: NodeBounds(
           x: (_document!.canvas.virtualWidth / 2) - (width / 2),
           y: (_document!.canvas.virtualHeight / 2) - (height / 2) + 40,
@@ -1661,6 +1748,75 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     });
   }
 
+  Future<void> _addSticker(String assetPath) async {
+    if (_document == null) return;
+    try {
+      final isSvg = assetPath.toLowerCase().endsWith('.svg');
+      final String stickerId = 'sticker_${DateTime.now().millisecondsSinceEpoch}';
+      
+      double width = 80.0;
+      double height = 80.0;
+
+      if (isSvg) {
+        final PictureInfo pictureInfo = await vg.loadPicture(
+          SvgAssetLoader(assetPath),
+          null,
+        );
+        _picturePool[stickerId] = pictureInfo.picture;
+        width = pictureInfo.size.width > 0 ? pictureInfo.size.width : 80.0;
+        height = pictureInfo.size.height > 0 ? pictureInfo.size.height : 80.0;
+        if (width > 120.0 || height > 120.0) {
+          final aspect = height / width;
+          width = 80.0;
+          height = width * aspect;
+        }
+      } else {
+        final ui.Image img = await _loadUiImage(assetPath);
+        _imagePool[stickerId] = img;
+        final double aspect = img.height.toDouble() / img.width.toDouble();
+        width = 80.0;
+        height = width * aspect;
+      }
+      
+      final stickerNode = StickerNode(
+        id: stickerId,
+        displayName: 'Sticker',
+        assetId: stickerId,
+        mediaType: isSvg ? 'svg' : 'image',
+        zIndex: _getNextTopZIndex(),
+        bounds: NodeBounds(
+          x: (_document!.canvas.virtualWidth / 2) - (width / 2),
+          y: (_document!.canvas.virtualHeight / 2) - (height / 2),
+          width: width,
+          height: height,
+        ),
+        transform: NodeTransform(
+          rotation: 0.0,
+          pivot: const Offset(0.5, 0.5),
+        ),
+        state: NodeState(visible: true, locked: false),
+        interaction: NodeInteraction(
+          selectable: true,
+          movable: true,
+          editable: true,
+        ),
+      );
+
+      _document!.assets[stickerId] = SceneAsset(
+        type: isSvg ? 'svg' : 'image',
+        src: assetPath,
+      );
+
+      setState(() {
+        _document!.layers.add(stickerNode);
+        _selectedNodeId = stickerId;
+        _saveToHistory();
+      });
+    } catch (e) {
+      debugPrint("Failed to add sticker: $e");
+    }
+  }
+
   Future<void> _addNewLogo() async {
     if (_document == null) return;
     try {
@@ -1693,6 +1849,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         fontWeight: 'normal',
         fontStyle: 'normal',
         decoration: 'none',
+        zIndex: _getNextTopZIndex(),
         bounds: NodeBounds(
           x: (_document!.canvas.virtualWidth / 2) - (width / 2),
           y: (_document!.canvas.virtualHeight / 2) - (height / 2),
@@ -1908,6 +2065,24 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   } else {
                     _activeTab = 'Signature';
                     if (_selectedNodeId == null || !_selectedNodeId!.startsWith('signature')) {
+                      _selectedNodeId = null;
+                    }
+                  }
+                });
+              },
+            ),
+            _buildBottomTab(
+              Icons.emoji_emotions_outlined,
+              'Stickers',
+              isActive: _activeTab == 'Stickers',
+              onTap: () {
+                setState(() {
+                  if (_activeTab == 'Stickers') {
+                    _activeTab = '';
+                    _selectedNodeId = null;
+                  } else {
+                    _activeTab = 'Stickers';
+                    if (_selectedNodeId == null || !_selectedNodeId!.startsWith('sticker')) {
                       _selectedNodeId = null;
                     }
                   }

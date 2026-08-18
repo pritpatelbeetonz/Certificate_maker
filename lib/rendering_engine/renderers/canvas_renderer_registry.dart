@@ -197,6 +197,17 @@ class StickerCanvasRenderer extends BaseNodeRenderer<StickerNode> implements Can
 
   @override
   void drawNodeContent(Canvas canvas, Size size, StickerNode node, RenderContext context) {
+    final picture = context.picturePool != null ? context.picturePool![node.assetId] : null;
+    if (picture != null) {
+      canvas.save();
+      final double virtualWidth = node.bounds.width;
+      final double scaleFactor = virtualWidth > 0 ? (size.width / virtualWidth) : 1.0;
+      canvas.scale(scaleFactor);
+      canvas.drawPicture(picture);
+      canvas.restore();
+      return;
+    }
+
     final image = context.assetRepository.getImage(node.assetId);
     if (image == null) return;
 

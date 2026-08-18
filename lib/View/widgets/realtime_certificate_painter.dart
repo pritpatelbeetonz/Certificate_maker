@@ -12,6 +12,7 @@ import '../../rendering_engine/models/background_state.dart';
 class RealtimeCertificatePainter extends CustomPainter {
   final SceneDocument document;
   final Map<String, ui.Image> loadedImages;
+  final Map<String, ui.Picture> picturePool;
   final String? selectedNodeId;
   final String? editingNodeId;
 
@@ -20,6 +21,7 @@ class RealtimeCertificatePainter extends CustomPainter {
     required this.loadedImages,
     required this.selectedNodeId,
     this.editingNodeId,
+    this.picturePool = const {},
   });
 
   @override
@@ -48,7 +50,7 @@ class RealtimeCertificatePainter extends CustomPainter {
       size: size,
       assetRepository: MapAssetRepository(loadedImages),
       viewportTransformer: transformer,
-      picturePool: const {},
+      picturePool: picturePool,
       outerSpacing: document.canvas.outerSpacing,
       innerSpacing: document.canvas.innerSpacing,
       isEditorMode: true,

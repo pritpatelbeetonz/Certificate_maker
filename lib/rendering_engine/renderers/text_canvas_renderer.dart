@@ -110,7 +110,24 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
       textAlign: parsedTextAlign,
     );
 
-    textPainter.layout(maxWidth: size.width + 2); // add minor layout tolerance
+    // Layout with infinite width first to find the natural single-line width of the text
+    textPainter.layout(maxWidth: double.infinity);
+    final double naturalWidth = textPainter.width;
+
+    // Check if the bounding box height is only tall enough for a single line
+    final bool isSingleLineHeight = size.height <= (node.fontSize * scale * screenScale * 1.8);
+
+    // Prevent wrapping if the box is single-line height, the text is short, has no spaces, or is only slightly wider than bounds
+    final bool shouldPreventWrap = isSingleLineHeight ||
+        node.text.length < 50 ||
+        !node.text.trim().contains(' ') ||
+        naturalWidth < (size.width * 1.20);
+
+    if (shouldPreventWrap) {
+      textPainter.layout(maxWidth: naturalWidth + 10);
+    } else {
+      textPainter.layout(maxWidth: size.width + 2);
+    }
     
     // 7. Align the text horizontally based on parsedTextAlign and center vertically within the bounding box
     double xOffset = 0.0;

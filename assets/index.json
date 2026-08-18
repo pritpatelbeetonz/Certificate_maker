@@ -15,6 +15,14 @@
       "thumbnail": "assets/thumbnails/2 1.png",
       "premium": true,
       "layoutPath": "assets/cert_jsons/certificate_02.json"
+    },
+    {
+      "id": "certificate_03",
+      "name": "Elegant Completion",
+      "category": "Completion",
+      "thumbnail": "assets/thumbnails/thumbnail_01.png",
+      "premium": true,
+      "layoutPath": "assets/cert_jsons/certificate_03.json"
     }
   ]
 }
