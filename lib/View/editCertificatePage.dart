@@ -12,6 +12,7 @@ import '../rendering_engine/canvas/viewport_transformer.dart';
 import '../rendering_engine/models/sticker_model.dart';
 import '../rendering_engine/widgets/interactive_overlay.dart';
 import '../rendering_engine/styles/paint_factory.dart';
+import 'package:dotted_border/dotted_border.dart';
 
 import 'widgets/realtime_certificate_painter.dart';
 import 'widgets/text_controls_panel.dart';
@@ -144,23 +145,29 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             ),
           ),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.undo,
-                color: _historyIndex > 0
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFFCBD5E1),
+            GestureDetector(
+              onLongPress: _historyIndex > 0 ? _resetToFirstState : null,
+              child: IconButton(
+                icon: Icon(
+                  Icons.undo,
+                  color: _historyIndex > 0
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFFCBD5E1),
+                ),
+                onPressed: _historyIndex > 0 ? _undo : null,
               ),
-              onPressed: _historyIndex > 0 ? _undo : null,
             ),
-            IconButton(
-              icon: Icon(
-                Icons.redo,
-                color: _historyIndex < _history.length - 1
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFFCBD5E1),
+            GestureDetector(
+              onLongPress: _historyIndex < _history.length - 1 ? _resetToLastState : null,
+              child: IconButton(
+                icon: Icon(
+                  Icons.redo,
+                  color: _historyIndex < _history.length - 1
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFFCBD5E1),
+                ),
+                onPressed: _historyIndex < _history.length - 1 ? _redo : null,
               ),
-              onPressed: _historyIndex < _history.length - 1 ? _redo : null,
             ),
             const SizedBox(width: 8),
             Padding(
@@ -646,7 +653,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           _editingTextNodeId = node.id;
           _textController.value = _textController.value.copyWith(
             text: node.text,
-            selection: TextSelection(baseOffset: 0, extentOffset: node.text.length),
+            selection: TextSelection.collapsed(offset: node.text.length),
             composing: TextRange.empty,
           );
           _activeTab = 'Text';
@@ -702,12 +709,34 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         _endEditing();
       },
     );
+    const double kSelectionPadding = 12.0;
+    Widget editorWithBorder = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          top: -kSelectionPadding,
+          left: -kSelectionPadding,
+          right: -kSelectionPadding,
+          bottom: -kSelectionPadding,
+          child: IgnorePointer(
+            child: DottedBorder(
+              options: const RectDottedBorderOptions(
+                padding: EdgeInsets.zero,
+                color: Colors.blueAccent,
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ),
+        textField,
+      ],
+    );
 
     if (node.transform.rotation != 0.0) {
       final double rotationAngleRad = node.transform.rotation * pi / 180.0;
-      textField = Transform.rotate(
+      editorWithBorder = Transform.rotate(
         angle: rotationAngleRad,
-        child: textField,
+        child: editorWithBorder,
       );
     }
 
@@ -716,7 +745,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       top: sy,
       width: sw,
       height: sh,
-      child: textField,
+      child: editorWithBorder,
     );
   }
 
@@ -823,6 +852,29 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     return textPainter.height > 0 ? textPainter.height : 10.0;
   }
 
+  int _calculateTextNodeLineCount(TextNode node, double virtualWidth) {
+    if (node.id.startsWith('logo') || node.id.startsWith('signature')) {
+      return 1;
+    }
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: node.text,
+        style: TextStyle(
+          fontFamily: node.fontFamily == 'System' ? null : node.fontFamily,
+          fontSize: node.fontSize,
+          fontWeight: _parseFontWeight(node.fontWeight),
+          fontStyle: _parseFontStyle(node.fontStyle),
+          decoration: _parseTextDecoration(node.decoration),
+          letterSpacing: node.letterSpacing,
+          height: node.lineHeight,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout(maxWidth: virtualWidth);
+    return textPainter.computeLineMetrics().length;
+  }
+
   Future<void> _loadLayoutAndAssets() async {
     try {
       final String jsonString = await rootBundle.loadString(widget.layoutPath);
@@ -895,6 +947,30 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         _document = SceneDocument.fromJson(jsonMap);
         _updateSelectedNodeTextField();
       });
+    }
+  }
+
+  void _resetToFirstState() {
+    if (_history.isNotEmpty && _historyIndex > 0) {
+      setState(() {
+        _historyIndex = 0;
+        final jsonMap = json.decode(_history[_historyIndex]);
+        _document = SceneDocument.fromJson(jsonMap);
+        _updateSelectedNodeTextField();
+      });
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  void _resetToLastState() {
+    if (_history.isNotEmpty && _historyIndex < _history.length - 1) {
+      setState(() {
+        _historyIndex = _history.length - 1;
+        final jsonMap = json.decode(_history[_historyIndex]);
+        _document = SceneDocument.fromJson(jsonMap);
+        _updateSelectedNodeTextField();
+      });
+      HapticFeedback.mediumImpact();
     }
   }
 
@@ -1061,6 +1137,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     String? fontStyle,
     String? decoration,
     String? align,
+    bool? saveHistory,
   }) {
     if (_document == null || _selectedNodeId == null) return;
     final int index = _document!.layers.indexWhere(
@@ -1083,6 +1160,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final tempNode = node.copyWith(
         fontFamily: fontFamily ?? node.fontFamily,
         fontSize: newFontSize,
+        color: color ?? node.color,
         fontWeight: fontWeight ?? node.fontWeight,
         fontStyle: fontStyle ?? node.fontStyle,
         decoration: decoration ?? node.decoration,
@@ -1109,6 +1187,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       setState(() {
         _document!.layers[index] = updatedNode;
       });
+      if (saveHistory ?? true) {
+        _saveToHistory();
+      }
     }
   }
 
@@ -1122,7 +1203,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       });
     }
     _updateSelectedTextProperty(color: hex);
-    _saveToHistory();
   }
 
   void _detectHitTest(Offset localTapPos, Size paintSize) {
@@ -1194,12 +1274,19 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       isSelected: true,
     );
 
+    final bool isLogoOrSig = node.id.startsWith('logo') || node.id.startsWith('signature');
+    final int lineCount = _calculateTextNodeLineCount(node, node.bounds.width);
+    final bool isMultiLine = lineCount > 1 || node.text.contains('\n');
+    final bool showTopBottom = isLogoOrSig ? true : isMultiLine;
+
     return InteractiveOverlay(
       model: stickerModel,
       boundWidth: paintSize.width,
       boundHeight: paintSize.height,
       width: sw,
       height: sh,
+      isEditingText: _editingTextNodeId == node.id,
+      showTopBottomHandles: showTopBottom,
       onUpdate: () {
         final TextNode originalNode = (_document != null)
             ? _document!.layers.firstWhereOrNull((l) => l.id == node.id) as TextNode? ?? node
@@ -1371,6 +1458,40 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           }
         }
       },
+      onResize: (newLeft, newTop, newWidth, newHeight) {
+        final TextNode originalNode = (_document != null)
+            ? _document!.layers.firstWhereOrNull((l) => l.id == node.id) as TextNode? ?? node
+            : node;
+        
+        final int index = _document!.layers.indexWhere((l) => l.id == node.id);
+        if (index != -1) {
+          setState(() {
+            // Convert to virtual coordinates
+            final double virtualX = transformer.toVirtualX(newLeft);
+            final double virtualY = transformer.toVirtualY(newTop);
+            final double virtualW = transformer.toVirtualWidth(newWidth);
+            final double virtualH = transformer.toVirtualHeight(newHeight);
+
+            // Recalculate wrapping height for text layers dynamically
+            double calculatedVirtualH = virtualH;
+            if (!originalNode.id.startsWith('logo') && !originalNode.id.startsWith('signature')) {
+              calculatedVirtualH = _calculateTextNodeHeight(originalNode, virtualW);
+            }
+
+            _document!.layers[index] = originalNode.copyWith(
+              bounds: NodeBounds(
+                x: virtualX,
+                y: virtualY,
+                width: virtualW,
+                height: calculatedVirtualH,
+              ),
+            );
+          });
+        }
+      },
+      onInteractionEnd: () {
+        _saveToHistory();
+      },
       onCancel: () {
         _deleteLayer(node.id);
       },
@@ -1383,7 +1504,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           _editingTextNodeId = node.id;
           _textController.value = _textController.value.copyWith(
             text: node.text,
-            selection: TextSelection(baseOffset: 0, extentOffset: node.text.length),
+            selection: TextSelection.collapsed(offset: node.text.length),
             composing: TextRange.empty,
           );
           _activeTab = 'Text';
@@ -1464,19 +1585,19 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   void _onSignatureExported(ui.Image img) {
-    String? sigId =
+    final String newSigId = 'signature_${DateTime.now().millisecondsSinceEpoch}';
+    final double aspect = img.height.toDouble() / img.width.toDouble();
+
+    String? oldSigId =
         _selectedNodeId != null && _selectedNodeId!.startsWith('signature')
         ? _selectedNodeId
         : null;
 
-    final double aspect = img.height.toDouble() / img.width.toDouble();
-
-    if (sigId == null) {
-      sigId = 'signature_${DateTime.now().millisecondsSinceEpoch}';
+    if (oldSigId == null) {
       const double width = 100.0;
       final double height = width * aspect;
       final newSigNode = TextNode(
-        id: sigId,
+        id: newSigId,
         displayName: 'Signature',
         text: 'Signature',
         fontFamily: 'System',
@@ -1502,11 +1623,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       );
       _document!.layers.add(newSigNode);
     } else {
-      final int index = _document!.layers.indexWhere((l) => l.id == sigId);
+      final int index = _document!.layers.indexWhere((l) => l.id == oldSigId);
       if (index != -1) {
         final node = _document!.layers[index] as TextNode;
         final double newHeight = node.bounds.width * aspect;
         _document!.layers[index] = node.copyWith(
+          id: newSigId,
           bounds: NodeBounds(
             x: node.bounds.x,
             y: node.bounds.y + (node.bounds.height - newHeight) / 2.0,
@@ -1517,12 +1639,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       }
     }
 
-    _imagePool[sigId] = img;
-    _signatureNames[sigId] = 'Drawn Signature';
-    _signatureDimensions[sigId] = 'PNG • ${img.width} × ${img.height} px';
+    _imagePool[newSigId] = img;
+    _signatureNames[newSigId] = 'Drawn Signature';
+    _signatureDimensions[newSigId] = 'PNG • ${img.width} × ${img.height} px';
 
     setState(() {
-      _selectedNodeId = sigId;
+      _selectedNodeId = newSigId;
       _saveToHistory();
     });
   }
@@ -1605,7 +1727,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final ui.FrameInfo frame = await codec.getNextFrame();
       final ui.Image uiImage = frame.image;
 
-      _imagePool[_selectedNodeId!] = uiImage;
+      final String newLogoId = 'logo_${DateTime.now().millisecondsSinceEpoch}';
+      _imagePool[newLogoId] = uiImage;
 
       final String name = file.path.split(Platform.isWindows ? '\\' : '/').last;
       final String dimensions = 'PNG • ${uiImage.width} × ${uiImage.height} px';
@@ -1619,6 +1742,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           final double width = originalNode.bounds.width;
           final double height = (width / uiImage.width) * uiImage.height;
           _document!.layers[index] = originalNode.copyWith(
+            id: newLogoId,
             bounds: NodeBounds(
               x: originalNode.bounds.x,
               y: originalNode.bounds.y,
@@ -1626,10 +1750,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               height: height,
             ),
           );
-          _logoNames[_selectedNodeId!] = name;
-          _logoDimensions[_selectedNodeId!] = dimensions;
+          _logoNames[newLogoId] = name;
+          _logoDimensions[newLogoId] = dimensions;
           _pickedLogoName = name;
           _pickedLogoDimensions = dimensions;
+          _selectedNodeId = newLogoId;
           _saveToHistory();
         });
       }

@@ -16,12 +16,16 @@ class InteractiveOverlay extends StatefulWidget {
   final double width;
   final double height;
   final bool isEditingImage;
+  final bool isEditingText;
+  final bool showTopBottomHandles;
   final VoidCallback? onTap;
   final VoidCallback? onDoubleTap;
   final VoidCallback? onCancel;
   final VoidCallback? onUpdate;
   final VoidCallback? onInteractionStart;
+  final VoidCallback? onInteractionEnd;
   final VoidCallback? onEdit;
+  final Function(double left, double top, double width, double height)? onResize;
   final bool viewOnly;
 
   const InteractiveOverlay({
@@ -33,12 +37,16 @@ class InteractiveOverlay extends StatefulWidget {
     required this.width,
     required this.height,
     this.isEditingImage = false,
+    this.isEditingText = false,
+    this.showTopBottomHandles = true,
     this.onTap,
     this.onDoubleTap,
     this.onCancel,
     this.onUpdate,
     this.onInteractionStart,
+    this.onInteractionEnd,
     this.onEdit,
+    this.onResize,
     this.viewOnly = false,
   });
 
@@ -50,6 +58,8 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
   Offset _initialFocalPoint = Offset.zero;
   double _initialLeft = 0.0;
   double _initialTop = 0.0;
+  double _initialWidth = 0.0;
+  double _initialHeight = 0.0;
 
   bool _isResizing = false;
   Offset _initialTouchPosition = Offset.zero;
@@ -184,6 +194,7 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
                   _wasScaling = false;
                 }
               });
+              widget.onInteractionEnd?.call();
             },
             onTap: () {
               if (widget.viewOnly) return;
@@ -207,7 +218,7 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
                     height: widget.height,
                     child: widget.child,
                   ),
-                  if (widget.model.isSelected && !widget.viewOnly && !widget.isEditingImage)
+                  if (widget.model.isSelected && !widget.viewOnly && !widget.isEditingImage) ...[
                     Positioned(
                       top: kOverlayMargin - kSelectionPadding,
                       left: kOverlayMargin - kSelectionPadding,
@@ -215,14 +226,277 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
                       height: widget.height + (kSelectionPadding * 2),
                       child: IgnorePointer(
                         child: DottedBorder(
-                          options: const RectDottedBorderOptions(
+                          options: RectDottedBorderOptions(
                             padding: EdgeInsets.zero,
-                            color: Color(0xFF4200AD),
+                            color: widget.isEditingText ? Colors.blueAccent : const Color(0xFF4200AD),
                           ),
                           child: const SizedBox.expand(),
                         ),
                       ),
                     ),
+                    // 1. TOP Handle (Horizontal rectangular bar or fallback circular dot)
+                    if (widget.showTopBottomHandles)
+                      Positioned(
+                        top: kOverlayMargin - kSelectionPadding - 20.0,
+                        left: kOverlayMargin + widget.width / 2.0 - 24.0,
+                        width: 48.0,
+                        height: 40.0,
+                        child: Transform.scale(
+                          scale: 1.0 / widget.model.scale.clamp(0.1, 8.0),
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onPanStart: (details) {
+                              widget.onInteractionStart?.call();
+                              _initialWidth = widget.width;
+                              _initialHeight = widget.height;
+                              _initialLeft = widget.model.left;
+                              _initialTop = widget.model.top;
+                              _initialTouchPosition = details.globalPosition;
+                            },
+                            onPanUpdate: (details) {
+                              final double angle = widget.model.angle;
+                              final Offset screenDragDelta = details.globalPosition - _initialTouchPosition;
+                              final double localDy = screenDragDelta.dx * sin(-angle) + screenDragDelta.dy * cos(-angle);
+
+                              final double newHeight = (_initialHeight - localDy).clamp(20.0, double.infinity);
+                              final double localOffsetY = (_initialHeight - newHeight) / 2.0;
+
+                              final double initialCenterX = _initialLeft + _initialWidth / 2.0;
+                              final double initialCenterY = _initialTop + _initialHeight / 2.0;
+                              final double newCenterX = initialCenterX - localOffsetY * sin(angle);
+                              final double newCenterY = initialCenterY + localOffsetY * cos(angle);
+
+                              final double newLeft = newCenterX - _initialWidth / 2.0;
+                              final double newTop = newCenterY - newHeight / 2.0;
+
+                              widget.onResize?.call(newLeft, newTop, _initialWidth, newHeight);
+                            },
+                            onPanEnd: (details) => widget.onInteractionEnd?.call(),
+                            onPanCancel: () => widget.onInteractionEnd?.call(),
+                            child: Center(
+                              child: Builder(
+                                builder: (context) {
+                                  final bool useBar = widget.width + kSelectionPadding * 2 >= 70.0;
+                                  return Container(
+                                    width: useBar ? 24.0 : 6.0,
+                                    height: 6.0,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: useBar ? BoxShape.rectangle : BoxShape.circle,
+                                      borderRadius: useBar ? BorderRadius.circular(2.5) : null,
+                                      border: Border.all(color: const Color(0xFF4200AD), width: 1.5),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 2,
+                                          offset: Offset(0, 1),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    // 2. BOTTOM Handle (Horizontal rectangular bar or fallback circular dot)
+                    if (widget.showTopBottomHandles)
+                      Positioned(
+                        top: kOverlayMargin + widget.height + kSelectionPadding - 20.0,
+                        left: kOverlayMargin + widget.width / 2.0 - 24.0,
+                        width: 48.0,
+                        height: 40.0,
+                        child: Transform.scale(
+                          scale: 1.0 / widget.model.scale.clamp(0.1, 8.0),
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onPanStart: (details) {
+                              widget.onInteractionStart?.call();
+                              _initialWidth = widget.width;
+                              _initialHeight = widget.height;
+                              _initialLeft = widget.model.left;
+                              _initialTop = widget.model.top;
+                              _initialTouchPosition = details.globalPosition;
+                            },
+                            onPanUpdate: (details) {
+                              final double angle = widget.model.angle;
+                              final Offset screenDragDelta = details.globalPosition - _initialTouchPosition;
+                              final double localDy = screenDragDelta.dx * sin(-angle) + screenDragDelta.dy * cos(-angle);
+
+                              final double newHeight = (_initialHeight + localDy).clamp(20.0, double.infinity);
+                              final double localOffsetY = (newHeight - _initialHeight) / 2.0;
+
+                              final double initialCenterX = _initialLeft + _initialWidth / 2.0;
+                              final double initialCenterY = _initialTop + _initialHeight / 2.0;
+                              final double newCenterX = initialCenterX - localOffsetY * sin(angle);
+                              final double newCenterY = initialCenterY + localOffsetY * cos(angle);
+
+                              final double newLeft = newCenterX - _initialWidth / 2.0;
+                              final double newTop = newCenterY - newHeight / 2.0;
+
+                              widget.onResize?.call(newLeft, newTop, _initialWidth, newHeight);
+                            },
+                            onPanEnd: (details) => widget.onInteractionEnd?.call(),
+                            onPanCancel: () => widget.onInteractionEnd?.call(),
+                            child: Center(
+                              child: Builder(
+                                builder: (context) {
+                                  final bool useBar = widget.width + kSelectionPadding * 2 >= 70.0;
+                                  return Container(
+                                    width: useBar ? 24.0 : 6.0,
+                                    height: 6.0,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: useBar ? BoxShape.rectangle : BoxShape.circle,
+                                      borderRadius: useBar ? BorderRadius.circular(2.5) : null,
+                                      border: Border.all(color: const Color(0xFF4200AD), width: 1.5),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 2,
+                                          offset: Offset(0, 1),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    // 3. LEFT Handle (Vertical rectangular bar or fallback circular dot)
+                    Positioned(
+                      top: kOverlayMargin + widget.height / 2.0 - 24.0,
+                      left: kOverlayMargin - kSelectionPadding - 20.0,
+                      width: 40.0,
+                      height: 48.0,
+                      child: Transform.scale(
+                        scale: 1.0 / widget.model.scale.clamp(0.1, 8.0),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onPanStart: (details) {
+                            widget.onInteractionStart?.call();
+                            _initialWidth = widget.width;
+                            _initialHeight = widget.height;
+                            _initialLeft = widget.model.left;
+                            _initialTop = widget.model.top;
+                            _initialTouchPosition = details.globalPosition;
+                          },
+                          onPanUpdate: (details) {
+                            final double angle = widget.model.angle;
+                            final Offset screenDragDelta = details.globalPosition - _initialTouchPosition;
+                            final double localDx = screenDragDelta.dx * cos(-angle) - screenDragDelta.dy * sin(-angle);
+
+                            final double newWidth = (_initialWidth - localDx).clamp(20.0, double.infinity);
+                            final double localOffsetX = (_initialWidth - newWidth) / 2.0;
+
+                            final double initialCenterX = _initialLeft + _initialWidth / 2.0;
+                            final double initialCenterY = _initialTop + _initialHeight / 2.0;
+                            final double newCenterX = initialCenterX + localOffsetX * cos(angle);
+                            final double newCenterY = initialCenterY + localOffsetX * sin(angle);
+
+                            final double newLeft = newCenterX - newWidth / 2.0;
+                            final double newTop = newCenterY - _initialHeight / 2.0;
+
+                            widget.onResize?.call(newLeft, newTop, newWidth, _initialHeight);
+                          },
+                          onPanEnd: (details) => widget.onInteractionEnd?.call(),
+                          onPanCancel: () => widget.onInteractionEnd?.call(),
+                          child: Center(
+                            child: Builder(
+                              builder: (context) {
+                                final bool useBar = widget.height + kSelectionPadding * 2 >= 70.0;
+                                return Container(
+                                  width: 6.0,
+                                  height: useBar ? 24.0 : 6.0,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: useBar ? BoxShape.rectangle : BoxShape.circle,
+                                    borderRadius: useBar ? BorderRadius.circular(2.5) : null,
+                                    border: Border.all(color: const Color(0xFF4200AD), width: 1.5),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 2,
+                                        offset: Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // 4. RIGHT Handle (Vertical rectangular bar or fallback circular dot)
+                    Positioned(
+                      top: kOverlayMargin + widget.height / 2.0 - 24.0,
+                      left: kOverlayMargin + widget.width + kSelectionPadding - 20.0,
+                      width: 40.0,
+                      height: 48.0,
+                      child: Transform.scale(
+                        scale: 1.0 / widget.model.scale.clamp(0.1, 8.0),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onPanStart: (details) {
+                            widget.onInteractionStart?.call();
+                            _initialWidth = widget.width;
+                            _initialHeight = widget.height;
+                            _initialLeft = widget.model.left;
+                            _initialTop = widget.model.top;
+                            _initialTouchPosition = details.globalPosition;
+                          },
+                          onPanUpdate: (details) {
+                            final double angle = widget.model.angle;
+                            final Offset screenDragDelta = details.globalPosition - _initialTouchPosition;
+                            final double localDx = screenDragDelta.dx * cos(-angle) - screenDragDelta.dy * sin(-angle);
+
+                            final double newWidth = (_initialWidth + localDx).clamp(20.0, double.infinity);
+                            final double localOffsetX = (newWidth - _initialWidth) / 2.0;
+
+                            final double initialCenterX = _initialLeft + _initialWidth / 2.0;
+                            final double initialCenterY = _initialTop + _initialHeight / 2.0;
+                            final double newCenterX = initialCenterX + localOffsetX * cos(angle);
+                            final double newCenterY = initialCenterY + localOffsetX * sin(angle);
+
+                            final double newLeft = newCenterX - newWidth / 2.0;
+                            final double newTop = newCenterY - _initialHeight / 2.0;
+
+                            widget.onResize?.call(newLeft, newTop, newWidth, _initialHeight);
+                          },
+                          onPanEnd: (details) => widget.onInteractionEnd?.call(),
+                          onPanCancel: () => widget.onInteractionEnd?.call(),
+                          child: Center(
+                            child: Builder(
+                              builder: (context) {
+                                final bool useBar = widget.height + kSelectionPadding * 2 >= 70.0;
+                                return Container(
+                                  width: 6.0,
+                                  height: useBar ? 24.0 : 6.0,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: useBar ? BoxShape.rectangle : BoxShape.circle,
+                                    borderRadius: useBar ? BorderRadius.circular(2.5) : null,
+                                    border: Border.all(color: const Color(0xFF4200AD), width: 1.5),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 2,
+                                        offset: Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   if (widget.isEditingImage && !widget.viewOnly) ...[
                     Positioned(
                       top: kOverlayMargin - kSelectionPadding,
@@ -378,9 +652,11 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
                           },
                           onPanEnd: (details) {
                             _isResizing = false;
+                            widget.onInteractionEnd?.call();
                           },
                           onPanCancel: () {
                             _isResizing = false;
+                            widget.onInteractionEnd?.call();
                           },
                           child: Container(
                             padding: const EdgeInsets.all(5),
@@ -436,6 +712,8 @@ class _InteractiveOverlayState extends State<InteractiveOverlay> {
 
                             widget.onUpdate?.call();
                           },
+                          onPanEnd: (details) => widget.onInteractionEnd?.call(),
+                          onPanCancel: () => widget.onInteractionEnd?.call(),
                           child: Container(
                             padding: const EdgeInsets.all(5),
                             decoration: BoxDecoration(

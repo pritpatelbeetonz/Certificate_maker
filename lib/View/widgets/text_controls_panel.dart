@@ -18,6 +18,7 @@ class TextControlsPanel extends StatelessWidget {
     String? fontStyle,
     String? decoration,
     String? align,
+    bool? saveHistory,
   }) onUpdateProperty;
   final Function(String hex, Color color) onColorSelected;
   final VoidCallback onDismiss;
@@ -291,7 +292,7 @@ class TextControlsPanel extends StatelessWidget {
                                 max: 72.0,
                                 onChanged: hasSelection
                                     ? (double val) {
-                                        onUpdateProperty(fontSize: val);
+                                        onUpdateProperty(fontSize: val, saveHistory: false);
                                       }
                                     : null,
                                 onChangeEnd: (_) => onSaveTextEditingState(),
