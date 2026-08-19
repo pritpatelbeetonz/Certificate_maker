@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class StickersControlsPanel extends StatelessWidget {
   final Function(String assetPath) onStickerSelected;
+  final VoidCallback onDismiss;
 
   const StickersControlsPanel({
     super.key,
     required this.onStickerSelected,
+    required this.onDismiss,
   });
 
   static const List<String> _stickerAssets = [
@@ -50,13 +53,25 @@ class StickersControlsPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Drag Handler / Top Notch Bar
-          Center(
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onVerticalDragUpdate: (details) {
+              if (details.delta.dy > 4.0) {
+                onDismiss();
+              }
+            },
             child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
             ),
           ),
@@ -76,7 +91,7 @@ class StickersControlsPanel extends StatelessWidget {
           // Grid View of Stickers
           Flexible(
             child: SizedBox(
-              height: 280,
+              height: 180.h,
               child: GridView.builder(
                 padding: const EdgeInsets.only(bottom: 12),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

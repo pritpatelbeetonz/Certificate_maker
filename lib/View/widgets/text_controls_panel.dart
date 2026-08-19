@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../rendering_engine/models/scene_node.dart';
 
 class TextControlsPanel extends StatelessWidget {
@@ -19,7 +20,8 @@ class TextControlsPanel extends StatelessWidget {
     String? decoration,
     String? align,
     bool? saveHistory,
-  }) onUpdateProperty;
+  })
+  onUpdateProperty;
   final Function(String hex, Color color) onColorSelected;
   final VoidCallback onDismiss;
 
@@ -51,8 +53,13 @@ class TextControlsPanel extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Choose Color', style: TextStyle(fontWeight: FontWeight.bold)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            'Choose Color',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           content: SingleChildScrollView(
             child: ColorPicker(
               pickerColor: selectedColor,
@@ -66,18 +73,24 @@ class TextControlsPanel extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Color(0xFF64748B)),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
-                final hex = '#FF${selectedColor.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+                final hex =
+                    '#FF${selectedColor.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
                 onColorSelected(hex, selectedColor);
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF5B21B6),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: const Text('Select'),
             ),
@@ -153,20 +166,39 @@ class TextControlsPanel extends StatelessWidget {
                           GestureDetector(
                             onTap: onAddNewTextNode,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF3E8FF),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.add, color: Color(0xFF7C3AED), size: 18),
-                                  SizedBox(width: 4),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
+                                      border: Border.all(
+                                        color: Color(0xFF4200AD),
+                                        width: 1.w,
+                                      ),
+                                      borderRadius: BorderRadius.circular(50.r)
+                                    ),
+
+                                    child: Icon(
+                                      Icons.add,
+                                      color: Color(0xFF7C3AED),
+                                      size: 12,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
                                   Text(
                                     'New Text',
                                     style: TextStyle(
                                       color: Color(0xFF7C3AED),
+                                      fontSize: 12.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -197,7 +229,10 @@ class TextControlsPanel extends StatelessWidget {
                                       color: Color(0xFFF1F5F9),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.add, color: Color(0xFF64748B)),
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: Color(0xFF64748B),
+                                    ),
                                   ),
                                 ),
                               );
@@ -207,7 +242,10 @@ class TextControlsPanel extends StatelessWidget {
                             final Color col = palItem['color'];
                             final String hex = palItem['hex'];
 
-                            final bool isSelected = hasSelection && selectedNode!.color.toUpperCase() == hex.toUpperCase();
+                            final bool isSelected =
+                                hasSelection &&
+                                selectedNode!.color.toUpperCase() ==
+                                    hex.toUpperCase();
 
                             return GestureDetector(
                               onTap: hasSelection
@@ -224,7 +262,9 @@ class TextControlsPanel extends StatelessWidget {
                                     color: col,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFFE2E8F0),
+                                      color: isSelected
+                                          ? const Color(0xFF8B5CF6)
+                                          : const Color(0xFFE2E8F0),
                                       width: isSelected ? 3.0 : 1.0,
                                     ),
                                   ),
@@ -235,102 +275,191 @@ class TextControlsPanel extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: hasSelection && fontFamilies.contains(selectedNode!.fontFamily)
-                                ? selectedNode!.fontFamily
-                                : 'System',
-                            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
-                            isExpanded: true,
-                            onChanged: hasSelection
-                                ? (String? newFont) {
-                                    if (newFont != null) {
-                                      onUpdateProperty(fontFamily: newFont);
-                                    }
-                                  }
-                                : null,
-                            items: fontFamilies.map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(
-                                  value,
-                                  style: TextStyle(
-                                    fontFamily: value == 'System' ? null : value,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                       Row(
                         children: [
-                          const Text(
-                            'A-',
-                            style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                          ),
-                          Expanded(
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                activeTrackColor: const Color(0xFF2563EB),
-                                inactiveTrackColor: const Color(0xFFE2E8F0),
-                                thumbColor: const Color(0xFF2563EB),
-                                overlayColor: const Color(0xFF2563EB).withOpacity(0.12),
-                                trackHeight: 4,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                              ),
-                              child: Slider(
-                                value: hasSelection ? selectedNode!.fontSize.clamp(6.0, 72.0) : 14.0,
-                                min: 6.0,
-                                max: 72.0,
-                                onChanged: hasSelection
-                                    ? (double val) {
-                                        onUpdateProperty(fontSize: val, saveHistory: false);
-                                      }
-                                    : null,
-                                onChangeEnd: (_) => onSaveTextEditingState(),
-                              ),
-                            ),
-                          ),
-                          const Text(
-                            'A+',
-                            style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                          ),
-                          const SizedBox(width: 8),
                           Container(
-                            width: 44,
-                            height: 36,
-                            alignment: Alignment.center,
+                            width: 178.w,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text(
-                              hasSelection ? selectedNode!.fontSize.round().toString() : '14',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value:
+                                    hasSelection &&
+                                        fontFamilies.contains(
+                                          selectedNode!.fontFamily,
+                                        )
+                                    ? selectedNode!.fontFamily
+                                    : 'System',style: TextStyle(color: Color(0xFF000000).withValues(alpha: 0.6)),
+                                icon: Image.asset("assets/Text edit/Dropdown.png",width: 24.w,height: 24.w,),
+                                isExpanded: true,
+                                onChanged: hasSelection
+                                    ? (String? newFont) {
+                                        if (newFont != null) {
+                                          onUpdateProperty(fontFamily: newFont);
+                                        }
+                                      }
+                                    : null,
+                                items: fontFamilies.map<DropdownMenuItem<String>>((
+                                  String value,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(
+                                      value,
+                                      style: TextStyle(
+                                        fontFamily: value == 'System'
+                                            ? null
+                                            : value,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildAlignToggleButton(
+                              image: "assets/Text edit/right.png",
+                              isActive:
+                              hasSelection &&
+                                  (selectedNode!.align == 'left' ||
+                                      selectedNode!.align == ''),
+                              onTap: hasSelection
+                                  ? () => onUpdateProperty(align: 'left')
+                                  : null,
+                            ),
+                          ),
+                         const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildAlignToggleButton(
+                              isActive:
+                              hasSelection &&
+                                  selectedNode!.align == 'center',
+                              onTap: hasSelection
+                                  ? () => onUpdateProperty(align: 'center')
+                                  : null, image: 'assets/Text edit/center.png',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildAlignToggleButton(
+                              isActive:
+                              hasSelection &&
+                                  selectedNode!.align == 'right',
+                              onTap: hasSelection
+                                  ? () => onUpdateProperty(align: 'right')
+                                  : null, image: 'assets/Text edit/right.png',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildAlignToggleButton(
+                              isActive:
+                              hasSelection &&
+                                  selectedNode!.align == 'justify',
+                              onTap: hasSelection
+                                  ? () => onUpdateProperty(align: 'justify')
+                                  : null, image: 'assets/Text edit/justify.png',
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 10.w,),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          Expanded(
+                            child: Container(
+                              padding:EdgeInsets.symmetric(horizontal: 12.w, vertical: 0.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F1FA),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Text(
+                                    'A-',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: SliderTheme(
+                                      data: SliderTheme.of(context).copyWith(
+                                        activeTrackColor: const Color(0xFF0052D4),
+                                        inactiveTrackColor: const Color(0x1A000000),
+                                        thumbColor: const Color(0xFF0052D4),
+                                        overlayColor: const Color(0xFF0052D4).withOpacity(0.12),
+                                        trackHeight: 3,
+                                        thumbShape: const RoundSliderThumbShape(
+                                          enabledThumbRadius: 6,
+                                          elevation: 1,
+                                        ),
+                                      ),
+                                      child: Slider(
+                                        value: hasSelection
+                                            ? selectedNode!.fontSize.clamp(6.0, 100.0)
+                                            : 14.0,
+                                        min: 6.0,
+                                        max: 100.0,
+                                        onChanged: hasSelection
+                                            ? (double val) {
+                                                onUpdateProperty(
+                                                  fontSize: val,
+                                                  saveHistory: false,
+                                                );
+                                              }
+                                            : null,
+                                        onChangeEnd: (_) => onSaveTextEditingState(),
+                                      ),
+                                    ),
+                                  ),
+                                  const Text(
+                                    'A+',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      hasSelection
+                                          ? selectedNode!.fontSize.round().toString()
+                                          : '14',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
                           Row(
                             children: [
                               _buildStyleToggleButton(
                                 iconText: 'B',
-                                isActive: hasSelection && selectedNode!.fontWeight == 'bold',
+                                isActive:
+                                    hasSelection &&
+                                    selectedNode!.fontWeight == 'bold',
                                 onTap: hasSelection
                                     ? () {
-                                        final newWeight = selectedNode!.fontWeight == 'bold' ? 'normal' : 'bold';
+                                        final newWeight =
+                                            selectedNode!.fontWeight == 'bold'
+                                            ? 'normal'
+                                            : 'bold';
                                         onUpdateProperty(fontWeight: newWeight);
                                       }
                                     : null,
@@ -338,11 +467,16 @@ class TextControlsPanel extends StatelessWidget {
                               const SizedBox(width: 8),
                               _buildStyleToggleButton(
                                 iconText: 'I',
-                                isActive: hasSelection && selectedNode!.fontStyle == 'italic',
+                                isActive:
+                                    hasSelection &&
+                                    selectedNode!.fontStyle == 'italic',
                                 isItalic: true,
                                 onTap: hasSelection
                                     ? () {
-                                        final newStyle = selectedNode!.fontStyle == 'italic' ? 'normal' : 'italic';
+                                        final newStyle =
+                                            selectedNode!.fontStyle == 'italic'
+                                            ? 'normal'
+                                            : 'italic';
                                         onUpdateProperty(fontStyle: newStyle);
                                       }
                                     : null,
@@ -350,55 +484,26 @@ class TextControlsPanel extends StatelessWidget {
                               const SizedBox(width: 8),
                               _buildStyleToggleButton(
                                 iconText: 'U',
-                                isActive: hasSelection && selectedNode!.decoration == 'underline',
+                                isActive:
+                                    hasSelection &&
+                                    selectedNode!.decoration == 'underline',
                                 isUnderline: true,
                                 onTap: hasSelection
                                     ? () {
-                                        final newDeco = selectedNode!.decoration == 'underline' ? 'none' : 'underline';
+                                        final newDeco =
+                                            selectedNode!.decoration ==
+                                                'underline'
+                                            ? 'none'
+                                            : 'underline';
                                         onUpdateProperty(decoration: newDeco);
                                       }
                                     : null,
                               ),
                             ],
                           ),
-                          Row(
-                            children: [
-                              _buildAlignToggleButton(
-                                icon: Icons.format_align_left,
-                                isActive: hasSelection && (selectedNode!.align == 'left' || selectedNode!.align == ''),
-                                onTap: hasSelection
-                                    ? () => onUpdateProperty(align: 'left')
-                                    : null,
-                              ),
-                              const SizedBox(width: 8),
-                              _buildAlignToggleButton(
-                                icon: Icons.format_align_center,
-                                isActive: hasSelection && selectedNode!.align == 'center',
-                                onTap: hasSelection
-                                    ? () => onUpdateProperty(align: 'center')
-                                    : null,
-                              ),
-                              const SizedBox(width: 8),
-                              _buildAlignToggleButton(
-                                icon: Icons.format_align_right,
-                                isActive: hasSelection && selectedNode!.align == 'right',
-                                onTap: hasSelection
-                                    ? () => onUpdateProperty(align: 'right')
-                                    : null,
-                              ),
-                              const SizedBox(width: 8),
-                              _buildAlignToggleButton(
-                                icon: Icons.format_align_justify,
-                                isActive: hasSelection && selectedNode!.align == 'justify',
-                                onTap: hasSelection
-                                    ? () => onUpdateProperty(align: 'justify')
-                                    : null,
-                              ),
-                            ],
-                          ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 5),
                     ],
                   ),
                 ),
@@ -420,12 +525,11 @@ class TextControlsPanel extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
+          color: isActive ? const Color(0xFFEFF6FF) : null,
           borderRadius: BorderRadius.circular(8),
-          border: isActive ? Border.all(color: const Color(0xFF2563EB)) : null,
         ),
         alignment: Alignment.center,
         child: Text(
@@ -433,8 +537,10 @@ class TextControlsPanel extends StatelessWidget {
           style: TextStyle(
             fontWeight: iconText == 'B' ? FontWeight.bold : FontWeight.w600,
             fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
-            decoration: isUnderline ? TextDecoration.underline : TextDecoration.none,
-            color: isActive ? const Color(0xFF2563EB) : const Color(0xFF475569),
+            decoration: isUnderline
+                ? TextDecoration.underline
+                : TextDecoration.none,
+            // color: isActive ? const Color(0xFF2563EB) : const Color(0xFF475569),
           ),
         ),
       ),
@@ -442,26 +548,21 @@ class TextControlsPanel extends StatelessWidget {
   }
 
   Widget _buildAlignToggleButton({
-    required IconData icon,
+    required String image,
     required bool isActive,
     VoidCallback? onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
+          color: isActive ? const Color(0xFFEFF6FF) : null,
           borderRadius: BorderRadius.circular(8),
-          border: isActive ? Border.all(color: const Color(0xFF2563EB)) : null,
         ),
         alignment: Alignment.center,
-        child: Icon(
-          icon,
-          size: 20,
-          color: isActive ? const Color(0xFF2563EB) : const Color(0xFF475569),
-        ),
+        child: Image.asset(image,width: 20.w,height: 20.w,),
       ),
     );
   }

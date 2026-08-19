@@ -5,7 +5,8 @@ import 'package:get/get.dart';
 import 'editCertificatePage.dart';
 
 class Browsetemplets extends StatefulWidget {
-  const Browsetemplets({super.key});
+  final String? initialCategory;
+  const Browsetemplets({super.key, this.initialCategory});
 
   @override
   State<Browsetemplets> createState() => _BrowsetempletsState();
@@ -18,17 +19,16 @@ class _BrowsetempletsState extends State<Browsetemplets> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All Template';
 
-  final List<Map<String, dynamic>> _categories = [
+  List<Map<String, dynamic>> _categories = [
     {'name': 'All Template', 'icon': Icons.grid_view_outlined},
-    {'name': 'Achievement', 'icon': Icons.emoji_events_outlined},
-    {'name': 'Participation', 'icon': Icons.person_outline},
-    {'name': 'Appreciation', 'icon': Icons.favorite_border_outlined},
-    {'name': 'Completion', 'icon': Icons.verified_user_outlined},
   ];
 
   @override
   void initState() {
     super.initState();
+    if (widget.initialCategory != null) {
+      _selectedCategory = widget.initialCategory!;
+    }
     _loadTemplates();
     _searchController.addListener(_onSearchChanged);
   }
@@ -40,12 +40,45 @@ class _BrowsetempletsState extends State<Browsetemplets> {
     super.dispose();
   }
 
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'achievement':
+        return Icons.emoji_events_outlined;
+      case 'participation':
+        return Icons.person_outline;
+      case 'appreciation':
+        return Icons.favorite_border_outlined;
+      case 'completion':
+        return Icons.verified_user_outlined;
+      default:
+        return Icons.bookmark_outline;
+    }
+  }
+
   Future<void> _loadTemplates() async {
     try {
       final String response = await DefaultAssetBundle.of(context).loadString('assets/index.json');
       final data = json.decode(response);
+      final layouts = data['layouts'] ?? [];
+      
+      final List<Map<String, dynamic>> dynamicCategories = [
+        {'name': 'All Template', 'icon': Icons.grid_view_outlined},
+      ];
+      final Set<String> categorySet = {};
+      for (final layout in layouts) {
+        final String cat = layout['category'] ?? '';
+        if (cat.isNotEmpty && !categorySet.contains(cat.toLowerCase())) {
+          categorySet.add(cat.toLowerCase());
+          dynamicCategories.add({
+            'name': cat,
+            'icon': _getCategoryIcon(cat),
+          });
+        }
+      }
+
       setState(() {
-        _allTemplates = data['layouts'] ?? [];
+        _allTemplates = layouts;
+        _categories = dynamicCategories;
         _isLoading = false;
       });
       _filterTemplates();

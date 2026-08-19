@@ -1,10 +1,16 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:certificate_maker/View/SavedProjectsPage.dart';
+import 'package:certificate_maker/View/SettingsPage.dart';
 import 'package:certificate_maker/View/browseTemplets.dart';
 import 'package:certificate_maker/View/editCertificatePage.dart';
+import 'package:certificate_maker/for_ads/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+import '../for_ads/utils/shared_prefrence_service.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -15,11 +21,145 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   late Box _projectsBox;
+  List<dynamic> _allTemplates = [];
+  List<String> _dynamicCategories = [];
+  bool _isLoadingTemplates = true;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _projectsBox = Hive.box('saved_projects');
+    _loadTemplates();
+    if (SharedPrefService.getIsFirstTime()) {
+      SharedPrefService.setIsFirstTime(false);
+      showLog("Entered First page");
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadTemplates() async {
+    try {
+      final String response = await DefaultAssetBundle.of(context).loadString('assets/index.json');
+      final data = json.decode(response);
+      final layouts = data['layouts'] ?? [];
+      
+      final Set<String> categorySet = {};
+      for (final layout in layouts) {
+        final String cat = layout['category'] ?? '';
+        if (cat.isNotEmpty) {
+          categorySet.add(cat);
+        }
+      }
+
+      setState(() {
+        _allTemplates = layouts;
+        _dynamicCategories = categorySet.toList();
+        _isLoadingTemplates = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingTemplates = false;
+      });
+      debugPrint("Error loading templates: $e");
+    }
+  }
+
+  Widget _buildCategorySection(String categoryName, String categoryKey) {
+    final categoryTemplates = _allTemplates.where((temp) {
+      final String cat = temp['category'] ?? '';
+      return cat.toLowerCase() == categoryKey.toLowerCase();
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "$categoryName Templates",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF191C1D),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Get.to(() => Browsetemplets(initialCategory: categoryName));
+                },
+                child: Text(
+                  "See All",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 120.h,
+          child: _isLoadingTemplates
+              ? const Center(child: CircularProgressIndicator())
+              : categoryTemplates.isEmpty
+                  ? const SizedBox.shrink()
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      itemCount: categoryTemplates.length,
+                      itemBuilder: (context, index) {
+                        final item = categoryTemplates[index];
+                        final String thumbnail = item['thumbnail'] ?? '';
+                        return Padding(
+                          padding: EdgeInsets.only(right: 12.w),
+                          child: GestureDetector(
+                            onTap: () {
+                              Get.to(() => EditCertificatePage(
+                                    layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
+                                  ));
+                            },
+                            child: Container(
+                              width: 160.w,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12.r),
+                                child: Image.asset(
+                                  thumbnail,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: const Color(0xFFE2E8F0),
+                                      child: const Icon(
+                                        Icons.image_not_supported_outlined,
+                                        color: Color(0xFF94A3B8),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
   }
 
   String _getThumbnailForProject(Map<dynamic, dynamic> projectData) {
@@ -117,6 +257,7 @@ class _HomepageState extends State<Homepage> {
       backgroundColor: const Color(0xFFf8f9fa),
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,22 +276,57 @@ class _HomepageState extends State<Homepage> {
                         color: const Color(0xFF0F172A),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        // Settings Action placeholder
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF1F3F5),
-                          shape: BoxShape.circle,
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Get.to(() => const SavedProjectsPage());
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8EAED),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.access_time,
+                                  color: const Color(0xFF191C1D),
+                                  size: 18.w,
+                                ),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  "Recent",
+                                  style: TextStyle(
+                                    color: const Color(0xFF191C1D),
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          Icons.settings_outlined,
-                          color: const Color(0xFF1E293B),
-                          size: 22.w,
+                        SizedBox(width: 8.w),
+                        GestureDetector(
+                          onTap: () {
+                            Get.to(() => const SettingsPage());
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(8.w),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE8EAED),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.settings_outlined,
+                              color: const Color(0xFF191C1D),
+                              size: 20.w,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -159,221 +335,27 @@ class _HomepageState extends State<Homepage> {
               // 2. Banner
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 188.h,
+                child: GestureDetector(
+                  onTap: () {
+                   // Get.to(() => const Browsetemplets());
+                  },
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16.r),
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Image.asset(
-                            "assets/Home Screen/banner bg.png",
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Positioned(
-                          left: 20.w,
-                          bottom: 20.h,
-                          child: GestureDetector(
-                            onTap: () {
-                              Get.to(() => const Browsetemplets());
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.06),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    "Browse Template",
-                                    style: TextStyle(
-                                      color: const Color(0xFF6F5BFF),
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  Icon(
-                                    Icons.arrow_forward_outlined,
-                                    color: const Color(0xFF6F5BFF),
-                                    size: 16.w,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: Image.asset(
+                      "assets/Home Screen/banner.png",
+                      width: double.infinity,
+                      //height: 188.h,
+                      //fit: BoxFit,
                     ),
                   ),
                 ),
               ),
 
-              SizedBox(height: 24.h),
+              SizedBox(height: 12.h),
 
-              // 3. Section Title: Recent Certificates & View All
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Recent Certificates",
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Get.to(() => const Browsetemplets());
-                      },
-                      child: Text(
-                        "View all",
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: const Color(0xFF6F5BFF),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // 3. Category Horizontal Lists
+              ..._dynamicCategories.map((category) => _buildCategorySection(category, category)),
 
-              SizedBox(height: 16.h),
-
-              // 4. Certificates Grid or Empty State
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: projects.isEmpty
-                    ? Center(
-                        child: Image.asset('assets/Home Screen/no_project.png',height: 319.38385009765625.h,width: 246.w,),
-                      )
-                    : GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12.w,
-                          mainAxisSpacing: 12.h,
-                          childAspectRatio: 0.97,
-                        ),
-                        itemCount: projects.length,
-                        itemBuilder: (context, index) {
-                          final project = projects[index];
-                          final String name = project.key as String;
-                          final data = project.value;
-                          final String? savedThumbnail = data['thumbnailPath'] as String?;
-                          final String fallbackThumbnailPath = _getThumbnailForProject(data);
-                          final String timeString = _formatDateTime(data['updatedAt'] as String?);
-
-                          return GestureDetector(
-                            onTap: () {
-                              Get.to(() => EditCertificatePage(
-                                    layoutPath: data['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
-                                    savedProjectName: name,
-                                  ));
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.03),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child:Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Certificate Thumbnail
-                                Padding(
-                                  padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10.r),
-                                    child: AspectRatio(
-                                      aspectRatio: 1.4,
-                                      child: (savedThumbnail != null &&
-                                          File(savedThumbnail).existsSync())
-                                          ? Image.file(
-                                        File(savedThumbnail),
-                                        fit: BoxFit.contain,
-                                      )
-                                          : Image.asset(
-                                        fallbackThumbnailPath,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                // Certificate Title & Date & Actions Menu
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 10.w,
-                                    vertical: 8.h,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              name,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize: 14.sp,
-                                                fontWeight: FontWeight.bold,
-                                                color: const Color(0xFF0F172A),
-                                              ),
-                                            ),
-                                            SizedBox(height: 2.h),
-                                            Text(
-                                              timeString,
-                                              style: TextStyle(
-                                                fontSize: 11.sp,
-                                                color: Colors.grey[500],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () => _showProjectOptions(context, name),
-                                        child: Icon(
-                                          Icons.more_vert,
-                                          size: 20.w,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
               SizedBox(height: 24.h),
             ],
           ),

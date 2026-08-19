@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -134,7 +135,6 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     final selectedLayer = (_selectedNodeId != null && _document != null)
         ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
         : null;
@@ -147,52 +147,43 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         _onBackPress();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF9FAFC),
+        backgroundColor: const Color(0xFFF8F9Fa),
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-            onPressed: _onBackPress,
-          ),
-          title: const Text(
-            'Edit Certificate',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+          leadingWidth: 140.w,
+          leading: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
+                onPressed: _onBackPress,
+              ),
+              GestureDetector(
+                onLongPress: _historyIndex > 0 ? _resetToFirstState : null,
+                child: GestureDetector(
+                  onTap: _historyIndex > 0 ? _undo : null,
+                  child: Image.asset( _historyIndex > 0 ?
+                    "assets/Text edit/Button.png":"assets/Text edit/Button ON.png",width: 32.w,height: 32.w
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onLongPress: _historyIndex < _history.length - 1 ? _resetToLastState : null,
+                child: GestureDetector(
+                  onTap: _historyIndex < _history.length - 1 ? _redo : null,
+                  child: Image.asset( _historyIndex < _history.length - 1?
+                    "assets/Text edit/Button_margin.png":"assets/Text edit/Button_margin ON.png",width: 32.w,height: 32.w,
+                  ),
+                ),
+              ),
+            ],
           ),
           actions: [
-            GestureDetector(
-              onLongPress: _historyIndex > 0 ? _resetToFirstState : null,
-              child: IconButton(
-                icon: Icon(
-                  Icons.undo,
-                  color: _historyIndex > 0
-                      ? const Color(0xFF0F172A)
-                      : const Color(0xFFCBD5E1),
-                ),
-                onPressed: _historyIndex > 0 ? _undo : null,
-              ),
-            ),
-            GestureDetector(
-              onLongPress: _historyIndex < _history.length - 1 ? _resetToLastState : null,
-              child: IconButton(
-                icon: Icon(
-                  Icons.redo,
-                  color: _historyIndex < _history.length - 1
-                      ? const Color(0xFF0F172A)
-                      : const Color(0xFFCBD5E1),
-                ),
-                onPressed: _historyIndex < _history.length - 1 ? _redo : null,
-              ),
-            ),
             if (_selectedNodeId == null)
-              IconButton(
-                icon: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
-                tooltip: 'Preview Landscape',
-                onPressed: () async {
+              GestureDetector(
+                child: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
+                //tooltip: 'Preview Landscape',
+                onTap: () async {
                   if (_document == null) return;
                   await Get.to(() => FullScreenViewerPage(
                         document: _document!,
@@ -206,7 +197,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   setState(() {});
                 },
               ),
-            const SizedBox(width: 8),
+            //const SizedBox(width: 8),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               child: ElevatedButton(
@@ -382,9 +373,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 5.0),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 0,
-                        vertical: 0,
+                      padding:  EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 10.h,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -400,15 +391,15 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: const Icon(
+                          GestureDetector(
+                            child: const Icon(
                               Icons.remove,
-                              size: 20,
+                              size: 22,
                               color: Color(0xFF64748B),
                             ),
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.zero,
-                             onPressed: () {
+                            //constraints: const BoxConstraints(),
+                            //padding: EdgeInsets.zero,
+                             onTap: () {
                                _zoomTo((_zoomScale - 0.25).clamp(0.5, 3.0));
                              },
                           ),
@@ -421,15 +412,15 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          IconButton(
-                            icon: const Icon(
+                          GestureDetector(
+                            child: const Icon(
                               Icons.add,
-                              size: 20,
+                              size: 22,
                               color: Color(0xFF64748B),
                             ),
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.zero,
-                             onPressed: () {
+                            //constraints: const BoxConstraints(),
+                           // padding: EdgeInsets.zero,
+                             onTap: () {
                                _zoomTo((_zoomScale + 0.25).clamp(0.5, 3.0));
                              },
                           ),
@@ -1683,6 +1674,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     } else if (_activeTab == 'Stickers') {
       return StickersControlsPanel(
         onStickerSelected: _addSticker,
+        onDismiss: _closeActiveTab,
       );
     }
     return const SizedBox.shrink();
@@ -2024,7 +2016,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         child: Row(
           children: [
             _buildBottomTab(
-              Icons.title,
+              "assets/Text edit/text.png",
+              "assets/Text edit/text selected.png",
               'Text',
               isActive: _activeTab == 'Text',
               onTap: () {
@@ -2045,7 +2038,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               },
             ),
             _buildBottomTab(
-              Icons.verified_user_outlined,
+              "assets/Text edit/logos.png",
+              "assets/Text edit/logo selected.png",
               'Logo',
               isActive: _activeTab == 'Logo',
               onTap: () {
@@ -2074,7 +2068,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               },
             ),
             _buildBottomTab(
-              Icons.gesture,
+              "assets/Text edit/Frame-2.png",
+              "assets/Text edit/signature selected.png",
               'Signature',
               isActive: _activeTab == 'Signature',
               onTap: () {
@@ -2092,7 +2087,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               },
             ),
             _buildBottomTab(
-              Icons.emoji_emotions_outlined,
+              "assets/Text edit/sticker_unselected.png",
+              "assets/Text edit/sticker_selected.png",
               'Stickers',
               isActive: _activeTab == 'Stickers',
               onTap: () {
@@ -2116,7 +2112,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   Widget _buildBottomTab(
-    IconData icon,
+     String SelectedImage,
+    String UnSelectedimage,
     String label, {
     required bool isActive,
     VoidCallback? onTap,
@@ -2132,7 +2129,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: col),
+              Image.asset(isActive ? UnSelectedimage:SelectedImage,width: 24.w,height: 24.w,),
+              //Icon(icon, color: col),
               const SizedBox(height: 4),
               Text(
                 label,
@@ -2158,26 +2156,83 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(
-            'Save Changes?',
-            style: TextStyle(fontWeight: FontWeight.bold),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
           ),
-          content: const Text('Would you like to save your project before leaving?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Get.offAll(() => const Homepage());
-              },
-              child: const Text('No', style: TextStyle(color: Colors.redAccent)),
+          backgroundColor: Colors.white,
+          title: Text(
+            'Unsaved Changes',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18.sp,
+              color: const Color(0xFF0F172A),
+              fontFamily: 'Inter',
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showSaveNameDialog();
-              },
-              child: const Text('Yes', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          content: Text(
+            'Save your certificate before leaving the editor?',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF64748B),
+              fontFamily: 'Inter',
+            ),
+          ),
+          actionsPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Get.offAll(() => const Homepage());
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE5E7EB),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Don’t Save',
+                        style: TextStyle(
+                          color: const Color(0xFF1F2937),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _showSaveNameDialog();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4200AD),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -2201,45 +2256,48 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
               backgroundColor: Colors.white,
               elevation: 8,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16.r),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(24.w),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Name Project',
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: const Color(0xFF0F172A),
+                        fontFamily: 'Inter',
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8.h),
+                    Text(
                       'Give your project name so you can find it later.',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+                        fontSize: 14.sp,
+                        color: const Color(0xFF64748B),
+                        fontFamily: 'Inter',
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F3F5),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       child: Row(
                         children: [
                           Expanded(
                             child: TextField(
                               controller: nameController,
-                              style: const TextStyle(
-                                fontSize: 16,
+                              style: TextStyle(
+                                fontSize: 16.sp,
                                 color: Colors.black,
+                                fontFamily: 'Inter',
                               ),
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
@@ -2256,60 +2314,49 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                 nameController.clear();
                                 setDialogState(() {});
                               },
-                              child: const Icon(
+                              child: Icon(
                                 Icons.close,
-                                color: Colors.grey,
-                                size: 20,
+                                color: const Color(0xFFCBD5E1),
+                                size: 20.w,
                               ),
                             ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                     Row(
                       children: [
                         Expanded(
-                          child: SizedBox(
-                            height: 48,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE5E7EB),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 12.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5E7EB),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                Get.offAll(() => const Homepage());
-                              },
-                              child: const Text(
+                              alignment: Alignment.center,
+                              child: Text(
                                 'Cancel',
                                 style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
+                                  color: const Color(0xFF1F2937),
+                                  fontSize: 14.sp,
                                   fontWeight: FontWeight.w600,
+                                  fontFamily: 'Inter',
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Expanded(
-                          child: SizedBox(
-                            height: 48,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4C00C6),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: () async {
-                                final String name = nameController.text.trim().isEmpty
-                                    ? 'Project ${projectCount + 1}'
-                                    : nameController.text.trim();
+                          child: GestureDetector(
+                            onTap: () async {
+                              final String name = nameController.text.trim().isEmpty
+                                  ? 'Project ${projectCount + 1}'
+                                  : nameController.text.trim();
                                 
                                 // Show loading indicator dialog
                                 showDialog(
@@ -2370,23 +2417,31 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                 }
                                 Get.offAll(() => const Homepage());
                               },
-                              child: const Text(
-                                'Save name',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4200AD),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Save name',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Inter',
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
+              );
           },
         );
       },

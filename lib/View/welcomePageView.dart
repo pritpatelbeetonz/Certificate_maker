@@ -237,7 +237,7 @@ class WelPageviewState extends State<WelPageview> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         body: SafeArea(
           top: false,
           child: Stack(

@@ -679,7 +679,7 @@ class _FullNativeAdScreenState extends State<FullNativeAdScreen> {
     log("intro full Ad is ${AdsVariable.fullNativeIntroAdIOS}");
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
       body: getFinalNativeAd(),
     );
 

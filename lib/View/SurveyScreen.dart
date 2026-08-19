@@ -130,7 +130,8 @@ class SurveyFormState extends State<SurveyForm> {
                   ),
                 ),
 
-                SizedBox(height: 28.h),
+                SizedBox(height: 10.h),
+
                 Flexible(
                   child: Column(
                     children: [
@@ -144,7 +145,7 @@ class SurveyFormState extends State<SurveyForm> {
                             selectedIndex = 0;
                           });
                         },
-                        image: "assets/Survay/Frame 1.png",
+                        image: "assets/Survay/logo.png",
                         subtitle: "Start with a ready-made design",
                       ),
                      SizedBox(height: 10.h),
@@ -183,7 +184,7 @@ class SurveyFormState extends State<SurveyForm> {
                             selectedIndex = 3;
                           });
                         },
-                        image: "assets/Survay/Frame 4.png",
+                        image: "assets/Survay/privacyPolicy.png",
                         subtitle: "Combine templates with your ideas",
                       ),
                     ],
@@ -277,7 +278,7 @@ class SurveyOption extends StatelessWidget {
               padding: EdgeInsetsGeometry.only(right: 10.w),
               child: Image.asset(
                 isSelected
-                    ? "assets/Survay/Frame 5.png"
+                    ? "assets/Survay/contanct_support.png"
                     : "assets/Survay/Border.png",
                 height: 24.w,
                 width: 24.w,

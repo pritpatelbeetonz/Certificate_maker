@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'signature_pad_painter.dart';
 
 class SignatureControlsPanel extends StatefulWidget {
@@ -54,7 +55,10 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
     const double padH = 160.0;
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(recorder, const Rect.fromLTWH(0, 0, padW, padH));
+    final Canvas canvas = Canvas(
+      recorder,
+      const Rect.fromLTWH(0, 0, padW, padH),
+    );
 
     // Fill transparent background
     final Paint paint = Paint()..color = Colors.transparent;
@@ -93,24 +97,29 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
         _exportSignatureDrawing();
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        width: 32,
-        height: 32,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: color,
           shape: BoxShape.circle,
           border: Border.all(
-            color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFFCBD5E1),
-            width: isSelected ? 2 : 1,
+            color: isSelected ? color : Colors.transparent,
+            width: 1.5,
           ),
         ),
-        child: isSelected
-            ? Icon(
-                Icons.check,
-                color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
-                size: 16,
-              )
-            : null,
+        padding: const EdgeInsets.all(2.5),
+        child: Container(
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: color == Colors.white
+                  ? const Color(0xFFCBD5E1)
+                  : Colors.transparent,
+              width: 1,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -149,15 +158,15 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        width: 32,
-        height: 32,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F5F9),
+          color: const Color(0xFFF8FAFC),
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFCBD5E1)),
         ),
-        child: const Icon(Icons.add, size: 16, color: Color(0xFF475569)),
+        alignment: Alignment.center,
+        child: const Icon(Icons.add, size: 18, color: Color(0xFF475569)),
       ),
     );
   }
@@ -210,56 +219,54 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Edit Signature',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF0F172A),
+                        color: Color(0xFF191C1D),
                       ),
                     ),
-                     Row(
-                       mainAxisSize: MainAxisSize.min,
-                       children: [
-                         ElevatedButton.icon(
-                           onPressed: _showFullscreenSignatureDialog,
-                           icon: const Icon(Icons.gesture, size: 16),
-                           label: const Text('Draw'),
-                           style: ElevatedButton.styleFrom(
-                             backgroundColor: const Color(0xFFF3E8FF),
-                             foregroundColor: const Color(0xFF7C3AED),
-                             elevation: 0,
-                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                             shape: RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(12),
-                             ),
-                           ),
-                         ),
-                         const SizedBox(width: 6),
-                         ElevatedButton.icon(
-                           onPressed: widget.onAddNewSignature,
-                           icon: const Icon(Icons.download, size: 16),
-                           label: const Text('Import'),
-                           style: ElevatedButton.styleFrom(
-                             backgroundColor: const Color(0xFFF1F5F9),
-                             foregroundColor: const Color(0xFF475569),
-                             elevation: 0,
-                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                             shape: RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(12),
-                             ),
-                           ),
-                         ),
-                       ],
-                     ),
+                    GestureDetector(
+                      onTap: widget.onAddNewSignature,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color(0xFFece5f7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              "assets/Text edit/import.png",
+                              width: 16.w,
+                              height: 16.h,
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Import Signature',
+                              style: TextStyle(
+                                color: Color(0xFF6B21A8),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 // Live Drawing Pad Box
                 Container(
-                  height: 160,
+                  height: 140.h,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
@@ -275,7 +282,9 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                           onPanUpdate: (details) {
                             if (_signatureStrokes.isNotEmpty) {
                               setState(() {
-                                _signatureStrokes.last.add(details.localPosition);
+                                _signatureStrokes.last.add(
+                                  details.localPosition,
+                                );
                               });
                             }
                           },
@@ -293,30 +302,62 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                           ),
                         ),
                       ),
-                      // Clear Button top right
+                      // Controls top right
                       Positioned(
                         top: 8,
                         right: 8,
-                        child: TextButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              _signatureStrokes.clear();
-                            });
-                            widget.onSignatureCleared();
-                          },
-                          icon: const Icon(Icons.refresh, size: 16, color: Color(0xFF7C3AED)),
-                          label: const Text(
-                            'Clear',
-                            style: TextStyle(
-                              color: Color(0xFF7C3AED),
-                              fontWeight: FontWeight.bold,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _signatureStrokes.clear();
+                                });
+                                widget.onSignatureCleared();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(
+                                      Icons.refresh,
+                                      size: 16,
+                                      color: Color(0xFF6B21A8),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Clear',
+                                      style: TextStyle(
+                                        color: Color(0xFF6B21A8),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: _showFullscreenSignatureDialog,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEBE8F9),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.crop_free_rounded,
+                                  size: 16,
+                                  color: Color(0xFF6B21A8),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -325,14 +366,16 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                 const SizedBox(height: 16),
                 // Color Selectors Row
                 SizedBox(
-                  height: 40,
+                  height: 44,
                   child: Row(
                     children: [
                       Expanded(
                         child: ListView(
                           scrollDirection: Axis.horizontal,
                           children: [
-                            ..._presetSignatureColors.map((color) => _buildSignatureColorDot(color)),
+                            ..._presetSignatureColors.map(
+                              (color) => _buildSignatureColorDot(color),
+                            ),
                             _buildSignatureCustomColorPickerButton(),
                           ],
                         ),
@@ -340,7 +383,7 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 8.h),
               ],
             ),
           ),
@@ -349,7 +392,10 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
     );
   }
 
-  Future<ui.Image?> _exportStrokesToImage(List<List<Offset>> strokes, Color color) async {
+  Future<ui.Image?> _exportStrokesToImage(
+    List<List<Offset>> strokes,
+    Color color,
+  ) async {
     if (strokes.isEmpty) return null;
 
     double minX = double.infinity;
@@ -369,7 +415,7 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
     const double padding = 15.0;
     minX = (minX - padding).clamp(0.0, double.infinity);
     minY = (minY - padding).clamp(0.0, double.infinity);
-    
+
     double drawWidth = (maxX - minX) + padding * 2;
     double drawHeight = (maxY - minY) + padding * 2;
 
@@ -377,7 +423,10 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
     if (drawHeight <= 0) drawHeight = 160.0;
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(recorder, Rect.fromLTWH(0, 0, drawWidth, drawHeight));
+    final Canvas canvas = Canvas(
+      recorder,
+      Rect.fromLTWH(0, 0, drawWidth, drawHeight),
+    );
 
     final Paint drawPaint = Paint()
       ..color = color
@@ -431,7 +480,10 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                     onPressed: tempStrokes.isEmpty
                         ? null
                         : () async {
-                            final img = await _exportStrokesToImage(tempStrokes, tempColor);
+                            final img = await _exportStrokesToImage(
+                              tempStrokes,
+                              tempColor,
+                            );
                             if (img != null) {
                               widget.onSignatureExported(img);
                             }
@@ -442,7 +494,9 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                     child: Text(
                       'Done',
                       style: TextStyle(
-                        color: tempStrokes.isEmpty ? Colors.grey : const Color(0xFF7C3AED),
+                        color: tempStrokes.isEmpty
+                            ? Colors.grey
+                            : const Color(0xFF7C3AED),
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -490,7 +544,10 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                             top: 16,
                             right: 16,
                             child: IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
                               onPressed: () {
                                 setDialogState(() {
                                   tempStrokes.clear();
@@ -503,12 +560,17 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 24.0, left: 16, right: 16),
+                    padding: const EdgeInsets.only(
+                      bottom: 24.0,
+                      left: 16,
+                      right: 16,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ..._presetSignatureColors.map((color) {
-                          final bool isSelected = tempColor.value == color.value;
+                          final bool isSelected =
+                              tempColor.value == color.value;
                           return GestureDetector(
                             onTap: () {
                               setDialogState(() {
@@ -523,14 +585,18 @@ class _SignatureControlsPanelState extends State<SignatureControlsPanel> {
                                 color: color,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFFCBD5E1),
+                                  color: isSelected
+                                      ? const Color(0xFF7C3AED)
+                                      : const Color(0xFFCBD5E1),
                                   width: isSelected ? 2 : 1,
                                 ),
                               ),
                               child: isSelected
                                   ? Icon(
                                       Icons.check,
-                                      color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
+                                      color: color.computeLuminance() > 0.5
+                                          ? Colors.black
+                                          : Colors.white,
                                       size: 16,
                                     )
                                   : null,

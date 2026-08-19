@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LogoControlsPanel extends StatelessWidget {
   final bool hasLogo;
@@ -66,12 +67,12 @@ class LogoControlsPanel extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Edit Logo',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF0F172A),
+                        color: Color(0xFF191C1D),
                       ),
                     ),
                     if (hasLogo)
@@ -83,12 +84,26 @@ class LogoControlsPanel extends StatelessWidget {
                             color: const Color(0xFFF3E8FF),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.add, color: Color(0xFF7C3AED), size: 18),
-                              SizedBox(width: 4),
-                              Text(
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                    border: Border.all(
+                                      color: const Color(0xFF4200AD),
+                                      width: 1.w,
+                                    ),
+                                    borderRadius: BorderRadius.circular(50.r)
+                                ),
+
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Color(0xFF7C3AED),
+                                  size: 12,
+                                ),
+                              ),                              const SizedBox(width: 4),
+                              const Text(
                                 'Add Logo',
                                 style: TextStyle(
                                   color: Color(0xFF7C3AED),
@@ -101,21 +116,10 @@ class LogoControlsPanel extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 15.h),
                 if (hasLogo) ...[
                   Row(
                     children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8F9FA),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        padding: const EdgeInsets.all(4),
-                        child: const Icon(Icons.verified_user_outlined, color: Color(0xFF7C3AED)),
-                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -141,11 +145,11 @@ class LogoControlsPanel extends StatelessWidget {
                       ),
                       ElevatedButton.icon(
                         onPressed: onReplaceSelectedLogo,
-                        icon: const Icon(Icons.swap_horiz, size: 16),
+                        icon: Image.asset('assets/Logo edit/rate.png',width: 18.w,height: 18.w,),
                         label: const Text('Replace Logo'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF3E8FF),
-                          foregroundColor: const Color(0xFF7C3AED),
+                          backgroundColor: const Color(0xFF4200AD),
+                          foregroundColor: const Color(0xFFFFFFFF),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
