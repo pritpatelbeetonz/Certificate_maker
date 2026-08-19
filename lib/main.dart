@@ -1,13 +1,83 @@
+import 'dart:io';
+
 import 'package:certificate_maker/View/HomePage.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:purchases_flutter/models/store.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+
+import 'Services/nsfw_detect_service.dart';
+import 'View/splash_view.dart';
+import 'for_ads/utils/app_constants.dart';
+import 'for_ads/utils/shared_prefrence_service.dart';
+import 'for_ads/utils/store_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox('saved_projects');
+  await NsfwDetectService.init();
+  await SharedPrefService.init();
+  await MobileAds.instance.initialize();
+  await Firebase.initializeApp();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  if (Platform.isIOS || Platform.isMacOS) {
+    print("object");
+    StoreConfig(store: Store.appStore, apiKey: appleApiKey);
+  } else if (Platform.isAndroid) {
+    // Run the app passing --dart-define=AMAZON=true
+    const useAmazon = bool.fromEnvironment("amazon");
+    StoreConfig(
+      store: useAmazon ? Store.amazon : Store.playStore,
+      apiKey: useAmazon ? amazonApiKey : googleApiKey,
+    );
+  }
+  await configureSDK();
   runApp(const MyApp());
+}
+
+Future<void> configureSDK() async {
+  try {
+    await Purchases.setLogLevel(LogLevel.debug);
+
+    PurchasesConfiguration configuration;
+    if (StoreConfig.isForAmazonAppstore()) {
+      configuration = AmazonConfiguration(StoreConfig.instance.apiKey);
+    } else {
+      configuration = PurchasesConfiguration(StoreConfig.instance.apiKey);
+    }
+
+    configuration.entitlementVerificationMode =
+        EntitlementVerificationMode.informational;
+    await Purchases.configure(configuration);
+
+    // ✅ ADD THIS — register renewal listener immediately after configure
+    // SubscriptionCreditService.initUpdateListener();
+
+    await Purchases.enableAdServicesAttributionTokenCollection();
+
+    final offerings = await Purchases.getOfferings();
+    if (offerings.current != null) {
+      ('✅ Offering found: ${offerings.current!.identifier}');
+      for (final pkg in offerings.current!.availablePackages) {
+        print('👉 Package: ${pkg.identifier}');
+        print('👉 Product: ${pkg.storeProduct.identifier}');
+      }
+    } else {
+      print('⚠️ No current offering found');
+    }
+  } catch (e, st) {
+    print('❌ Error configuring SDK or fetching offerings: $e');
+    print(st);
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -16,15 +86,17 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      child: GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        ),
+        home: const SplashScreen(),
       ),
-      home: const Homepage(),
     );
   }
 }
-
-

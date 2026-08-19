@@ -104,14 +104,14 @@ class WelPageviewState extends State<WelPageview> {
   Widget bottomnavigation(int dataLength, int currentIndex) {
     final List<String> titles = [
       "Beautiful Templates",
-      "Design Every Memory",
-      "Endless Layouts",
+      "Sign with Ease",
+      "Style Your Certificate",
     ];
 
     final List<String> Subtitles = [
-      "Discover the perfect layout for every memory.",
-      "Create collages that tell your story.",
-      "Choose a layout that fits your style.",
+      "Start with a professionally designed certificate.",
+      "Draw your signature or import an existing one.",
+      "Enhance your certificate with elegant stickers. ",
     ];
 
     // Hide bottom nav on the ad page
@@ -136,7 +136,7 @@ class WelPageviewState extends State<WelPageview> {
                   titles[dotIdx],
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 28.sp,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w700,
@@ -150,7 +150,7 @@ class WelPageviewState extends State<WelPageview> {
                   Subtitles[dotIdx],
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.black.withValues(alpha: 0.8),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -170,8 +170,8 @@ class WelPageviewState extends State<WelPageview> {
                       height: 8.h,
                       decoration: BoxDecoration(
                         color: isActive
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.3),
+                            ? Color(0xFF4200AD)
+                            : Color(0x1010104D).withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                     );
@@ -211,11 +211,7 @@ class WelPageviewState extends State<WelPageview> {
                     height: 48.h,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8.r),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF6F5BFF), Color(0xFF8A7DFF)],
-                      ),
+                      color: Color(0xFF4200AD)
                     ),
                     child: Text(
                       currentIndex == dataLength - 1 ? "Get Started" : 'Next',
@@ -259,16 +255,16 @@ class WelPageviewState extends State<WelPageview> {
                     checkAndShowInAppReview('onboarding_rate_us'):null;
                   }
                 },
-                // Without ad: [Welcome1, Welcome2, Welcome3]
+                 // Without ad: [Welcome1, Welcome2, Welcome3]
                 // With ad:    [Welcome1, Welcome2, FullNativeAdScreen, Welcome3]
                 children: dataLength == 3
-                    ? [const Welcome1(), const Welcome2(), const Welcome3()]
+                    ? [const Welcome1(), const Welcome2(), const  Welcome3()]
                     : [
                         const Welcome1(),
                         const Welcome2(),
                         const FullNativeAdScreen(),
                         const Welcome3(),
-                      ],
+                       ],
               ),
 
               // Show bottom nav ONLY if not the ad page

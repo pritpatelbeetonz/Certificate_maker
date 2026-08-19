@@ -107,7 +107,7 @@ class SplashScreenState extends State<SplashScreen> {
           child: Stack(
             children: [
               Image.asset(
-                "assets/Splash Screen/image 70.png",
+                "assets/Splash Screen/Splash Screen.png",
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
@@ -117,53 +117,53 @@ class SplashScreenState extends State<SplashScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      "assets/Splash Screen/image 69.png",
-                      width: 81.w,
-                      height: 81.w,
+                      "assets/Splash Screen/ic.png",
+                      width: 100.w,
+                      height: 100.w,
                     ),
-                    SizedBox(height: 24.h,),
+                    SizedBox(height: 14.h,),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Framz",
+                          "Certificate Maker",
                           style: TextStyle(
-                            fontSize: 38.54.sp,
-                            color: Colors.white,
+                            fontSize: 30.sp,
+                            color: Colors.black,
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          "Where Memories Meet Design",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w300,
-                            fontFamily: 'Inter',
-                          ),
-                        ),
+                        // SizedBox(height: 4.h),
+                        // Text(
+                        //   "Where Memories Meet Design",
+                        //   style: TextStyle(
+                        //     color: Colors.black,
+                        //     fontSize: 14.sp,
+                        //     fontWeight: FontWeight.w300,
+                        //     fontFamily: 'Inter',
+                        //   ),
+                        // ),
                         // SizedBox(height: 5.h),
                       ],
                     )
                   ],
                 ),
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 10.h,
-                child: Center(
-                  child: Lottie.asset(
-                    "assets/Splash Screen/vtV06TU06B.json",
-                    width: 300.w, // adjust as needed
-                    height:15.h, // adjust as needed
-                    fit: BoxFit.contain,
-                    repeat: true,
-                  ),
-                ),
-              ),
+              // Positioned(
+              //   left: 0,
+              //   right: 0,
+              //   bottom: 10.h,
+              //   child: Center(
+              //     child: Lottie.asset(
+              //       "assets/Splash Screen/vtV06TU06B.json",
+              //       width: 300.w, // adjust as needed
+              //       height:15.h, // adjust as needed
+              //       fit: BoxFit.contain,
+              //       repeat: true,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

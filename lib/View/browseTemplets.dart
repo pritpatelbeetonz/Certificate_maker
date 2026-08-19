@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'editCertificatePage.dart';
 
@@ -15,6 +16,15 @@ class _BrowsetempletsState extends State<Browsetemplets> {
   List<dynamic> _filteredTemplates = [];
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
+  String _selectedCategory = 'All Template';
+
+  final List<Map<String, dynamic>> _categories = [
+    {'name': 'All Template', 'icon': Icons.grid_view_outlined},
+    {'name': 'Achievement', 'icon': Icons.emoji_events_outlined},
+    {'name': 'Participation', 'icon': Icons.person_outline},
+    {'name': 'Appreciation', 'icon': Icons.favorite_border_outlined},
+    {'name': 'Completion', 'icon': Icons.verified_user_outlined},
+  ];
 
   @override
   void initState() {
@@ -36,9 +46,9 @@ class _BrowsetempletsState extends State<Browsetemplets> {
       final data = json.decode(response);
       setState(() {
         _allTemplates = data['layouts'] ?? [];
-        _filteredTemplates = List.from(_allTemplates);
         _isLoading = false;
       });
+      _filterTemplates();
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -47,19 +57,30 @@ class _BrowsetempletsState extends State<Browsetemplets> {
     }
   }
 
-  void _onSearchChanged() {
+  void _filterTemplates() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      if (query.isEmpty) {
-        _filteredTemplates = List.from(_allTemplates);
-      } else {
-        _filteredTemplates = _allTemplates.where((temp) {
-          final String name = temp['name'] ?? '';
-          final String category = temp['category'] ?? '';
-          return name.toLowerCase().contains(query) || category.toLowerCase().contains(query);
-        }).toList();
-      }
+      _filteredTemplates = _allTemplates.where((temp) {
+        final String name = temp['name'] ?? '';
+        final String category = temp['category'] ?? '';
+
+        final matchesSearch = name.toLowerCase().contains(query) || category.toLowerCase().contains(query);
+        final matchesCategory = _selectedCategory == 'All Template' || category.toLowerCase() == _selectedCategory.toLowerCase();
+
+        return matchesSearch && matchesCategory;
+      }).toList();
     });
+  }
+
+  void _onCategorySelected(String category) {
+    setState(() {
+      _selectedCategory = category;
+    });
+    _filterTemplates();
+  }
+
+  void _onSearchChanged() {
+    _filterTemplates();
   }
 
   @override
@@ -81,25 +102,28 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                   GestureDetector(
                     onTap: () => Get.back(),
                     child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF1F3F5),
+                      width: 35.w,
+                      height: 35.w,
+                      alignment: Alignment.center,
+                      //padding: const EdgeInsets.all(10),
+                      decoration:  BoxDecoration(
+                        color: Color(0xFF000000).withValues(alpha: 0.06),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.arrow_back,
                         color: Color(0xFF1E293B),
-                        size: 22,
+                        size: 18,
                       ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    'Recent Certificate',
+                    'Browse Templates',
                     style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       color: const Color(0xFF0F172A),
-                      fontSize: 22,
+                      fontSize: 16.sp,
                     ),
                   ),
                 ],
@@ -123,7 +147,7 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Search languages...', // matching search language hint in screenshot
+                    hintText: 'Search templates...', // matching search templates hint
                     hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 16),
                     prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B), size: 24),
                     border: InputBorder.none,
@@ -131,6 +155,61 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                   ),
                 ),
               ),
+               const SizedBox(height: 16),
+
+              // Categories Selector
+              SizedBox(
+                height: 40.h,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: _categories.length,
+                  itemBuilder: (context, index) {
+                    final cat = _categories[index];
+                    final String catName = cat['name']!;
+                    final IconData catIcon = cat['icon']!;
+                    final bool isSelected = _selectedCategory == catName;
+
+                    return Padding(
+                      padding: EdgeInsets.only(right: 8.w),
+                      child: GestureDetector(
+                        onTap: () => _onCategorySelected(catName),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFFF1EDFF) : Colors.white,
+                            borderRadius: BorderRadius.circular(20.r),
+                            border: Border.all(
+                              color: isSelected ? const Color(0xFF6F5BFF) : const Color(0xFFE2E8F0),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                catIcon,
+                                size: 18.w,
+                                color: isSelected ? const Color(0xFF6F5BFF) : const Color(0xFF64748B),
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                catName,
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected ? const Color(0xFF6F5BFF) : const Color(0xFF0F172A),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
               const SizedBox(height: 20),
               
               // Templates listing grid
@@ -150,7 +229,7 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                               crossAxisCount: 2,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
-                              childAspectRatio: 0.76,
+                              childAspectRatio: 0.97,
                             ),
                             itemCount: _filteredTemplates.length,
                             itemBuilder: (context, index) {
@@ -168,94 +247,95 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(16.r),
                                     boxShadow: [
                                       BoxShadow(
-                                      // ignore: deprecated_member_use
-                                      color: Colors.black.withOpacity(0.02),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    // Image Thumbnail
-                                    Expanded(
-                                      child: ClipRRect(
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(16),
-                                          topRight: Radius.circular(16),
-                                        ),
-                                        child: Image.asset(
-                                          thumbnail,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Container(
-                                              color: const Color(0xFFE2E8F0),
-                                              child: const Icon(
-                                                Icons.image_not_supported_outlined,
-                                                color: Color(0xFF94A3B8),
-                                              ),
-                                            );
-                                          },
-                                        ),
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
                                       ),
-                                    ),
-                                    
-                                    // Info footer
-                                    Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Text(
-                                                  displayName,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
-                                                    color: Color(0xFF1E293B),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Image Thumbnail
+                                      Padding(
+                                        padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 0),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(10.r),
+                                          child: AspectRatio(
+                                            aspectRatio: 1.4,
+                                            child: Image.asset(
+                                              thumbnail,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (context, error, stackTrace) {
+                                                return Container(
+                                                  color: const Color(0xFFE2E8F0),
+                                                  child: const Icon(
+                                                    Icons.image_not_supported_outlined,
+                                                    color: Color(0xFF94A3B8),
                                                   ),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  displaySubtitle,
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Color(0xFF64748B),
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ],
+                                                );
+                                              },
                                             ),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.more_vert,
-                                              color: Color(0xFF1E293B),
-                                              size: 20,
-                                            ),
-                                            onPressed: () {
-                                              // Actions for templates if required in future
-                                            },
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                          )
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ));
+
+                                      // Info footer
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10.w,
+                                          vertical: 8.h,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    displayName,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 14.sp,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: const Color(0xFF0F172A),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 2.h),
+                                                  Text(
+                                                    displaySubtitle,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 11.sp,
+                                                      color: Colors.grey[500],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+                                            GestureDetector(
+                                              onTap: () {
+                                                // Actions for templates
+                                              },
+                                              child: Icon(
+                                                Icons.more_vert,
+                                                size: 20.w,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ));
                             },
                           ),
               ),

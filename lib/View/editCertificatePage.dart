@@ -25,11 +25,17 @@ import 'widgets/text_controls_panel.dart';
 import 'widgets/logo_controls_panel.dart';
 import 'widgets/signature_controls_panel.dart';
 import 'widgets/stickers_controls_panel.dart';
+import '../rendering_engine/export/scene_export_service.dart';
 
 class EditCertificatePage extends StatefulWidget {
   final String layoutPath;
+  final String? savedProjectName;
 
-  const EditCertificatePage({super.key, required this.layoutPath});
+  const EditCertificatePage({
+    super.key,
+    required this.layoutPath,
+    this.savedProjectName,
+  });
 
   @override
   State<EditCertificatePage> createState() => _EditCertificatePageState();
@@ -913,9 +919,23 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   Future<void> _loadLayoutAndAssets() async {
     try {
-      final String jsonString = await rootBundle.loadString(widget.layoutPath);
-      final Map<String, dynamic> jsonMap = json.decode(jsonString);
-      final doc = SceneDocument.fromJson(jsonMap);
+      SceneDocument doc;
+      if (widget.savedProjectName != null) {
+        final box = Hive.box('saved_projects');
+        final projectData = box.get(widget.savedProjectName) as Map<dynamic, dynamic>?;
+        if (projectData != null && projectData['document'] != null) {
+          final docJson = Map<String, dynamic>.from(projectData['document'] as Map);
+          doc = SceneDocument.fromJson(docJson);
+        } else {
+          final String jsonString = await rootBundle.loadString(widget.layoutPath);
+          final Map<String, dynamic> jsonMap = json.decode(jsonString);
+          doc = SceneDocument.fromJson(jsonMap);
+        }
+      } else {
+        final String jsonString = await rootBundle.loadString(widget.layoutPath);
+        final Map<String, dynamic> jsonMap = json.decode(jsonString);
+        doc = SceneDocument.fromJson(jsonMap);
+      }
 
       // Preload images and fonts from assets
       for (var entry in doc.assets.entries) {
@@ -2168,7 +2188,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   void _showSaveNameDialog() {
     final int projectCount = Hive.box('saved_projects').length;
     final TextEditingController nameController = TextEditingController(
-      text: 'Project ${projectCount + 1}',
+      text: widget.savedProjectName ?? 'Project ${projectCount + 1}',
     );
 
     showDialog(
@@ -2302,13 +2322,44 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                   ),
                                 );
 
+                                String? renderedPath;
+                                try {
+                                  if (_document != null) {
+                                    final double aspectDouble = _document!.canvas.virtualWidth / _document!.canvas.virtualHeight;
+                                    renderedPath = await SceneExportService().renderSceneToFile(
+                                      doc: _document!,
+                                      assetImageLoader: (src) async {
+                                        final byteData = await rootBundle.load(src);
+                                        final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
+                                        final frame = await codec.getNextFrame();
+                                        return frame.image;
+                                      },
+                                      fileImageLoader: (path) async {
+                                        final bytes = await File(path).readAsBytes();
+                                        final codec = await ui.instantiateImageCodec(bytes);
+                                        final frame = await codec.getNextFrame();
+                                        return frame.image;
+                                      },
+                                      aspectDouble: aspectDouble,
+                                      editorImagePool: _imagePool,
+                                      watermarkEnabled: false,
+                                    );
+                                  }
+                                } catch (e) {
+                                  debugPrint("Failed to render preview thumbnail: $e");
+                                }
+
                                 final box = Hive.box('saved_projects');
                                 final projectData = {
                                   'name': name,
                                   'document': _document?.toJson(),
                                   'layoutPath': widget.layoutPath,
+                                  'thumbnailPath': renderedPath,
                                   'updatedAt': DateTime.now().toIso8601String(),
                                 };
+                                if (widget.savedProjectName != null && widget.savedProjectName != name) {
+                                  await box.delete(widget.savedProjectName);
+                                }
                                 await box.put(name, projectData);
                                 
                                 if (context.mounted) {

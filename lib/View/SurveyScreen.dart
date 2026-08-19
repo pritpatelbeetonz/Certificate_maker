@@ -46,7 +46,7 @@ class SurveyFormState extends State<SurveyForm> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: Color(0xFFf8f9fa),
         bottomNavigationBar: SafeArea(
           child: (AdsVariable.isPurchase == false)
               ? isInterNetConnected
@@ -72,7 +72,7 @@ class SurveyFormState extends State<SurveyForm> {
         ),
         body: SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 0.h),
+            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 0.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -84,12 +84,12 @@ class SurveyFormState extends State<SurveyForm> {
                     children: [
                       //SizedBox(height: 10.h,),
                       Text(
-                        "Which feature excites you most ?",
+                        "How do you usually create\n certificates ?",
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
                           fontFamily: 'Inter',
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                         Spacer(),
@@ -111,14 +111,7 @@ class SurveyFormState extends State<SurveyForm> {
                               height: 36.h,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xFF6F5BFF),
-                                    Color(0xFF8A7DFF),
-                                  ],
-                                ),
+                               color: Color(0xFF4200AD),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -143,7 +136,7 @@ class SurveyFormState extends State<SurveyForm> {
                     children: [
                       /// OPTIONS
                       SurveyOption(
-                        title: "Collage Layouts",
+                        title: "Use a Template",
                         index: 0,
                         selectedIndex: selectedIndex,
                         onTap: () {
@@ -151,12 +144,12 @@ class SurveyFormState extends State<SurveyForm> {
                             selectedIndex = 0;
                           });
                         },
-                        image: "assets/Surway/collage_layouts.png",
-                        subtitle: "Creative photo grids",
+                        image: "assets/Survay/Frame 1.png",
+                        subtitle: "Start with a ready-made design",
                       ),
                      SizedBox(height: 10.h),
                       SurveyOption(
-                        title: "Premium Templates",
+                        title: "Edit Manually",
                         index: 1,
                         selectedIndex: selectedIndex,
                         onTap: () {
@@ -164,12 +157,12 @@ class SurveyFormState extends State<SurveyForm> {
                             selectedIndex = 1;
                           });
                         },
-                        image: "assets/Surway/premium_templets.png",
-                        subtitle: "Design in one tap",
+                        image: "assets/Survay/Frame 2.png",
+                        subtitle: "Customize every detail yourself",
                       ),
                       SizedBox(height: 10.h),
                       SurveyOption(
-                        title: "Photo Editor",
+                        title: "Personalize the Design",
                         index: 2,
                         selectedIndex: selectedIndex,
                         onTap: () {
@@ -177,12 +170,12 @@ class SurveyFormState extends State<SurveyForm> {
                             selectedIndex = 2;
                           });
                         },
-                        image: "assets/Surway/photo_editor.png",
-                        subtitle: "Edit with ease",
+                        image: "assets/Survay/Frame 3.png",
+                        subtitle: "Add logos, signatures and stickers",
                       ),
                      SizedBox(height: 10.h),
                       SurveyOption(
-                        title: "Custom Backgrounds",
+                        title: "Mix & Match",
                         index: 3,
                         selectedIndex: selectedIndex,
                         onTap: () {
@@ -190,8 +183,8 @@ class SurveyFormState extends State<SurveyForm> {
                             selectedIndex = 3;
                           });
                         },
-                        image: "assets/Surway/creative_background.png",
-                        subtitle: "Personalize every design",
+                        image: "assets/Survay/Frame 4.png",
+                        subtitle: "Combine templates with your ideas",
                       ),
                     ],
                   ),
@@ -233,7 +226,7 @@ class SurveyOption extends StatelessWidget {
         //height: 85.h,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
-          color: isSelected ? Color(0xFF111111):Color(0xFF111111),
+          color: isSelected ? Colors.white:Colors.white,
          // border: isSelected ? Border.all(color: Color(0xFFffc31f)):Border.all(color: Colors.transparent),
           borderRadius: BorderRadius.circular(20.r),
         ),
@@ -246,7 +239,7 @@ class SurveyOption extends StatelessWidget {
               padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(9999.r),
-                  color: Color(0xFF7B61FF).withValues(alpha: 0.1)
+                  color: Color(0xFFEFF6FF),
                 ),
                 child: Image.asset(image,width: 24.w,height: 24.w,)),
 
@@ -260,20 +253,20 @@ class SurveyOption extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 16.sp,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Inter',
-                      color: isSelected ? Colors.white : Colors.white,
+                      color: isSelected ? Colors.black : Colors.black,
                     ),
                   ),
                   SizedBox(height: 4.h,),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
                       fontFamily: 'Inter',
-                      color: isSelected ? Colors.white.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.3),
+                      color: isSelected ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.3),
                     ),
                   )
                 ],
@@ -284,8 +277,8 @@ class SurveyOption extends StatelessWidget {
               padding: EdgeInsetsGeometry.only(right: 10.w),
               child: Image.asset(
                 isSelected
-                    ? "assets/Surway/checkmark.png"
-                    : "assets/Surway/notSelected.png",
+                    ? "assets/Survay/Frame 5.png"
+                    : "assets/Survay/Border.png",
                 height: 24.w,
                 width: 24.w,
               ),
