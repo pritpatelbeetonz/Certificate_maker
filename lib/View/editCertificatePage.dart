@@ -27,6 +27,7 @@ import 'widgets/logo_controls_panel.dart';
 import 'widgets/signature_controls_panel.dart';
 import 'widgets/stickers_controls_panel.dart';
 import '../rendering_engine/export/scene_export_service.dart';
+import '../Services/nsfw_detect_service.dart';
 
 class EditCertificatePage extends StatefulWidget {
   final String layoutPath;
@@ -2072,6 +2073,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final XFile? file = await picker.pickImage(source: ImageSource.gallery);
       if (file == null) return;
 
+      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(imagePathOrUrl: file.path);
+      if (isNsfw) return;
+
       final Uint8List bytes = await File(file.path).readAsBytes();
       final ui.Codec codec = await ui.instantiateImageCodec(bytes);
       final ui.FrameInfo frame = await codec.getNextFrame();
@@ -2139,6 +2143,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final XFile? file = await picker.pickImage(source: ImageSource.gallery);
       if (file == null) return;
 
+      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(imagePathOrUrl: file.path);
+      if (isNsfw) return;
+
       final Uint8List bytes = await File(file.path).readAsBytes();
       final ui.Codec codec = await ui.instantiateImageCodec(bytes);
       final ui.FrameInfo frame = await codec.getNextFrame();
@@ -2186,6 +2193,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final ImagePicker picker = ImagePicker();
       final XFile? file = await picker.pickImage(source: ImageSource.gallery);
       if (file == null) return;
+
+      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(imagePathOrUrl: file.path);
+      if (isNsfw) return;
 
       final Uint8List bytes = await File(file.path).readAsBytes();
       final ui.Codec codec = await ui.instantiateImageCodec(bytes);

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'editCertificatePage.dart';
+import 'PremiumCreditView.dart';
+import '../for_ads/ads/ads_variable.dart';
 
 class Browsetemplets extends StatefulWidget {
   final String? initialCategory;
@@ -218,7 +220,11 @@ class _BrowsetempletsState extends State<Browsetemplets> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Get.back(),
+                    onTap: () {
+                      AdsVariable.onShowAds(context, onComplete: () {
+                        Get.back();
+                      });
+                    },
                     child: Container(
                       width: 35.w,
                       height: 35.w,
@@ -237,7 +243,7 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    'Browse Templates',
+                    'All Certificates',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF0F172A),
@@ -358,9 +364,18 @@ class _BrowsetempletsState extends State<Browsetemplets> {
 
                               return GestureDetector(
                                 onTap: () {
-                                  Get.to(() => EditCertificatePage(
-                                        layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
-                                      ));
+                                  if (item['premium'] == true && AdsVariable.isPurchase != true) {
+                                    Get.to(() => PremiumCreditView(
+                                          onboarding: false,
+                                          onDone: () => Get.back(),
+                                        ));
+                                  } else {
+                                    AdsVariable.onShowAds(context, onComplete: () {
+                                      Get.to(() => EditCertificatePage(
+                                            layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
+                                          ));
+                                    });
+                                  }
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
@@ -380,24 +395,45 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                                       // Image Thumbnail
                                       Padding(
                                         padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 0),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(10.r),
-                                          child: AspectRatio(
-                                            aspectRatio: 1.4,
-                                            child: Image.asset(
-                                              thumbnail,
-                                              fit: BoxFit.contain,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return Container(
-                                                  color: const Color(0xFFE2E8F0),
-                                                  child: const Icon(
-                                                    Icons.image_not_supported_outlined,
-                                                    color: Color(0xFF94A3B8),
-                                                  ),
-                                                );
-                                              },
+                                        child: Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(10.r),
+                                              child: AspectRatio(
+                                                aspectRatio: 1.4,
+                                                child: Image.asset(
+                                                  thumbnail,
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Container(
+                                                      color: const Color(0xFFE2E8F0),
+                                                      child: const Icon(
+                                                        Icons.image_not_supported_outlined,
+                                                        color: Color(0xFF94A3B8),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                            if (item['premium'] == true && AdsVariable.isPurchase != true)
+                                              Positioned(
+                                                top: 6.h,
+                                                right: 6.w,
+                                                child: Container(
+                                                  padding: EdgeInsets.all(4.r),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black.withOpacity(0.5),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: Image.asset(
+                                                    'assets/Home Screen/premiumCrown.png',
+                                                    width: 14.r,
+                                                    height: 14.r,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
                                         ),
                                       ),
 

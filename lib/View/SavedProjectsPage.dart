@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'editCertificatePage.dart';
+import '../for_ads/ads/ads_variable.dart';
 
 class SavedProjectsPage extends StatefulWidget {
   const SavedProjectsPage({super.key});
@@ -185,7 +186,11 @@ class _SavedProjectsPageState extends State<SavedProjectsPage> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Get.back(),
+                    onTap: () {
+                      AdsVariable.onShowAds(context, onComplete: () {
+                        Get.back();
+                      });
+                    },
                     child: Container(
                       width: 35.w,
                       height: 35.w,

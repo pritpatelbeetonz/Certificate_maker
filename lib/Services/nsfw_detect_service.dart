@@ -470,26 +470,51 @@ void showLoadingDialog(BuildContext context) {
         canPop: false,
         child: Center(
           child: Container(
-            padding: const EdgeInsets.all(24),
+            width: 220,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
             decoration: BoxDecoration(
-              color: const Color(0xFF171717),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF945EFF)),
+                const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0052D4)),
+                  ),
                 ),
-                SizedBox(height: 16),
-                Text(
-                  'Analyzing image...',
+                const SizedBox(height: 20),
+                const Text(
+                  'Analyzing Image',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
+                    color: Color(0xFF0F172A),
+                    fontSize: 15,
+                    decoration: TextDecoration.none,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Inter',
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Verifying content safety...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
                     decoration: TextDecoration.none,
                     fontWeight: FontWeight.normal,
+                    fontFamily: 'Inter',
                   ),
                 ),
               ],

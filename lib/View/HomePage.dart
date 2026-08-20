@@ -4,6 +4,8 @@ import 'package:certificate_maker/View/SavedProjectsPage.dart';
 import 'package:certificate_maker/View/SettingsPage.dart';
 import 'package:certificate_maker/View/browseTemplets.dart';
 import 'package:certificate_maker/View/editCertificatePage.dart';
+import 'package:certificate_maker/View/PremiumCreditView.dart';
+import 'package:certificate_maker/for_ads/ads/ads_variable.dart';
 import 'package:certificate_maker/for_ads/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -126,9 +128,18 @@ class _HomepageState extends State<Homepage> {
                           padding: EdgeInsets.only(right: 12.w),
                           child: GestureDetector(
                             onTap: () {
-                              Get.to(() => EditCertificatePage(
-                                    layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
-                                  ));
+                              if (item['premium'] == true && AdsVariable.isPurchase != true) {
+                                Get.to(() => PremiumCreditView(
+                                      onboarding: false,
+                                      onDone: () => Get.back(),
+                                    ));
+                              } else {
+                                AdsVariable.onShowAds(context, onComplete: () {
+                                  Get.to(() => EditCertificatePage(
+                                        layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
+                                      ));
+                                });
+                              }
                             },
                             child: Container(
                               width: 175.w,
@@ -136,21 +147,43 @@ class _HomepageState extends State<Homepage> {
                                 borderRadius: BorderRadius.circular(12.r),
                                 border: Border.all(color: const Color( 0xFFdfe0e1),width: 4),
                               ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12.r),
-                                child: Image.asset(
-                                  thumbnail,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: const Color(0xFFE2E8F0),
-                                      child: const Icon(
-                                        Icons.image_not_supported_outlined,
-                                        color: Color(0xFF94A3B8),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    child: Image.asset(
+                                      thumbnail,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: const Color(0xFFE2E8F0),
+                                          child: const Icon(
+                                            Icons.image_not_supported_outlined,
+                                            color: Color(0xFF94A3B8),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  if (item['premium'] == true && AdsVariable.isPurchase != true)
+                                    Positioned(
+                                      top: 6.h,
+                                      right: 6.w,
+                                      child: Container(
+                                        padding: EdgeInsets.all(4.r),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.5),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Image.asset(
+                                          'assets/Home Screen/premiumCrown.png',
+                                          width: 18.r,
+                                          height: 18.r,
+                                        ),
                                       ),
-                                    );
-                                  },
-                                ),
+                                    ),
+                                ],
                               ),
                             ),
                           ),

@@ -13,6 +13,7 @@ import 'package:hive/hive.dart';
 import 'HomePage.dart';
 import 'fullScreenViewerPage.dart';
 import 'package:open_filex/open_filex.dart';
+import '../for_ads/ads/ads_variable.dart';
 
 class PreviewCertificatePage extends StatefulWidget {
   final SceneDocument document;
@@ -648,7 +649,11 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-              onPressed: _onBackPress,
+              onPressed: () {
+                AdsVariable.onShowAds(context, onComplete: () {
+                  _onBackPress();
+                });
+              },
             ),
             title: const Text(
               'Preview Certificate',
