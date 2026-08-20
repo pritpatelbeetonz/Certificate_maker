@@ -1286,6 +1286,8 @@ class TextNode implements SceneNode {
   final double wordSpacing;
   final double? lineHeight;
   final ShadowStyle shadow;
+  final double textBend;
+  final double textBendRadius;
 
   TextNode({
     required this.id,
@@ -1309,6 +1311,8 @@ class TextNode implements SceneNode {
     this.wordSpacing = 0.0,
     this.lineHeight,
     this.shadow = const ShadowStyle(),
+    this.textBend = 0.0,
+    this.textBendRadius = 300.0,
   });
 
   factory TextNode.fromJson(Map<String, dynamic> json) {
@@ -1348,6 +1352,8 @@ class TextNode implements SceneNode {
       shadow: content['shadow'] != null
           ? ShadowStyle.fromJson(Map<String, dynamic>.from(content['shadow'] as Map))
           : const ShadowStyle(),
+      textBend: (content['textBend'] as num? ?? 0.0).toDouble(),
+      textBendRadius: (content['textBendRadius'] as num? ?? 300.0).toDouble(),
     );
   }
 
@@ -1375,6 +1381,8 @@ class TextNode implements SceneNode {
     'wordSpacing': wordSpacing,
     if (lineHeight != null) 'lineHeight': lineHeight,
     'shadow': shadow.toJson(),
+    'textBend': textBend,
+    'textBendRadius': textBendRadius,
   };
 
   @override
@@ -1403,6 +1411,8 @@ class TextNode implements SceneNode {
     double? lineHeight,
     ShadowStyle? shadow,
     bool clearLineHeight = false,
+    double? textBend,
+    double? textBendRadius,
   }) {
     return TextNode(
       id: id ?? this.id,
@@ -1426,6 +1436,8 @@ class TextNode implements SceneNode {
       wordSpacing: wordSpacing ?? this.wordSpacing,
       lineHeight: clearLineHeight ? null : (lineHeight ?? this.lineHeight),
       shadow: shadow ?? this.shadow,
+      textBend: textBend ?? this.textBend,
+      textBendRadius: textBendRadius ?? this.textBendRadius,
     );
   }
 }

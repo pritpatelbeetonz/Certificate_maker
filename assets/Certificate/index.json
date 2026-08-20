@@ -14,7 +14,7 @@
       "category": "Achievement",
       "thumbnail": "assets/Certificate/Achievement/Colorful Achievement/Colorful Achievement.png",
 
-      "premium": true,
+      "premium": false,
       "layoutPath": "assets/Certificate/Achievement/Colorful Achievement/Colorful_Archivement.json"
     },
 
@@ -31,7 +31,7 @@
       "name": "Elegant Completion",
       "category": "Appreciation",
       "thumbnail": "assets/Certificate/Appreciation/Elegant Appreciation/Elegant Appreciation.png",
-      "premium": true,
+      "premium": false,
       "layoutPath": "assets/Certificate/Appreciation/Elegant Appreciation/elegant_appreciation.json"
     },
     {

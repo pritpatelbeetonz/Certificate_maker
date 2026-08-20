@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/scene_node.dart';
 import 'canvas_renderer_registry.dart';
@@ -43,25 +44,6 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
     final parsedTextAlign = _parseTextAlign(node.align);
     final parsedTextDecoration = _parseTextDecoration(node.decoration);
 
-    // 3. Measure the text at the base font size to find its original virtual width
-    final baseTextPainter = TextPainter(
-      text: TextSpan(
-        text: node.text,
-        style: TextStyle(
-          fontFamily: node.fontFamily == 'System' ? null : node.fontFamily,
-          fontSize: node.fontSize,
-          fontWeight: parsedFontWeight,
-          fontStyle: parsedFontStyle,
-          decoration: parsedTextDecoration,
-          letterSpacing: node.letterSpacing,
-          wordSpacing: node.wordSpacing,
-          height: node.lineHeight,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final double baseVirtualWidth = baseTextPainter.width > 0 ? baseTextPainter.width : 1.0;
 
     // 4. Set scale to 1.0 to keep font size consistent and prevent text from stretching/shrinking when typed
     final double scale = 1.0;
@@ -70,17 +52,118 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
     final double screenScale = context.viewportTransformer.scaleX;
 
 
-    debugPrint('================ TEXT RENDER =================');
-    debugPrint('Text: ${node.text}');
-    debugPrint('Font: ${node.fontFamily}');
-    debugPrint('Font Size: ${node.fontSize}');
-    debugPrint('Bounds Width: ${node.bounds.width}');
-    debugPrint('Base Width: $baseVirtualWidth');
-    debugPrint('Content Scale: $scale');
-    debugPrint('Viewport Scale: $screenScale');
-    debugPrint('Effective Font Size: ${node.fontSize * scale}');
-    debugPrint('Rendered Font Size: ${node.fontSize * scale * screenScale}');
-    debugPrint('==============================================');
+    if (node.textBend != 0.0) {
+      debugPrint('>>> Bending Text: "${node.text}" | Bend: ${node.textBend}% | Radius: ${node.textBendRadius} | Characters: ${node.text.length} <<<');
+      final List<String> characters = node.text.split('');
+      if (characters.isNotEmpty) {
+        final List<double> charWidths = [];
+        for (final char in characters) {
+          final charPainter = TextPainter(
+            text: TextSpan(
+              text: char,
+              style: TextStyle(
+                fontFamily: node.fontFamily == 'System' ? null : node.fontFamily,
+                fontSize: node.fontSize * scale * screenScale,
+                fontWeight: parsedFontWeight,
+                fontStyle: parsedFontStyle,
+                decoration: parsedTextDecoration,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          charWidths.add(charPainter.width);
+        }
+
+        final double letterSpacingVal = node.letterSpacing * scale * screenScale;
+        final double wordSpacingVal = node.wordSpacing * scale * screenScale;
+
+        double totalCharWidth = 0.0;
+        for (int i = 0; i < charWidths.length; i++) {
+          totalCharWidth += charWidths[i];
+          if (i < charWidths.length - 1) {
+            final isSpace = characters[i] == ' ';
+            totalCharWidth += isSpace ? wordSpacingVal : letterSpacingVal;
+          }
+        }
+        final double totalTextWidth = totalCharWidth;
+
+        double alignmentOffset = 0.0;
+        if (parsedTextAlign == TextAlign.center) {
+          alignmentOffset = (size.width - totalTextWidth) / 2.0;
+        } else if (parsedTextAlign == TextAlign.right) {
+          alignmentOffset = size.width - totalTextWidth;
+        }
+
+        final double bendStrength = node.textBend.abs() / 100.0;
+        final double radius = node.textBendRadius * scale * screenScale;
+        final double effectiveRadius = radius / bendStrength;
+
+        double currentX = 0.0;
+        for (int i = 0; i < characters.length; i++) {
+          final String char = characters[i];
+          final double charW = charWidths[i];
+
+          final double charCenterFromStart = currentX + charW / 2.0;
+          final double xOffsetFromCenter = charCenterFromStart - totalTextWidth / 2.0;
+
+          // Compute angle theta based on radius and bend strength multiplier
+          final double theta = (xOffsetFromCenter / radius) * (node.textBend / 100.0);
+
+          double dx = effectiveRadius * math.sin(theta);
+          double dy = 0.0;
+          double rotation = theta;
+
+          if (node.textBend > 0.0) {
+            // Rainbow curve (center is highest, sides bend downwards)
+            dy = effectiveRadius * (1.0 - math.cos(theta));
+          } else {
+            // Smile curve (center is lowest, sides bend upwards)
+            dy = -effectiveRadius * (1.0 - math.cos(theta));
+          }
+
+          final double finalX = alignmentOffset + totalTextWidth / 2.0 + dx;
+          final double finalY = (size.height / 2.0) + dy;
+
+          canvas.save();
+          canvas.translate(finalX, finalY);
+          canvas.rotate(rotation);
+
+          final charPainter = TextPainter(
+            text: TextSpan(
+              text: char,
+              style: TextStyle(
+                fontFamily: node.fontFamily == 'System' ? null : node.fontFamily,
+                fontSize: node.fontSize * scale * screenScale,
+                color: parsedColor,
+                fontWeight: parsedFontWeight,
+                fontStyle: parsedFontStyle,
+                decoration: parsedTextDecoration,
+                shadows: node.shadow.enabled
+                    ? [
+                        Shadow(
+                          color: PaintFactory.parseHexColor(node.shadow.color)
+                              .withOpacity(node.shadow.opacity),
+                          offset: node.shadow.offset * scale * screenScale,
+                          blurRadius: node.shadow.blurRadius * scale * screenScale,
+                        )
+                      ]
+                    : null,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          )..layout();
+
+          charPainter.paint(canvas, Offset(-charW / 2.0, -charPainter.height / 2.0));
+          canvas.restore();
+
+          final isSpace = char == ' ';
+          currentX += charW + (isSpace ? wordSpacingVal : letterSpacingVal);
+        }
+
+        canvas.restore();
+        return;
+      }
+    }
 
     // 6. Paint text directly using TextPainter with the scaled font size
     final textPainter = TextPainter(

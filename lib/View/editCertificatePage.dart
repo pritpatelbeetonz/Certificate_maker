@@ -897,7 +897,17 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       textDirection: TextDirection.ltr,
     );
     textPainter.layout(maxWidth: virtualWidth);
-    return textPainter.height > 0 ? textPainter.height : 10.0;
+    final double textPainterHeight = textPainter.height > 0 ? textPainter.height : 10.0;
+    if (node.textBend != 0.0) {
+      final double W = virtualWidth;
+      final double bendStrength = node.textBend.abs() / 100.0;
+      final double radius = node.textBendRadius;
+      final double effectiveRadius = radius / bendStrength;
+      final double thetaMax = (W / 2.0 / radius) * bendStrength;
+      final double dy = effectiveRadius * (1.0 - cos(thetaMax));
+      return textPainterHeight + dy;
+    }
+    return textPainterHeight;
   }
 
   int _calculateTextNodeLineCount(TextNode node, double virtualWidth) {
@@ -1229,6 +1239,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     double? wordSpacing,
     double? lineHeight,
     bool clearLineHeight = false,
+    double? textBend,
+    double? textBendRadius,
     bool? saveHistory,
   }) {
     if (_document == null || _selectedNodeId == null) return;
@@ -1261,6 +1273,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         wordSpacing: wordSpacing ?? node.wordSpacing,
         lineHeight: lineHeight ?? node.lineHeight,
         clearLineHeight: clearLineHeight,
+        textBend: textBend ?? node.textBend,
+        textBendRadius: textBendRadius ?? node.textBendRadius,
       );
 
       final double newHeight = _calculateTextNodeHeight(tempNode, newWidth);
