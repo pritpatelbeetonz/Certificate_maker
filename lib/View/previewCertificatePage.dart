@@ -8,18 +8,22 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../rendering_engine/models/scene_node.dart';
 import '../rendering_engine/export/scene_export_service.dart';
+import 'package:hive/hive.dart';
+import 'HomePage.dart';
 import 'package:open_filex/open_filex.dart';
 
 class PreviewCertificatePage extends StatefulWidget {
   final SceneDocument document;
   final Map<String, ui.Image> imagePool;
   final String layoutPath;
+  final String? savedProjectName;
 
   const PreviewCertificatePage({
     super.key,
     required this.document,
     required this.imagePool,
     required this.layoutPath,
+    this.savedProjectName,
   });
 
   @override
@@ -29,6 +33,7 @@ class PreviewCertificatePage extends StatefulWidget {
 class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
   bool _isRendering = true;
   String? _renderedImagePath;
+  bool _hasExported = false;
 
   @override
   void initState() {
@@ -280,6 +285,7 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
 
       final file = File(finalPath);
       await file.writeAsBytes(await pdf.save());
+      _hasExported = true;
 
       if (mounted) {
         Navigator.of(context).pop(); // pop loader
@@ -336,17 +342,308 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
     }
   }
 
+  Future<void> _saveProject(String name) async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4C00C6)),
+        ),
+      ),
+    );
+
+    try {
+      final box = Hive.box('saved_projects');
+      final projectData = {
+        'name': name,
+        'document': widget.document.toJson(),
+        'layoutPath': widget.layoutPath,
+        'thumbnailPath': _renderedImagePath,
+        'updatedAt': DateTime.now().toIso8601String(),
+      };
+      if (widget.savedProjectName != null && widget.savedProjectName != name) {
+        await box.delete(widget.savedProjectName);
+      }
+      await box.put(name, projectData);
+    } catch (e) {
+      debugPrint("Failed to save project: $e");
+    } finally {
+      if (mounted) {
+        Navigator.of(context).pop(); // pop loader
+      }
+    }
+  }
+
+  void _showSaveProjectNameDialog() {
+    final int projectCount = Hive.box('saved_projects').length;
+    final TextEditingController nameController = TextEditingController(
+      text: widget.savedProjectName ?? 'Project ${projectCount + 1}',
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Name Project',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Give your project name so you can find it later.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF64748B),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F3F5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: nameController,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                                fontFamily: 'Inter',
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onChanged: (val) {
+                                setDialogState(() {});
+                              },
+                            ),
+                          ),
+                          if (nameController.text.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                nameController.clear();
+                                setDialogState(() {});
+                              },
+                              child: const Icon(
+                                Icons.close,
+                                color: Color(0xFFCBD5E1),
+                                size: 20,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5E7EB),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Color(0xFF1F2937),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final String name = nameController.text.trim().isEmpty
+                                  ? 'Project ${projectCount + 1}'
+                                  : nameController.text.trim();
+                              
+                              Navigator.of(context).pop(); // pop dialog
+                              await _saveProject(name);
+                              Get.offAll(() => const Homepage());
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4200AD),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'Save name',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showExitConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Unsaved Changes',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Color(0xFF0F172A),
+              fontFamily: 'Inter',
+            ),
+          ),
+          content: const Text(
+            'Save your certificate before leaving the editor?',
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xFF64748B),
+              fontFamily: 'Inter',
+            ),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Get.offAll(() => const Homepage());
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE5E7EB),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Don’t Save',
+                        style: TextStyle(
+                          color: Color(0xFF1F2937),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _showSaveProjectNameDialog();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4200AD),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onBackPress() async {
+    if (_hasExported) {
+      final String name = widget.savedProjectName ?? () {
+        final int projectCount = Hive.box('saved_projects').length;
+        return 'Project ${projectCount + 1}';
+      }();
+      await _saveProject(name);
+      Get.offAll(() => const Homepage());
+    } else {
+      _showExitConfirmationDialog();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-          onPressed: () => Get.back(),
-        ),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF9FAFC),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
+            onPressed: _onBackPress,
+          ),
         title: const Text(
           'Preview Certificate',
           style: TextStyle(
@@ -360,146 +657,92 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
           ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4C00C6))))
           : _renderedImagePath == null
               ? const Center(child: Text("Failed to render preview"))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+              : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Certificate Preview Card
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.file(
+                        File(_renderedImagePath!),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                 Spacer(),
+
+                  // Bottom actions
+                  Row(
                     children: [
-                      // Certificate Preview Card
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                      Expanded(
+                        child: SizedBox(
+                          height: 52,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE2E8F0),
+                              side: BorderSide.none,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.file(
-                            File(_renderedImagePath!),
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Capture Details Card
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Capture Details',
+                            onPressed: () => Get.back(),
+                            icon: const Icon(Icons.edit_outlined, color: Colors.black),
+                            label: const Text(
+                              'Edit',
                               style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            _buildDetailRow(
-                              icon: Icons.assignment_outlined,
-                              label: 'Type',
-                              value: 'Achievement',
-                            ),
-                            const Divider(height: 24),
-                            _buildDetailRow(
-                              icon: Icons.brush_outlined,
-                              label: 'Style',
-                              value: 'Morden',
-                            ),
-                            const Divider(height: 24),
-                            _buildDetailRow(
-                              icon: Icons.palette_outlined,
-                              label: 'Color Theme',
-                              value: 'Purple',
-                            ),
-                            const Divider(height: 24),
-                            _buildDetailRow(
-                              icon: Icons.crop_rotate_outlined,
-                              label: 'Orientation',
-                              value: 'Landscape',
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 32),
-
-                      // Bottom actions
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 52,
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE2E8F0),
-                                  side: BorderSide.none,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                onPressed: () => Get.back(),
-                                icon: const Icon(Icons.edit_outlined, color: Colors.black),
-                                label: const Text(
-                                  'Edit',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: SizedBox(
+                          height: 52,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4C00C6),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: _showSaveNameDialog,
+                            icon: const Icon(Icons.save_outlined, color: Colors.white),
+                            label: const Text(
+                              'Save to PDF',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: SizedBox(
-                              height: 52,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4C00C6),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                onPressed: _showSaveNameDialog,
-                                icon: const Icon(Icons.save_outlined, color: Colors.white),
-                                label: const Text(
-                                  'Save to PDF',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 16),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+      ),
     );
   }
 

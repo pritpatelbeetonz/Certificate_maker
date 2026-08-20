@@ -207,6 +207,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                         document: _document!,
                         imagePool: _imagePool,
                         layoutPath: widget.layoutPath,
+                        savedProjectName: widget.savedProjectName,
                       ));
                 },
                 style: ElevatedButton.styleFrom(
