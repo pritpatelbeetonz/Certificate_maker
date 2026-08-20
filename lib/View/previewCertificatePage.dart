@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -638,131 +639,137 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF9FAFC),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-            onPressed: _onBackPress,
-          ),
-          title: const Text(
-            'Preview Certificate',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
+      child: SafeArea(
+        top: false,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF9FAFC),
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
+              onPressed: _onBackPress,
             ),
-          ),
-          actions: [
-            GestureDetector(
-              child: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
-              onTap: () async {
-                await Get.to(() => FullScreenViewerPage(
-                      document: widget.document,
-                      imagePool: widget.imagePool,
-                      picturePool: widget.picturePool ?? const {},
-                    ));
-                await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-                await SystemChrome.setPreferredOrientations([
-                  DeviceOrientation.portraitUp,
-                ]);
-                setState(() {});
-              },
-            ),
-            const SizedBox(width: 16),
-          ],
-        ),
-      body: _isRendering
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4C00C6))))
-          : _renderedImagePath == null
-              ? const Center(child: Text("Failed to render preview"))
-              : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Certificate Preview Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.file(
-                        File(_renderedImagePath!),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                 Spacer(),
-
-                  // Bottom actions
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 52,
-                          child: OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE2E8F0),
-                              side: BorderSide.none,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: () => Get.back(),
-                            icon: const Icon(Icons.edit_outlined, color: Colors.black),
-                            label: const Text(
-                              'Edit',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: SizedBox(
-                          height: 52,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4C00C6),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: _showSaveNameDialog,
-                            icon: const Icon(Icons.save_outlined, color: Colors.white),
-                            label: const Text(
-                              'Save to PDF',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                ],
+            title: const Text(
+              'Preview Certificate',
+              style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
+            ),
+            actions: [
+              GestureDetector(
+                child: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
+                onTap: () async {
+                  await Get.to(() => FullScreenViewerPage(
+                        document: widget.document,
+                        imagePool: widget.imagePool,
+                        picturePool: widget.picturePool ?? const {},
+                      ));
+                  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                  await SystemChrome.setPreferredOrientations([
+                    DeviceOrientation.portraitUp,
+                  ]);
+                  setState(() {});
+                },
+              ),
+              const SizedBox(width: 16),
+            ],
+          ),
+        body: _isRendering
+            ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4C00C6))))
+            : _renderedImagePath == null
+                ? const Center(child: Text("Failed to render preview"))
+                : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Certificate Preview Card
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.file(
+                          File(_renderedImagePath!),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+        
+                   Spacer(),
+        
+                    // Bottom actions
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 5.w),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 52,
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE2E8F0),
+                                  side: BorderSide.none,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: () => Get.back(),
+                                icon: const Icon(Icons.edit_outlined, color: Colors.black),
+                                label: const Text(
+                                  'Edit',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: SizedBox(
+                              height: 52,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4C00C6),
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: _showSaveNameDialog,
+                                icon: const Icon(Icons.save_outlined, color: Colors.white),
+                                label: const Text(
+                                  'Save to PDF',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+        ),
       ),
     );
   }

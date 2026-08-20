@@ -1630,6 +1630,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   Widget _buildDynamicControlsPanel(TextNode? selectedTextNode) {
+    final double opacity = _getSelectedNodeOpacity();
+    final bool hasSelection = _selectedNodeId != null;
+
     if (_activeTab == 'Text') {
       return TextControlsPanel(
         selectedNode: selectedTextNode,
@@ -1642,6 +1645,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         onUpdateProperty: _updateSelectedTextProperty,
         onColorSelected: _onColorSelected,
         onDismiss: _closeActiveTab,
+        onCopy: _duplicateSelectedNode,
+        currentOpacity: opacity,
+        onOpacityChanged: (val) => _updateSelectedNodeOpacity(val, saveHistory: false),
+        onOpacityChangeEnd: () => _saveToHistory(),
       );
     } else if (_activeTab == 'Logo') {
       final SceneNode? logoNode =
@@ -1663,6 +1670,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         onAddNewLogo: _addNewLogo,
         onReplaceSelectedLogo: _replaceSelectedLogo,
         onDismiss: _closeActiveTab,
+        onCopy: _duplicateSelectedNode,
+        currentOpacity: opacity,
+        onOpacityChanged: (val) => _updateSelectedNodeOpacity(val, saveHistory: false),
+        onOpacityChangeEnd: () => _saveToHistory(),
       );
     } else if (_activeTab == 'Signature') {
       return SignatureControlsPanel(
@@ -1674,9 +1685,15 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         onDismiss: _closeActiveTab,
       );
     } else if (_activeTab == 'Stickers') {
+      final bool isStickerSelected = _selectedNodeId != null && _selectedNodeId!.startsWith('sticker');
       return StickersControlsPanel(
         onStickerSelected: _addSticker,
         onDismiss: _closeActiveTab,
+        hasSelection: isStickerSelected,
+        onCopy: _duplicateSelectedNode,
+        currentOpacity: opacity,
+        onOpacityChanged: (val) => _updateSelectedNodeOpacity(val, saveHistory: false),
+        onOpacityChangeEnd: () => _saveToHistory(),
       );
     }
     return const SizedBox.shrink();
@@ -1829,6 +1846,106 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     } catch (e) {
       debugPrint("Failed to add sticker: $e");
     }
+  }
+
+  void _duplicateSelectedNode() {
+    if (_document == null || _selectedNodeId == null) return;
+    final node = _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    if (node == null) return;
+
+    final String baseId = node.id.split('_').first;
+    final String newId = '${baseId}_${DateTime.now().millisecondsSinceEpoch}';
+    const double shift = 20.0;
+
+    if (_document!.assets.containsKey(node.id)) {
+      _document!.assets[newId] = SceneAsset(
+        type: _document!.assets[node.id]!.type,
+        src: _document!.assets[node.id]!.src,
+        fallbackSrc: _document!.assets[node.id]!.fallbackSrc,
+      );
+    }
+
+    if (_imagePool.containsKey(node.id)) {
+      _imagePool[newId] = _imagePool[node.id]!;
+    }
+    if (_picturePool.containsKey(node.id)) {
+      _picturePool[newId] = _picturePool[node.id]!;
+    }
+    if (_logoNames.containsKey(node.id)) {
+      _logoNames[newId] = _logoNames[node.id]!;
+      _logoDimensions[newId] = _logoDimensions[node.id]!;
+    }
+    if (_signatureNames.containsKey(node.id)) {
+      _signatureNames[newId] = _signatureNames[node.id]!;
+      _signatureDimensions[newId] = _signatureDimensions[node.id]!;
+    }
+
+    final duplicatedNode = node.clone();
+    SceneNode finalNode;
+    if (duplicatedNode is TextNode) {
+      finalNode = duplicatedNode.copyWith(
+        id: newId,
+        zIndex: _getNextTopZIndex(),
+        bounds: duplicatedNode.bounds.copyWith(
+          x: duplicatedNode.bounds.x + shift,
+          y: duplicatedNode.bounds.y + shift,
+        ),
+      );
+    } else if (duplicatedNode is StickerNode) {
+      finalNode = duplicatedNode.copyWith(
+        id: newId,
+        assetId: newId,
+        zIndex: _getNextTopZIndex(),
+        bounds: duplicatedNode.bounds.copyWith(
+          x: duplicatedNode.bounds.x + shift,
+          y: duplicatedNode.bounds.y + shift,
+        ),
+      );
+    } else {
+      return;
+    }
+
+    setState(() {
+      _document!.layers.add(finalNode);
+      _selectedNodeId = newId;
+      _saveToHistory();
+    });
+  }
+
+  void _updateSelectedNodeOpacity(double value, {bool saveHistory = false}) {
+    if (_document == null || _selectedNodeId == null) return;
+    final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+    if (index == -1) return;
+
+    final node = _document!.layers[index];
+    setState(() {
+      if (node is TextNode) {
+        _document!.layers[index] = node.copyWith(opacity: value);
+      } else if (node is StickerNode) {
+        final currentStyle = node.style ?? const NodeStyle();
+        final currentEffects = currentStyle.effects;
+        _document!.layers[index] = node.copyWith(
+          style: currentStyle.copyWith(
+            effects: currentEffects.copyWith(opacity: value),
+          ),
+        );
+      }
+    });
+
+    if (saveHistory) {
+      _saveToHistory();
+    }
+  }
+
+  double _getSelectedNodeOpacity() {
+    if (_document == null || _selectedNodeId == null) return 1.0;
+    final node = _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    if (node is TextNode) {
+      return node.opacity;
+    } else if (node is StickerNode) {
+      return node.style?.effects.opacity ?? 1.0;
+    }
+    return 1.0;
   }
 
   Future<void> _addNewLogo() async {

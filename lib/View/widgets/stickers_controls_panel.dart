@@ -4,11 +4,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class StickersControlsPanel extends StatelessWidget {
   final Function(String assetPath) onStickerSelected;
   final VoidCallback onDismiss;
+  final bool hasSelection;
+  final VoidCallback? onCopy;
+  final double? currentOpacity;
+  final ValueChanged<double>? onOpacityChanged;
+  final VoidCallback? onOpacityChangeEnd;
 
   const StickersControlsPanel({
     super.key,
     required this.onStickerSelected,
     required this.onDismiss,
+    required this.hasSelection,
+    this.onCopy,
+    this.currentOpacity,
+    this.onOpacityChanged,
+    this.onOpacityChangeEnd,
   });
 
   static const List<String> _stickerAssets = [
@@ -86,7 +96,64 @@ class StickersControlsPanel extends StatelessWidget {
               color: Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+
+          if (hasSelection) ...[
+            Row(
+              children: [
+                const Text(
+                  'Opacity',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF64748B),
+                    fontSize: 13,
+                  ),
+                ),
+                Expanded(
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: const Color(0xFF0052D4),
+                      inactiveTrackColor: const Color(0x1A000000),
+                      thumbColor: const Color(0xFF0052D4),
+                      trackHeight: 3,
+                      thumbShape: const RoundSliderThumbShape(
+                        enabledThumbRadius: 6,
+                      ),
+                    ),
+                    child: Slider(
+                      value: currentOpacity ?? 1.0,
+                      min: 0.0,
+                      max: 1.0,
+                      onChanged: onOpacityChanged,
+                      onChangeEnd: (_) => onOpacityChangeEnd?.call(),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F1FA),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${((currentOpacity ?? 1.0) * 100).round()}%',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.copy_outlined, color: Color(0xFF7C3AED), size: 20),
+                  onPressed: onCopy,
+                  tooltip: 'Duplicate',
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
 
           // Grid View of Stickers
           Flexible(
