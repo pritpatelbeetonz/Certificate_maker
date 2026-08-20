@@ -1,0 +1,488 @@
+{
+  "metadata": {
+    "id": "classic_honnor"
+  },
+  "canvas": {
+    "virtualSize": {
+      "width": 463,
+      "height": 330
+    }
+  },
+  "theme": {
+    "background": {
+      "type": "color",
+      "color": 4294497262
+    }
+  },
+  "assets": {
+    "background": {
+      "type": "image",
+      "src": "assets/Certificate/Achievement/Classic Honor/Frame 2085663533.png"
+    },
+    "KaiseiTokumin": {
+      "type": "font",
+      "src": "assets/Certificate/Fonts/KaiseiTokumin-Regular.ttf"
+    },
+    "LibreBaskerville": {
+      "type": "font",
+      "src": "assets/Certificate/Fonts/LibreBaskerville-Italic-VariableFont_wght.ttf"
+    },
+    "Inter": {
+      "type": "font",
+      "src": "assets/Certificate/Fonts/Inter-VariableFont_opsz,wght.ttf"
+    },
+    "Licorice": {
+      "type": "font",
+      "src": "assets/Certificate/Fonts/Licorice-Regular.ttf"
+    }
+  },
+  "scene": {
+    "layers": [
+      {
+        "id": "background",
+        "displayName": "Background",
+        "type": "frame",
+        "renderPass": "content",
+        "zIndex": 0,
+        "state": {
+          "visible": true,
+          "locked": true
+        },
+        "interaction": {
+          "selectable": false,
+          "movable": false,
+          "editable": false
+        },
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 463,
+          "height": 330
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "placeholder": {
+          "assetId": "background",
+          "mediaType": "image"
+        },
+        "style": {
+          "effects": {
+            "blendMode": "normal",
+            "filters": {}
+          }
+        }
+      },
+      {
+        "id": "certificate_title",
+        "displayName": "Certificate Title",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 170,
+          "y": 73,
+          "width": 123,
+          "height": 23
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "CERTIFICATE",
+          "fontFamily": "KaiseiTokumin",
+          "fontSize": 14,
+          "color": "#383838",
+          "align": "center",
+          "fontWeight": "700",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "certificate_subtitle",
+        "displayName": "Certificate Subtitle",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 183,
+          "y": 94,
+          "width": 97,
+          "height": 16
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "OF ACHIEVEMENT",
+          "fontFamily": "KaiseiTokumin",
+          "fontSize": 8.5,
+          "color": "#655E55",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "presented_text",
+        "displayName": "Presented Text",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 116,
+          "y": 137,
+          "width": 231,
+          "height": 18
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "THIS CERTIFICATE IS PROUDLY PRESENTED TO",
+          "fontFamily": "KaiseiTokumin",
+          "fontSize": 6.7,
+          "color": "#655E55",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "recipient_name",
+        "displayName": "Recipient Name",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 61,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 158,
+          "y": 158,
+          "width": 147,
+          "height": 25
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "MR. JOHN DOE",
+          "fontFamily": "KaiseiTokumin",
+          "fontSize": 12.5,
+          "color": "#303236",
+          "align": "center",
+          "fontWeight": "700",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "description",
+        "displayName": "Description",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 123,
+          "y": 201,
+          "width": 217,
+          "height": 36
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "This certificate acknowledges your outstanding contribution\nand dedication to the Design project, showcasing your\ncommitment to excellence, innovation, and teamwork.",
+          "fontFamily": "Inter",
+          "fontSize": 6.8,
+          "color": "#756D62",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "left_signature",
+        "displayName": "President Director Signature",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 61,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 152,
+          "y": 243,
+          "width": 61,
+          "height": 27
+        },
+        "transform":
+        {
+          "rotation": -5.96,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "samaisy",
+          "fontFamily": "Licorice",
+          "fontSize": 22,
+          "color": "#000000",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "right_signature",
+        "displayName": "General Manager Signature",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 61,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 264,
+          "y": 244,
+          "width": 30,
+          "height": 33
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "ritav",
+          "fontFamily": "Licorice",
+          "fontSize": 21,
+          "color": "#000000",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "left_signature_label",
+        "displayName": "President Director",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 145,
+          "y": 270,
+          "width": 68,
+          "height": 13
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "PRESIDENT DIRECTOR",
+          "fontFamily": "KaiseiTokumin",
+          "fontSize": 5.3,
+          "color": "#59534B",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      },
+      {
+        "id": "right_signature_label",
+        "displayName": "General Manager",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 245,
+          "y": 270,
+          "width": 79,
+          "height": 13
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "skew": {
+            "x": 0,
+            "y": 0
+          },
+          "flipX": false,
+          "flipY": false
+        },
+        "content": {
+          "text": "GENERAL MANAGER",
+          "fontFamily": "KaiseiTokumin",
+          "fontSize": 5.3,
+          "color": "#59534B",
+          "align": "center",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "decoration": "none"
+        }
+      }
+    ]
+  }
+}

@@ -56,7 +56,29 @@ dev_dependencies:
 
 flutter:
   assets:
-    - assets/index.json
+    - assets/Certificate/index.json
+    - assets/Certificate/
+    - "assets/Certificate/Achievement/Classic Honor/"
+    - "assets/Certificate/Achievement/Colorful Achievement/"
+    - "assets/Certificate/Achievement/Elegant Gold/"
+    - "assets/Certificate/Achievement/Premium Gold/"
+    - "assets/Certificate/Achievement/Royal Achievement/"
+    - "assets/Certificate/Appreciation/Classic Appreciation/"
+    - "assets/Certificate/Appreciation/Creative Appreciation/"
+    - "assets/Certificate/Appreciation/Elegant Appreciation/"
+    - "assets/Certificate/Appreciation/Modern Appreciation/"
+    - "assets/Certificate/Appreciation/Royal Appreciation/"
+    - "assets/Certificate/Completion/Bold Recognition/"
+    - "assets/Certificate/Completion/Dark Prestige/"
+    - "assets/Certificate/Completion/Golden Classic/"
+    - "assets/Certificate/Completion/Luxury Completion/"
+    - "assets/Certificate/Completion/Modern Excellence/"
+    - assets/Certificate/Fonts/
+    - "assets/Certificate/Participation/Best Participation/"
+    - "assets/Certificate/Participation/Bright Participation/"
+    - "assets/Certificate/Participation/Modern Participation/"
+    - "assets/Certificate/Participation/Premium Participation/"
+    - "assets/Certificate/Participation/Royal Participation/"
     - assets/demo.json
     - assets/bg/
     - assets/thumbnails/
@@ -79,13 +101,3 @@ flutter:
 
   uses-material-design: true
 
-  fonts:
-    - family: LibreBodoni
-      fonts:
-        - asset: assets/fonts/LibreBodoni-VariableFont_wght.ttf
-    - family: LoveYaLikeASister
-      fonts:
-        - asset: assets/fonts/LoveYaLikeASister-Regular.ttf
-    - family: OoohBaby
-      fonts:
-        - asset: assets/fonts/OoohBaby-Regular.ttf

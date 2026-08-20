@@ -57,7 +57,7 @@ class _BrowsetempletsState extends State<Browsetemplets> {
 
   Future<void> _loadTemplates() async {
     try {
-      final String response = await DefaultAssetBundle.of(context).loadString('assets/index.json');
+      final String response = await DefaultAssetBundle.of(context).loadString('assets/Certificate/index.json');
       final data = json.decode(response);
       final layouts = data['layouts'] ?? [];
       

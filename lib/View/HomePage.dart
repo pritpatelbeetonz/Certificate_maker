@@ -45,7 +45,7 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _loadTemplates() async {
     try {
-      final String response = await DefaultAssetBundle.of(context).loadString('assets/index.json');
+      final String response = await DefaultAssetBundle.of(context).loadString('assets/Certificate/index.json');
       final data = json.decode(response);
       final layouts = data['layouts'] ?? [];
       
@@ -85,7 +85,7 @@ class _HomepageState extends State<Homepage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "$categoryName Templates",
+                categoryName,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
@@ -131,10 +131,10 @@ class _HomepageState extends State<Homepage> {
                                   ));
                             },
                             child: Container(
-                              width: 160.w,
+                              width: 175.w,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                border: Border.all(color: const Color( 0xFFdfe0e1),width: 4),
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(12.r),

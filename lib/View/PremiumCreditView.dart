@@ -95,7 +95,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                   child: Column(
                     children: [
                       SizedBox(
-                        height: MediaQuery.of(context).padding.top + 290.h,
+                        height: MediaQuery.of(context).padding.top + 280                       .h,
                       ),
                       // Title
                       Padding(

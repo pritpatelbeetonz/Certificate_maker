@@ -71,69 +71,69 @@ class SurveyFormState extends State<SurveyForm> {
               : const SizedBox(),
         ),
         body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 0.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10.h,),
-                /// Title
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: Row(
-                    children: [
-                      //SizedBox(height: 10.h,),
-                      Text(
-                        "How do you usually create\n certificates ?",
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Inter',
-                          color: Colors.black,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 0.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 10.h,),
+                  /// Title
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: Row(
+                      children: [
+                        //SizedBox(height: 10.h,),
+                        Text(
+                          "How do you usually create\n certificates ?",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Inter',
+                            color: Colors.black,
+                          ),
                         ),
-                      ),
-                        Spacer(),
-                        Visibility(
-                          visible:selectedIndex != -1,
-                          replacement: SizedBox(height: 36.h,),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      WelPageview(),
+                          Spacer(),
+                          Visibility(
+                            visible:selectedIndex != -1,
+                            replacement: SizedBox(height: 36.h,),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        WelPageview(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 68.w,
+                                height: 36.h,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                 color: Color(0xFF4200AD),
+                                  borderRadius: BorderRadius.circular(8.r),
                                 ),
-                              );
-                            },
-                            child: Container(
-                              width: 68.w,
-                              height: 36.h,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                               color: Color(0xFF4200AD),
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              child: Text(
-                                "Done",
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'Inter',
-                                  color: Colors.white,
+                                child: Text(
+                                  "Done",
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Inter',
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-
-                SizedBox(height: 10.h),
-
-                Flexible(
-                  child: Column(
+  
+                  SizedBox(height: 10.h),
+  
+                  Column(
                     children: [
                       /// OPTIONS
                       SurveyOption(
@@ -145,7 +145,7 @@ class SurveyFormState extends State<SurveyForm> {
                             selectedIndex = 0;
                           });
                         },
-                        image: "assets/Survay/logo.png",
+                        image: "assets/Survay/Frame 1.png",
                         subtitle: "Start with a ready-made design",
                       ),
                      SizedBox(height: 10.h),
@@ -174,7 +174,7 @@ class SurveyFormState extends State<SurveyForm> {
                         image: "assets/Survay/Frame 3.png",
                         subtitle: "Add logos, signatures and stickers",
                       ),
-                     SizedBox(height: 10.h),
+                      SizedBox(height: 10.h),
                       SurveyOption(
                         title: "Mix & Match",
                         index: 3,
@@ -184,14 +184,14 @@ class SurveyFormState extends State<SurveyForm> {
                             selectedIndex = 3;
                           });
                         },
-                        image: "assets/Survay/privacyPolicy.png",
+                        image: "assets/Survay/Frame 4.png",
                         subtitle: "Combine templates with your ideas",
                       ),
                     ],
-                  ),
-                )
-
-              ],
+                  )
+  
+                ],
+              ),
             ),
           ),
         ),
@@ -278,7 +278,7 @@ class SurveyOption extends StatelessWidget {
               padding: EdgeInsetsGeometry.only(right: 10.w),
               child: Image.asset(
                 isSelected
-                    ? "assets/Survay/contanct_support.png"
+                    ? "assets/Survay/Frame 5.png"
                     : "assets/Survay/Border.png",
                 height: 24.w,
                 width: 24.w,
