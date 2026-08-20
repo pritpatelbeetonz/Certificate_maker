@@ -54,6 +54,7 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
           fontStyle: parsedFontStyle,
           decoration: parsedTextDecoration,
           letterSpacing: node.letterSpacing,
+          wordSpacing: node.wordSpacing,
           height: node.lineHeight,
         ),
       ),
@@ -93,6 +94,7 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
           fontStyle: parsedFontStyle,
           decoration: parsedTextDecoration,
           letterSpacing: node.letterSpacing * scale * screenScale,
+          wordSpacing: node.wordSpacing * scale * screenScale,
           height: node.lineHeight,
           shadows: node.shadow.enabled
               ? [

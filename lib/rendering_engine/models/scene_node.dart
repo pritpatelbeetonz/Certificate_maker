@@ -1283,6 +1283,7 @@ class TextNode implements SceneNode {
   final String decoration;
   final double opacity;
   final double letterSpacing;
+  final double wordSpacing;
   final double? lineHeight;
   final ShadowStyle shadow;
 
@@ -1305,6 +1306,7 @@ class TextNode implements SceneNode {
     this.decoration = 'none',
     this.opacity = 1.0,
     this.letterSpacing = 0.0,
+    this.wordSpacing = 0.0,
     this.lineHeight,
     this.shadow = const ShadowStyle(),
   });
@@ -1341,6 +1343,7 @@ class TextNode implements SceneNode {
       decoration: content['decoration'] as String? ?? 'none',
       opacity: (content['opacity'] as num? ?? 1.0).toDouble(),
       letterSpacing: (content['letterSpacing'] as num? ?? 0.0).toDouble(),
+      wordSpacing: (content['wordSpacing'] as num? ?? 0.0).toDouble(),
       lineHeight: content['lineHeight'] != null ? (content['lineHeight'] as num).toDouble() : null,
       shadow: content['shadow'] != null
           ? ShadowStyle.fromJson(Map<String, dynamic>.from(content['shadow'] as Map))
@@ -1369,6 +1372,7 @@ class TextNode implements SceneNode {
     'decoration': decoration,
     'opacity': opacity,
     'letterSpacing': letterSpacing,
+    'wordSpacing': wordSpacing,
     if (lineHeight != null) 'lineHeight': lineHeight,
     'shadow': shadow.toJson(),
   };
@@ -1395,6 +1399,7 @@ class TextNode implements SceneNode {
     String? decoration,
     double? opacity,
     double? letterSpacing,
+    double? wordSpacing,
     double? lineHeight,
     ShadowStyle? shadow,
     bool clearLineHeight = false,
@@ -1418,6 +1423,7 @@ class TextNode implements SceneNode {
       decoration: decoration ?? this.decoration,
       opacity: opacity ?? this.opacity,
       letterSpacing: letterSpacing ?? this.letterSpacing,
+      wordSpacing: wordSpacing ?? this.wordSpacing,
       lineHeight: clearLineHeight ? null : (lineHeight ?? this.lineHeight),
       shadow: shadow ?? this.shadow,
     );

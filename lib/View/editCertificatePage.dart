@@ -179,6 +179,18 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             ],
           ),
           actions: [
+            if (_selectedNodeId != null) ...[
+              IconButton(
+                icon: const Icon(Icons.vertical_align_top, color: Color(0xFF0F172A)),
+                tooltip: 'Bring to Front',
+                onPressed: _bringSelectedNodeToFront,
+              ),
+              IconButton(
+                icon: const Icon(Icons.vertical_align_bottom, color: Color(0xFF0F172A)),
+                tooltip: 'Send to Back',
+                onPressed: _sendSelectedNodeToBack,
+              ),
+            ],
             if (_selectedNodeId == null)
               GestureDetector(
                 child: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
@@ -878,6 +890,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           fontStyle: _parseFontStyle(node.fontStyle),
           decoration: _parseTextDecoration(node.decoration),
           letterSpacing: node.letterSpacing,
+          wordSpacing: node.wordSpacing,
           height: node.lineHeight,
         ),
       ),
@@ -901,6 +914,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           fontStyle: _parseFontStyle(node.fontStyle),
           decoration: _parseTextDecoration(node.decoration),
           letterSpacing: node.letterSpacing,
+          wordSpacing: node.wordSpacing,
           height: node.lineHeight,
         ),
       ),
@@ -1211,6 +1225,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     String? fontStyle,
     String? decoration,
     String? align,
+    double? letterSpacing,
+    double? wordSpacing,
+    double? lineHeight,
+    bool clearLineHeight = false,
     bool? saveHistory,
   }) {
     if (_document == null || _selectedNodeId == null) return;
@@ -1239,6 +1257,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         fontStyle: fontStyle ?? node.fontStyle,
         decoration: decoration ?? node.decoration,
         align: align ?? node.align,
+        letterSpacing: letterSpacing ?? node.letterSpacing,
+        wordSpacing: wordSpacing ?? node.wordSpacing,
+        lineHeight: lineHeight ?? node.lineHeight,
+        clearLineHeight: clearLineHeight,
       );
 
       final double newHeight = _calculateTextNodeHeight(tempNode, newWidth);
@@ -1846,6 +1868,87 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     } catch (e) {
       debugPrint("Failed to add sticker: $e");
     }
+  }
+
+  void _bringSelectedNodeToFront() {
+    if (_document == null || _selectedNodeId == null) return;
+
+    final nonSelectableLayers = _document!.layers.where((l) => !l.interaction.selectable).toList();
+    final selectableLayers = _document!.layers.where((l) => l.interaction.selectable).toList()
+      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+
+    final node = selectableLayers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    if (node == null) return;
+
+    selectableLayers.removeWhere((l) => l.id == _selectedNodeId);
+    selectableLayers.add(node);
+
+    int maxNonSelectableZ = 0;
+    for (final l in nonSelectableLayers) {
+      if (l.zIndex > maxNonSelectableZ) {
+        maxNonSelectableZ = l.zIndex;
+      }
+    }
+
+    setState(() {
+      for (int i = 0; i < selectableLayers.length; i++) {
+        final current = selectableLayers[i];
+        final newZ = maxNonSelectableZ + 10 + (i * 10);
+        final indexInDoc = _document!.layers.indexWhere((l) => l.id == current.id);
+        if (indexInDoc != -1) {
+          final updated = _updateNodeZIndex(current, newZ);
+          if (updated != null) {
+            _document!.layers[indexInDoc] = updated;
+          }
+        }
+      }
+      _saveToHistory();
+    });
+  }
+
+  void _sendSelectedNodeToBack() {
+    if (_document == null || _selectedNodeId == null) return;
+
+    final nonSelectableLayers = _document!.layers.where((l) => !l.interaction.selectable).toList();
+    final selectableLayers = _document!.layers.where((l) => l.interaction.selectable).toList()
+      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+
+    final node = selectableLayers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    if (node == null) return;
+
+    selectableLayers.removeWhere((l) => l.id == _selectedNodeId);
+    selectableLayers.insert(0, node);
+
+    int maxNonSelectableZ = 0;
+    for (final l in nonSelectableLayers) {
+      if (l.zIndex > maxNonSelectableZ) {
+        maxNonSelectableZ = l.zIndex;
+      }
+    }
+
+    setState(() {
+      for (int i = 0; i < selectableLayers.length; i++) {
+        final current = selectableLayers[i];
+        final newZ = maxNonSelectableZ + 10 + (i * 10);
+        final indexInDoc = _document!.layers.indexWhere((l) => l.id == current.id);
+        if (indexInDoc != -1) {
+          final updated = _updateNodeZIndex(current, newZ);
+          if (updated != null) {
+            _document!.layers[indexInDoc] = updated;
+          }
+        }
+      }
+      _saveToHistory();
+    });
+  }
+
+  SceneNode? _updateNodeZIndex(SceneNode node, int newZIndex) {
+    if (node is TextNode) {
+      return node.copyWith(zIndex: newZIndex);
+    } else if (node is StickerNode) {
+      return node.copyWith(zIndex: newZIndex);
+    }
+    return null;
   }
 
   void _duplicateSelectedNode() {

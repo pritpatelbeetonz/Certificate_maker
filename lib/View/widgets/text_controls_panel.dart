@@ -19,6 +19,10 @@ class TextControlsPanel extends StatelessWidget {
     String? fontStyle,
     String? decoration,
     String? align,
+    double? letterSpacing,
+    double? wordSpacing,
+    double? lineHeight,
+    bool clearLineHeight,
     bool? saveHistory,
   })
   onUpdateProperty;
@@ -565,6 +569,166 @@ class TextControlsPanel extends StatelessWidget {
                               onPressed: onCopy,
                               tooltip: 'Duplicate',
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Text(
+                              'Letter Spacing',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF64748B),
+                                fontSize: 13,
+                              ),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: const Color(0xFF0052D4),
+                                  inactiveTrackColor: const Color(0x1A000000),
+                                  thumbColor: const Color(0xFF0052D4),
+                                  trackHeight: 3,
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6,
+                                  ),
+                                ),
+                                child: Slider(
+                                  value: hasSelection ? selectedNode!.letterSpacing.clamp(-5.0, 20.0) : 0.0,
+                                  min: -5.0,
+                                  max: 20.0,
+                                  onChanged: hasSelection
+                                      ? (val) => onUpdateProperty(letterSpacing: val, saveHistory: false)
+                                      : null,
+                                  onChangeEnd: (_) => onSaveTextEditingState(),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F1FA),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                hasSelection ? selectedNode!.letterSpacing.toStringAsFixed(1) : '0.0',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Text(
+                              'Word Spacing',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF64748B),
+                                fontSize: 13,
+                              ),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: const Color(0xFF0052D4),
+                                  inactiveTrackColor: const Color(0x1A000000),
+                                  thumbColor: const Color(0xFF0052D4),
+                                  trackHeight: 3,
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6,
+                                  ),
+                                ),
+                                child: Slider(
+                                  value: hasSelection ? selectedNode!.wordSpacing.clamp(-5.0, 30.0) : 0.0,
+                                  min: -5.0,
+                                  max: 30.0,
+                                  onChanged: hasSelection
+                                      ? (val) => onUpdateProperty(wordSpacing: val, saveHistory: false)
+                                      : null,
+                                  onChangeEnd: (_) => onSaveTextEditingState(),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F1FA),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                hasSelection ? selectedNode!.wordSpacing.toStringAsFixed(1) : '0.0',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Text(
+                              'Line Spacing',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF64748B),
+                                fontSize: 13,
+                              ),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: const Color(0xFF0052D4),
+                                  inactiveTrackColor: const Color(0x1A000000),
+                                  thumbColor: const Color(0xFF0052D4),
+                                  trackHeight: 3,
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6,
+                                  ),
+                                ),
+                                child: Slider(
+                                  value: hasSelection ? (selectedNode!.lineHeight ?? 1.2).clamp(0.5, 3.0) : 1.2,
+                                  min: 0.5,
+                                  max: 3.0,
+                                  onChanged: hasSelection
+                                      ? (val) => onUpdateProperty(lineHeight: val, saveHistory: false)
+                                      : null,
+                                  onChangeEnd: (_) => onSaveTextEditingState(),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F1FA),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                hasSelection ? (selectedNode!.lineHeight?.toStringAsFixed(1) ?? 'Default') : '1.2',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            if (hasSelection && selectedNode!.lineHeight != null) ...[
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.refresh, size: 18, color: Color(0xFF64748B)),
+                                onPressed: () {
+                                  onUpdateProperty(clearLineHeight: true);
+                                },
+                                tooltip: 'Reset Line Spacing',
+                              ),
+                            ],
                           ],
                         ),
                       ],
