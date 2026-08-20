@@ -10,11 +10,13 @@ import '../rendering_engine/models/scene_node.dart';
 import '../rendering_engine/export/scene_export_service.dart';
 import 'package:hive/hive.dart';
 import 'HomePage.dart';
+import 'fullScreenViewerPage.dart';
 import 'package:open_filex/open_filex.dart';
 
 class PreviewCertificatePage extends StatefulWidget {
   final SceneDocument document;
   final Map<String, ui.Image> imagePool;
+  final Map<String, ui.Picture>? picturePool;
   final String layoutPath;
   final String? savedProjectName;
 
@@ -22,6 +24,7 @@ class PreviewCertificatePage extends StatefulWidget {
     super.key,
     required this.document,
     required this.imagePool,
+    this.picturePool,
     required this.layoutPath,
     this.savedProjectName,
   });
@@ -644,15 +647,33 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
             icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
             onPressed: _onBackPress,
           ),
-        title: const Text(
-          'Preview Certificate',
-          style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+          title: const Text(
+            'Preview Certificate',
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
+          actions: [
+            GestureDetector(
+              child: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
+              onTap: () async {
+                await Get.to(() => FullScreenViewerPage(
+                      document: widget.document,
+                      imagePool: widget.imagePool,
+                      picturePool: widget.picturePool ?? const {},
+                    ));
+                await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                await SystemChrome.setPreferredOrientations([
+                  DeviceOrientation.portraitUp,
+                ]);
+                setState(() {});
+              },
+            ),
+            const SizedBox(width: 16),
+          ],
         ),
-      ),
       body: _isRendering
           ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4C00C6))))
           : _renderedImagePath == null

@@ -206,6 +206,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   Get.to(() => PreviewCertificatePage(
                         document: _document!,
                         imagePool: _imagePool,
+                        picturePool: _picturePool,
                         layoutPath: widget.layoutPath,
                         savedProjectName: widget.savedProjectName,
                       ));
