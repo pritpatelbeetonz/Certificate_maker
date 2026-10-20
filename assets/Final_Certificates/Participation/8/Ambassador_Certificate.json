@@ -1,0 +1,630 @@
+{
+  "metadata": {
+    "id": "Participation_8"
+  },
+  "canvas": {
+    "virtualSize": {
+      "width": 463,
+      "height": 330
+    }
+  },
+  "theme": {
+    "background": {
+      "type": "color",
+      "color": 4294967295
+    }
+  },
+  "assets": {
+    "background": {
+      "type": "image",
+      "src": "assets/Final_Certificates/Participation/8/bg.png"
+    },
+    "LibreBaskerville": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+    },
+    "Kadwa": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+    },
+    "GreatVibes": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+    },
+    "Jomolhari": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+    },
+    "MeowScript": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/MeowScript-Regular.ttf"
+    }
+  },
+  "scene": {
+    "layers": [
+      {
+        "id": "background",
+        "displayName": "Background",
+        "type": "frame",
+        "renderPass": "content",
+        "zIndex": 0,
+        "state": {
+          "visible": true,
+          "locked": true
+        },
+        "interaction": {
+          "selectable": false,
+          "movable": false,
+          "editable": false
+        },
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 463,
+          "height": 330
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "placeholder": {
+          "assetId": "background",
+          "mediaType": "image"
+        },
+        "style": {
+          "effects": {
+            "blendMode": "normal",
+            "filters": {}
+          }
+        }
+      },
+      {
+        "id": "certificate_title",
+        "displayName": "Certificate Title",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 66,
+          "y": 49,
+          "width": 331,
+          "height": 24
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "CERTIFICATE",
+          "fontFamily": "LibreBaskerville",
+          "fontSize": 22.0,
+          "color": "#000000",
+          "align": "center",
+          "letterSpacing": 4.0,
+          "fontWeight": "w800"
+        }
+      },
+      {
+        "id": "certificate_type_line_left",
+        "displayName": "Type Line Left",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 61,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 102,
+          "y": 86,
+          "width": 63,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#D0A75E",
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#D0A75E"
+          }
+        }
+      },
+      {
+        "id": "certificate_type",
+        "displayName": "Certificate Type",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 62,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 178,
+          "y": 80,
+          "width": 107,
+          "height": 12
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "OF PARTICIPATION",
+          "fontFamily": "LibreBaskerville",
+          "fontSize": 7.8,
+          "color": "#D0A75E",
+          "align": "center",
+          "letterSpacing": 2.0,
+          "fontWeight": "w600"
+        }
+      },
+      {
+        "id": "certificate_type_line_right",
+        "displayName": "Type Line Right",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 63,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 295,
+          "y": 86,
+          "width": 62,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#D0A75E",
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#D0A75E"
+          }
+        }
+      },
+      {
+        "id": "presentation_line",
+        "displayName": "Presentation Line",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 64,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 100,
+          "y": 116,
+          "width": 263,
+          "height": 12
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "THIS CERTIFICATE IS PROUDLY PRESENTED TO",
+          "fontFamily": "Kadwa",
+          "fontSize": 7.8,
+          "color": "#666666",
+          "align": "center",
+          "letterSpacing": 2.0,
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "recipient_name",
+        "displayName": "Recipient Name",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 65,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 81,
+          "y": 148,
+          "width": 301,
+          "height": 44
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "Laurence Smith",
+          "fontFamily": "GreatVibes",
+          "fontSize": 38.0,
+          "color": "#4D4D4D",
+          "align": "center",
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "recipient_line",
+        "displayName": "Recipient Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 66,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 122,
+          "y": 193,
+          "width": 220,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#E5E5E5",
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#E5E5E5"
+          }
+        }
+      },
+      {
+        "id": "description_paragraph",
+        "displayName": "Description Paragraph",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 67,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 60,
+          "y": 221,
+          "width": 343,
+          "height": 22
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "This certificate is proudly presented in recognition of outstanding achievement, exceptional dedication, and\nremarkable performance demonstrated through consistent effort and commitment to excellence.",
+          "fontFamily": "Jomolhari",
+          "fontSize": 7.2,
+          "color": "#666666",
+          "align": "center",
+          "lineHeight": 1.45,
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "date_value",
+        "displayName": "Date Value",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 68,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 108,
+          "y": 266,
+          "width": 61,
+          "height": 12
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "03/08/25",
+          "fontFamily": "MeowScript",
+          "fontSize": 11.5,
+          "color": "#0A0A42",
+          "align": "center",
+          "fontWeight": "w700"
+        }
+      },
+      {
+        "id": "date_line",
+        "displayName": "Date Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 69,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 112,
+          "y": 278,
+          "width": 53,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#E5E5E5",
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#E5E5E5"
+          }
+        }
+      },
+      {
+        "id": "date_label",
+        "displayName": "Date Label",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 70,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 112,
+          "y": 283,
+          "width": 53,
+          "height": 9
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "DATE",
+          "fontFamily": "Kadwa",
+          "fontSize": 4.8,
+          "color": "#5A5549",
+          "align": "center",
+          "letterSpacing": 1.0,
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "signature_value",
+        "displayName": "Signature Value",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 71,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 300,
+          "y": 255,
+          "width": 53,
+          "height": 22
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "Smith",
+          "fontFamily": "GreatVibes",
+          "fontSize": 17.0,
+          "color": "#333333",
+          "align": "center",
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "signature_line",
+        "displayName": "Signature Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 72,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 300,
+          "y": 279,
+          "width": 53,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#E5E5E5",
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#E5E5E5"
+          }
+        }
+      },
+      {
+        "id": "signature_label",
+        "displayName": "Signature Label",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 73,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 300,
+          "y": 284,
+          "width": 53,
+          "height": 9
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "SIGNATURE",
+          "fontFamily": "Kadwa",
+          "fontSize": 4.8,
+          "color": "#5A5549",
+          "align": "center",
+          "letterSpacing": 1.0,
+          "fontWeight": "w400"
+        }
+      }
+    ]
+  }
+}

@@ -114,6 +114,66 @@ class TextControlsPanel extends StatelessWidget {
     );
   }
 
+  void _showCustomFontSizeDialog(BuildContext context) {
+    if (selectedNode == null) return;
+    final TextEditingController controller = TextEditingController(
+      text: selectedNode!.fontSize.round().toString(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            'Font Size',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  hintText: 'Enter size (6 - 100)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  suffixText: 'pt',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final double? parsed = double.tryParse(controller.text.trim());
+                if (parsed != null) {
+                  final clamped = parsed.clamp(6.0, 100.0);
+                  onUpdateProperty(
+                    fontSize: clamped,
+                    saveHistory: true,
+                  );
+                }
+                Navigator.of(ctx).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0052D4),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Apply'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool hasSelection = selectedNode != null;
@@ -394,11 +454,29 @@ class TextControlsPanel extends StatelessWidget {
                               ),
                               child: Row(
                                 children: [
-                                  const Text(
-                                    'A-',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF64748B),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: hasSelection
+                                        ? () {
+                                            final currentSize = selectedNode!.fontSize;
+                                            final newSize = (currentSize - 1.0).clamp(6.0, 100.0);
+                                            if (newSize != currentSize) {
+                                              onUpdateProperty(
+                                                fontSize: newSize,
+                                                saveHistory: true,
+                                              );
+                                            }
+                                          }
+                                        : null,
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
+                                      child: const Text(
+                                        'A-',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   Expanded(
@@ -407,7 +485,7 @@ class TextControlsPanel extends StatelessWidget {
                                         activeTrackColor: const Color(0xFF0052D4),
                                         inactiveTrackColor: const Color(0x1A000000),
                                         thumbColor: const Color(0xFF0052D4),
-                                        overlayColor: const Color(0xFF0052D4).withOpacity(0.12),
+                                        overlayColor: const Color(0xFF0052D4).withValues(alpha: 0.12),
                                         trackHeight: 3,
                                         thumbShape: const RoundSliderThumbShape(
                                           enabledThumbRadius: 6,
@@ -432,27 +510,50 @@ class TextControlsPanel extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  const Text(
-                                    'A+',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF64748B),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: hasSelection
+                                        ? () {
+                                            final currentSize = selectedNode!.fontSize;
+                                            final newSize = (currentSize + 1.0).clamp(6.0, 100.0);
+                                            if (newSize != currentSize) {
+                                              onUpdateProperty(
+                                                fontSize: newSize,
+                                                saveHistory: true,
+                                              );
+                                            }
+                                          }
+                                        : null,
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
+                                      child: const Text(
+                                        'A+',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      hasSelection
-                                          ? selectedNode!.fontSize.round().toString()
-                                          : '14',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF0F172A),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: hasSelection ? () => _showCustomFontSizeDialog(context) : null,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1),
+                                      ),
+                                      child: Text(
+                                        hasSelection
+                                            ? selectedNode!.fontSize.round().toString()
+                                            : '14',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF0F172A),
+                                        ),
                                       ),
                                     ),
                                   ),

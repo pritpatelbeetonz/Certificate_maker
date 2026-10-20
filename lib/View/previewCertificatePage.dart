@@ -686,94 +686,100 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
             ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4C00C6))))
             : _renderedImagePath == null
                 ? const Center(child: Text("Failed to render preview"))
-                : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Certificate Preview Card
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 16),
+                        // Certificate Preview Card
+                        Expanded(
+                          child: Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.file(
+                                  File(_renderedImagePath!),
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
                           ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.file(
-                          File(_renderedImagePath!),
-                          fit: BoxFit.contain,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-        
-                   Spacer(),
-        
-                    // Bottom actions
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 5.w),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 52,
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE2E8F0),
-                                  side: BorderSide.none,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                onPressed: () => Get.back(),
-                                icon: const Icon(Icons.edit_outlined, color: Colors.black),
-                                label: const Text(
-                                  'Edit',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: SizedBox(
-                              height: 52,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4C00C6),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                onPressed: _showSaveNameDialog,
-                                icon: const Icon(Icons.save_outlined, color: Colors.white),
-                                label: const Text(
-                                  'Save to PDF',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                        const SizedBox(height: 16),
+
+                        // Bottom actions
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 5.w),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: 52,
+                                  child: OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFE2E8F0),
+                                      side: BorderSide.none,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: () => Get.back(),
+                                    icon: const Icon(Icons.edit_outlined, color: Colors.black),
+                                    label: const Text(
+                                      'Edit',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: SizedBox(
+                                  height: 52,
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF4C00C6),
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: _showSaveNameDialog,
+                                    icon: const Icon(Icons.save_outlined, color: Colors.white),
+                                    label: const Text(
+                                      'Save to PDF',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+                  ),
         ),
       ),
     );

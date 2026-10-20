@@ -1,0 +1,325 @@
+{
+  "layouts": [
+    {
+      "id": "Achievement_1",
+      "name": "Achievement_1",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/1/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Achievement/1/Colorful_Archivement.json"
+    },
+    {
+      "id": "Achievement_2",
+      "name": "Elegant Gold",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/2/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Achievement/2/Elegant_Gold.json"
+    },
+    {
+      "id": "Achievement_3",
+      "name": "Royal Honor",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/3/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Achievement/3/Royal_Honor.json"
+    },
+    {
+      "id": "Achievement_4",
+      "name": "Classic Vintage",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/4/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Achievement/4/Classic_Vintage.json"
+    },
+    {
+      "id": "Achievement_6",
+      "name": "Crimson Crest",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/6/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Achievement/6/Crimson_Crest.json"
+    },
+    {
+      "id": "Achievement_7",
+      "name": "Emerald Elegance",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/7/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Achievement/7/Emerald_Elegance.json"
+    },
+    {
+      "id": "Achievement_8",
+      "name": "Imperial Ribbon",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/8/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Achievement/8/Imperial_Ribbon.json"
+    },
+    {
+      "id": "Achievement_9",
+      "name": "Scarlet Ribbon",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/9/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Achievement/9/Scarlet_Ribbon.json"
+    },
+    {
+      "id": "Achievement_10",
+      "name": "Geometric Apex",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/10/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Achievement/10/Geometric_Apex.json"
+    },
+    {
+      "id": "Achievement_5",
+      "name": "Modern Prestige",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/5/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Achievement/5/Modern_Prestige.json"
+    },
+
+    {
+      "id": "Appreciation_1",
+      "name": "Golden Gratitude",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/1/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Appreciation/1/Golden_Gratitude.json"
+    },
+    {
+      "id": "Appreciation_2",
+      "name": "Executive Recognition",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/2/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Appreciation/2/Executive_Recognition.json"
+    },
+    {
+      "id": "Appreciation_3",
+      "name": "Academic Distinction",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/3/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Appreciation/3/Academic_Distinction.json"
+    },
+    {
+      "id": "Appreciation_4",
+      "name": "Prestige Honor",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/4/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Appreciation/4/Prestige_Honor.json"
+    },
+    {
+      "id": "Appreciation_5",
+      "name": "Heraldic Seal",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/5/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Appreciation/5/Heraldic_Seal.json"
+    },
+    {
+      "id": "Appreciation_6",
+      "name": "Sovereign Tribute",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/6/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Appreciation/6/Sovereign_Tribute.json"
+    },
+    {
+      "id": "Appreciation_7",
+      "name": "Vanguard Merit",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/7/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Appreciation/7/Vanguard_Merit.json"
+    },
+    {
+      "id": "Appreciation_8",
+      "name": "Imperial Classic",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/8/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Appreciation/8/Imperial_Classic.json"
+    },
+    {
+      "id": "Appreciation_9",
+      "name": "Legacy of Valor",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/9/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Appreciation/9/Legacy_of_Valor.json"
+    },
+    {
+      "id": "Appreciation_10",
+      "name": "Elysian Crest",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/10/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Appreciation/10/Elysian_Crest.json"
+    },
+    {
+      "id": "Completion_1",
+      "name": "Scholastic Mastery",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/1/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Completion/1/Scholastic_Mastery.json"
+    },
+    {
+      "id": "Completion_3",
+      "name": "Summit Scholar",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/3/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Completion/3/Summit_Scholar.json"
+    },
+    {
+      "id": "Completion_4",
+      "name": "Chartered Excellence",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/4/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Completion/4/Chartered_Excellence.json"
+    },
+    {
+      "id": "Completion_5",
+      "name": "Prime Diploma",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/5/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Completion/5/Prime_Diploma.json"
+    },
+    {
+      "id": "Completion_6",
+      "name": "Regal Certification",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/6/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Completion/6/Regal_Certification.json"
+    },
+    {
+      "id": "Completion_7",
+      "name": "Signature Accomplishment",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/7/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Completion/7/Signature_Accomplishment.json"
+    },
+    {
+      "id": "Completion_8",
+      "name": "Grand Laureate",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/8/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Completion/8/Grand_Laureate.json"
+    },
+    {
+      "id": "Completion_9",
+      "name": "Mastery Distinction",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/9/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Completion/9/Mastery_Distinction.json"
+    },
+    {
+      "id": "Completion_10",
+      "name": "Crown Accreditation",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/10/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Completion/10/Crown_Accreditation.json"
+    },
+    {
+      "id": "Completion_2",
+      "name": "Apex Graduate",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/2/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Completion/2/Apex_Graduate.json"
+    },
+    {
+      "id": "Participation_1",
+      "name": "Honorary Participant",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/1/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Participation/1/Honorary_Participant.json"
+    },
+    {
+      "id": "Participation_2",
+      "name": "Dynamic Contribution",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/2/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Participation/2/Dynamic_Contribution.json"
+    },
+    {
+      "id": "Participation_3",
+      "name": "Pinnacle Delegate",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/3/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Participation/3/Pinnacle_Delegate.json"
+    },
+    {
+      "id": "Participation_4",
+      "name": "Summit Attendee",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/4/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Participation/4/Summit_Attendee.json"
+    },
+    {
+      "id": "Participation_5",
+      "name": "Global Forum",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/5/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Participation/5/Global_Forum.json"
+    },
+    {
+      "id": "Participation_6",
+      "name": "Vanguard Participant",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/6/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Participation/6/Vanguard_Participant.json"
+    },
+    {
+      "id": "Participation_7",
+      "name": "Distinguished Envoy",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/7/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Participation/7/Distinguished_Envoy.json"
+    },
+    {
+      "id": "Participation_8",
+      "name": "Ambassador Certificate",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/8/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Participation/8/Ambassador_Certificate.json"
+    },
+    {
+      "id": "Participation_9",
+      "name": "Excellence in Attendance",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/9/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Participation/9/Excellence_in_Attendance.json"
+    },
+    {
+      "id": "Participation_10",
+      "name": "Symposium Commendation",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/10/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Participation/10/Symposium_Commendation.json"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "banner_certificates": [
+    {
+      "id": "Completion_1",
+      "name": "First Division Certificate",
+      "category": "Completion",
+      "thumbnail": "assets/Final_Certificates/Completion/1/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Completion/1/First_Division.json"
+    },
+    {
+      "id": "Achievement_2",
+      "name": "Elegant Gold",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/2/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Achievement/2/Elegant_Gold.json"
+    },
+    {
+      "id": "Appreciation_3",
+      "name": "Academic Distinction",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/3/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Appreciation/3/Academic_Distinction.json"
+    },
+    {
+      "id": "Participation_7",
+      "name": "Distinguished Envoy",
+      "category": "Participation",
+      "thumbnail": "assets/Final_Certificates/Participation/7/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Participation/7/Distinguished_Envoy.json"
+    },
+    {
+      "id": "Achievement_7",
+      "name": "Emerald Elegance",
+      "category": "Achievement",
+      "thumbnail": "assets/Final_Certificates/Achievement/7/thumbnail.png",
+      "premium": true,
+      "layoutPath": "assets/Final_Certificates/Achievement/7/Emerald_Elegance.json"
+    },
+    {
+      "id": "Appreciation_1",
+      "name": "Leadership Appreciation",
+      "category": "Appreciation",
+      "thumbnail": "assets/Final_Certificates/Appreciation/1/thumbnail.png",
+      "premium": false,
+      "layoutPath": "assets/Final_Certificates/Appreciation/1/Certificate_of_Appreciation.json"
+    }
+  ]
+}

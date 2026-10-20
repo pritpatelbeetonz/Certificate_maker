@@ -56,7 +56,54 @@ dev_dependencies:
 
 flutter:
   assets:
-    - assets/Certificate/index.json
+    - assets/Final_Certificates/Fonts/
+    - assets/Final_Certificates/index.json
+    - assets/Final_Certificates/backgrounds.json
+    - assets/Final_Certificates/stickers.json
+    - assets/Final_Certificates/fonts.json
+    - assets/Final_Certificates/banner_certificates.json
+    - assets/Final_Certificates/stickers/
+    - assets/Final_Certificates/
+    - assets/Final_Certificates/Achievement/1/
+    - assets/Final_Certificates/Achievement/2/
+    - assets/Final_Certificates/Achievement/3/
+    - assets/Final_Certificates/Achievement/4/
+    - assets/Final_Certificates/Achievement/5/
+    - assets/Final_Certificates/Achievement/6/
+    - assets/Final_Certificates/Achievement/7/
+    - assets/Final_Certificates/Achievement/8/
+    - assets/Final_Certificates/Achievement/9/
+    - assets/Final_Certificates/Achievement/10/
+    - assets/Final_Certificates/Appreciation/1/
+    - assets/Final_Certificates/Appreciation/2/
+    - assets/Final_Certificates/Appreciation/3/
+    - assets/Final_Certificates/Appreciation/4/
+    - assets/Final_Certificates/Appreciation/5/
+    - assets/Final_Certificates/Appreciation/6/
+    - assets/Final_Certificates/Appreciation/7/
+    - assets/Final_Certificates/Appreciation/8/
+    - assets/Final_Certificates/Appreciation/9/
+    - assets/Final_Certificates/Appreciation/10/
+    - assets/Final_Certificates/Completion/1/
+    - assets/Final_Certificates/Completion/2/
+    - assets/Final_Certificates/Completion/3/
+    - assets/Final_Certificates/Completion/4/
+    - assets/Final_Certificates/Completion/5/
+    - assets/Final_Certificates/Completion/6/
+    - assets/Final_Certificates/Completion/7/
+    - assets/Final_Certificates/Completion/8/
+    - assets/Final_Certificates/Completion/9/
+    - assets/Final_Certificates/Completion/10/
+    - assets/Final_Certificates/Participation/1/
+    - assets/Final_Certificates/Participation/2/
+    - assets/Final_Certificates/Participation/3/
+    - assets/Final_Certificates/Participation/4/
+    - assets/Final_Certificates/Participation/5/
+    - assets/Final_Certificates/Participation/6/
+    - assets/Final_Certificates/Participation/7/
+    - assets/Final_Certificates/Participation/8/
+    - assets/Final_Certificates/Participation/9/
+    - assets/Final_Certificates/Participation/10/
     - assets/Certificate/
     - "assets/Certificate/Achievement/Classic Honor/"
     - "assets/Certificate/Achievement/Colorful Achievement/"

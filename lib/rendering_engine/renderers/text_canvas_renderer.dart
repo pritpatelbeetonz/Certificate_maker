@@ -106,20 +106,17 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
           final double charCenterFromStart = currentX + charW / 2.0;
           final double xOffsetFromCenter = charCenterFromStart - totalTextWidth / 2.0;
 
-          // Compute angle theta based on radius and bend strength multiplier
-          final double theta = (xOffsetFromCenter / radius) * (node.textBend / 100.0);
+          // Compute arc angle theta along the curve from center (preserving left-to-right x-progression)
+          final double theta = (xOffsetFromCenter / radius) * bendStrength;
 
           double dx = effectiveRadius * math.sin(theta);
-          double dy = 0.0;
-          double rotation = theta;
-
-          if (node.textBend > 0.0) {
-            // Rainbow curve (center is highest, sides bend downwards)
-            dy = effectiveRadius * (1.0 - math.cos(theta));
-          } else {
-            // Smile curve (center is lowest, sides bend upwards)
-            dy = -effectiveRadius * (1.0 - math.cos(theta));
-          }
+          // For a rainbow arch (dy > 0 as we move away from center):
+          // Left side (theta < 0) points up-right (rotation < 0)
+          // Right side (theta > 0) points down-right (rotation > 0)
+          double rotation = (node.textBend >= 0.0) ? theta : -theta;
+          double dy = (node.textBend >= 0.0)
+              ? effectiveRadius * (1.0 - math.cos(theta))
+              : -effectiveRadius * (1.0 - math.cos(theta));
 
           final double finalX = alignmentOffset + totalTextWidth / 2.0 + dx;
           final double finalY = (size.height / 2.0) + dy;

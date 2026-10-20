@@ -59,7 +59,7 @@ class _BrowsetempletsState extends State<Browsetemplets> {
 
   Future<void> _loadTemplates() async {
     try {
-      final String response = await DefaultAssetBundle.of(context).loadString('assets/Certificate/index.json');
+      final String response = await DefaultAssetBundle.of(context).loadString('assets/Final_Certificates/index.json');
       final data = json.decode(response);
       final layouts = data['layouts'] ?? [];
       
@@ -118,90 +118,6 @@ class _BrowsetempletsState extends State<Browsetemplets> {
     _filterTemplates();
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context, dynamic template) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          backgroundColor: Colors.white,
-          title: Text(
-            'Delete Project?',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18.sp,
-              color: const Color(0xFF0F172A),
-            ),
-          ),
-          content: Text(
-            'Are you sure you want to delete “${template['name'] ?? ''}”?',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF64748B),
-            ),
-          ),
-          actionsPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE5E7EB),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: const Color(0xFF1F2937),
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _allTemplates.remove(template);
-                      });
-                      _filterTemplates();
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF3B30),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Delete',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -471,18 +387,6 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                                                     ),
                                                   ),
                                                 ],
-                                              ),
-                                            ),
-
-                                            GestureDetector(
-                                              onTap: () {
-                                                _showDeleteConfirmationDialog(context, item);
-                                              },
-                                              child: Image.asset(
-                                                "assets/Text edit/delete.png",
-                                                width: 20.w,
-                                                height: 20.w,
-                                                fit: BoxFit.contain,
                                               ),
                                             ),
                                           ],

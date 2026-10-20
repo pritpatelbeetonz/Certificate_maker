@@ -1,0 +1,733 @@
+{
+  "metadata": {
+    "id": "Appreciation_5"
+  },
+  "canvas": {
+    "virtualSize": {
+      "width": 463,
+      "height": 327
+    }
+  },
+  "theme": {
+    "background": {
+      "type": "color",
+      "color": 4294967295
+    }
+  },
+  "assets": {
+    "background": {
+      "type": "image",
+      "src": "assets/Final_Certificates/Appreciation/5/bg.png"
+    },
+    "sticker": {
+      "type": "image",
+      "src": "assets/Final_Certificates/Appreciation/5/sticker.png"
+    },
+    "Kadwa": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+    },
+    "LibreBaskerville": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+    },
+    "Jomolhari": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+    },
+    "GreatVibes": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+    },
+    "Licorice": {
+      "type": "font",
+      "src": "assets/Final_Certificates/Fonts/Licorice-Regular.ttf"
+    }
+  },
+  "scene": {
+    "layers": [
+      {
+        "id": "background",
+        "displayName": "Background",
+        "type": "frame",
+        "renderPass": "content",
+        "zIndex": 0,
+        "state": {
+          "visible": true,
+          "locked": true
+        },
+        "interaction": {
+          "selectable": false,
+          "movable": false,
+          "editable": false
+        },
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 463,
+          "height": 327
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "placeholder": {
+          "assetId": "background",
+          "mediaType": "image"
+        },
+        "style": {
+          "effects": {
+            "blendMode": "normal",
+            "filters": {}
+          }
+        }
+      },
+      {
+        "id": "sticker",
+        "displayName": "Sticker",
+        "type": "sticker",
+        "renderPass": "content",
+        "zIndex": 20,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 327,
+          "y": 0,
+          "width": 84,
+          "height": 327
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "placeholder": {
+          "assetId": "sticker",
+          "mediaType": "image"
+        },
+        "style": {
+          "effects": {
+            "blendMode": "normal",
+            "filters": {}
+          }
+        }
+      },
+      {
+        "id": "certificate_title",
+        "displayName": "Certificate Title",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 45,
+          "y": 28,
+          "width": 260,
+          "height": 36
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "CERTIFICATE",
+          "textStyle": {
+            "fontFamily": "LibreBaskerville",
+            "fontSize": 26,
+            "color": 4287627264,
+            "letterSpacing": 2.5,
+            "fontWeight": "w700"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "middle"
+          },
+          "autoSize": false,
+          "maxLines": 1
+        }
+      },
+      {
+        "id": "subtitle_line_left",
+        "displayName": "Subtitle Line Left",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 61,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 61,
+          "y": 78,
+          "width": 51,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": 4289967027,
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": 4289967027
+          }
+        }
+      },
+      {
+        "id": "subtitle",
+        "displayName": "Subtitle",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 62,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 114,
+          "y": 71,
+          "width": 122,
+          "height": 15
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "OF APPRECIATION",
+          "textStyle": {
+            "fontFamily": "LibreBaskerville",
+            "fontSize": 8.5,
+            "color": 4287627264,
+            "letterSpacing": 1.5,
+            "fontWeight": "w400"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "middle"
+          },
+          "autoSize": false,
+          "maxLines": 1
+        }
+      },
+      {
+        "id": "subtitle_line_right",
+        "displayName": "Subtitle Line Right",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 63,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 239,
+          "y": 78,
+          "width": 51,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": 4289967027,
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": 4289967027
+          }
+        }
+      },
+      {
+        "id": "recipient_name",
+        "displayName": "Recipient Name",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 64,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 50,
+          "y": 118,
+          "width": 250,
+          "height": 38
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "John Doe",
+          "textStyle": {
+            "fontFamily": "GreatVibes",
+            "fontSize": 34,
+            "color": 4279317070,
+            "letterSpacing": 0.0,
+            "fontWeight": "w400"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "middle"
+          },
+          "autoSize": false,
+          "maxLines": 1
+        }
+      },
+      {
+        "id": "recipient_separator_line",
+        "displayName": "Recipient Separator Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 65,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 45,
+          "y": 154,
+          "width": 263,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": 4279571733,
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": 4279571733
+          }
+        }
+      },
+      {
+        "id": "description_paragraph",
+        "displayName": "Description Paragraph",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 66,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 40,
+          "y": 190,
+          "width": 270,
+          "height": 36
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "This certificate acknowledges your outstanding contribution and dedication\nto the Design project, showcasing your commitment to excellence,\ninnovation, and teamwork.",
+          "textStyle": {
+            "fontFamily": "Jomolhari",
+            "fontSize": 5.2,
+            "color": 4284900966,
+            "lineHeight": 1.45,
+            "fontWeight": "w400"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "middle"
+          },
+          "autoSize": false,
+          "maxLines": 3
+        }
+      },
+      {
+        "id": "date",
+        "displayName": "Date",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 67,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 60,
+          "y": 264,
+          "width": 72,
+          "height": 15
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "03/08/25",
+          "textStyle": {
+            "fontFamily": "LibreBaskerville",
+            "fontSize": 8.5,
+            "color": 4279511110,
+            "fontStyle": "italic",
+            "fontWeight": "w400"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "middle"
+          },
+          "autoSize": false,
+          "maxLines": 1
+        }
+      },
+      {
+        "id": "date_line",
+        "displayName": "Date Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 68,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 61,
+          "y": 277,
+          "width": 71,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": 4291860837,
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": 4291860837
+          }
+        }
+      },
+      {
+        "id": "date_text",
+        "displayName": "Date Text",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 69,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 61,
+          "y": 282,
+          "width": 71,
+          "height": 10
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "DATE",
+          "textStyle": {
+            "fontFamily": "Kadwa",
+            "fontSize": 4.5,
+            "color": 4285426015,
+            "letterSpacing": 1.5,
+            "fontWeight": "w400"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "middle"
+          },
+          "autoSize": false,
+          "maxLines": 1
+        }
+      },
+      {
+        "id": "signature",
+        "displayName": "Signature",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 70,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 219,
+          "y": 264,
+          "width": 71,
+          "height": 15
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "John Doe",
+          "textStyle": {
+            "fontFamily": "GreatVibes",
+            "fontSize": 12.0,
+            "color": 4282137660,
+            "fontWeight": "w400"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "middle"
+          },
+          "autoSize": false,
+          "maxLines": 1
+        }
+      },
+      {
+        "id": "signature_line",
+        "displayName": "Signature Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 71,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 219,
+          "y": 277,
+          "width": 71,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": 4291860837,
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": 4291860837
+          }
+        }
+      },
+      {
+        "id": "signature_title",
+        "displayName": "Signature Title",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 72,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 219,
+          "y": 282,
+          "width": 71,
+          "height": 10
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "SIGNATURE",
+          "textStyle": {
+            "fontFamily": "Kadwa",
+            "fontSize": 4.5,
+            "color": 4285426015,
+            "letterSpacing": 1.5,
+            "fontWeight": "w400"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "middle"
+          },
+          "autoSize": false,
+          "maxLines": 1
+        }
+      },
+      {
+        "id": "seal_curved_text",
+        "displayName": "Seal Curved Text",
+        "type": "text",
+        "renderPass": "content",
+        "zIndex": 75,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 316,
+          "y": 221,
+          "width": 70,
+          "height": 70
+        },
+        "transform": {
+          "rotation": -90.0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "certificate  of  participation",
+          "fontFamily": "Kadwa",
+          "fontSize": 5.0,
+          "color": "#1C1C1E",
+          "letterSpacing": 1.2,
+          "textBend": 100.0,
+          "textBendRadius": 20.0,
+          "align": "center",
+          "fontWeight": "400"
+        }
+      }
+    ]
+  }
+}

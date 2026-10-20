@@ -5,6 +5,14 @@ import '../geometry/vector_geometry.dart';
 import '../geometry/svg_path_parser.dart';
 import 'virtual_canvas.dart';
 
+String? _parseColorString(dynamic val) {
+  if (val == null) return null;
+  if (val is int) {
+    return '#${val.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  }
+  return val.toString();
+}
+
 abstract class CellMask {
   Path buildPath(Size size);
   Map<String, dynamic> toJson();
@@ -308,6 +316,16 @@ class NodeState {
     );
   }
 
+  NodeState copyWith({
+    bool? visible,
+    bool? locked,
+  }) {
+    return NodeState(
+      visible: visible ?? this.visible,
+      locked: locked ?? this.locked,
+    );
+  }
+
   Map<String, dynamic> toJson() => {'visible': visible, 'locked': locked};
 }
 
@@ -454,7 +472,7 @@ class FillStyle {
     }
 
     final colorsList = json['colors'] as List?;
-    final colors = colorsList?.map((c) => c as String).toList();
+    final colors = colorsList?.map((c) => _parseColorString(c) ?? '#000000').toList();
     final stopsList = json['stops'] as List?;
     final stops = stopsList?.map((s) => (s as num).toDouble()).toList();
 
@@ -487,7 +505,7 @@ class FillStyle {
 
     return FillStyle(
       type: gType,
-      color: json['color'] as String?,
+      color: _parseColorString(json['color']),
       opacity: (json['opacity'] as num? ?? 1.0).toDouble(),
       colors: colors,
       stops: stops,
@@ -562,7 +580,7 @@ class StrokeStyle {
       width: (json['width'] as num? ?? 0.0).toDouble(),
       alignment: json['alignment'] as String? ?? 'inside',
       style: sType,
-      color: json['color'] as String? ?? '#00000000',
+      color: _parseColorString(json['color']) ?? '#00000000',
       fill: json['fill'] != null
           ? FillStyle.fromJson(Map<String, dynamic>.from(json['fill'] as Map))
           : null,
@@ -615,7 +633,7 @@ class ShadowStyle {
         json['enabled'] as bool? ?? json['visible'] as bool? ?? false;
     return ShadowStyle(
       enabled: isEnabled,
-      color: json['color'] as String? ?? '#00000000',
+      color: _parseColorString(json['color']) ?? '#00000000',
       opacity: (json['opacity'] as num? ?? 1.0).toDouble(),
       offset: Offset(
         (offsetJson['x'] as num? ?? 0.0).toDouble(),
@@ -675,7 +693,7 @@ class InnerShadowStyle {
     final offsetJson = json['offset'] as Map? ?? {};
     return InnerShadowStyle(
       enabled: json['enabled'] as bool? ?? false,
-      color: json['color'] as String? ?? '#00000000',
+      color: _parseColorString(json['color']) ?? '#00000000',
       opacity: (json['opacity'] as num? ?? 1.0).toDouble(),
       offset: Offset(
         (offsetJson['x'] as num? ?? 0.0).toDouble(),
@@ -1251,6 +1269,30 @@ class GroupNode implements SceneNode {
 
   @override
   SceneNode clone() => SceneNode.fromJson(toJson());
+
+  GroupNode copyWith({
+    String? id,
+    String? displayName,
+    String? renderPass,
+    int? zIndex,
+    NodeState? state,
+    NodeInteraction? interaction,
+    NodeBounds? bounds,
+    NodeTransform? transform,
+    List<SceneNode>? children,
+  }) {
+    return GroupNode(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      renderPass: renderPass ?? this.renderPass,
+      zIndex: zIndex ?? this.zIndex,
+      state: state ?? this.state,
+      interaction: interaction ?? this.interaction,
+      bounds: bounds ?? this.bounds,
+      transform: transform ?? this.transform,
+      children: children ?? this.children,
+    );
+  }
 }
 
 class TextNode implements SceneNode {
@@ -1317,6 +1359,32 @@ class TextNode implements SceneNode {
 
   factory TextNode.fromJson(Map<String, dynamic> json) {
     final content = Map<String, dynamic>.from(json['content'] as Map? ?? json);
+    final textStyle = content['textStyle'] is Map ? Map<String, dynamic>.from(content['textStyle'] as Map) : null;
+    final alignment = content['alignment'] is Map ? Map<String, dynamic>.from(content['alignment'] as Map) : null;
+
+    final String text = (content['text'] as String?) ?? '';
+    final String fontFamily = (content['fontFamily'] as String?) ?? (textStyle?['fontFamily'] as String?) ?? 'System';
+    final double fontSize = (content['fontSize'] as num? ?? textStyle?['fontSize'] as num? ?? 14.0).toDouble();
+    final String color = _parseColorString(content['color'] ?? textStyle?['color']) ?? '#FFFFFFFF';
+    final String align = (content['textAlign'] as String? ??
+        content['align'] as String? ??
+        alignment?['horizontal'] as String? ??
+        'left');
+    final String fontWeight = (content['fontWeight'] as String?) ?? (textStyle?['fontWeight'] as String?) ?? 'normal';
+    final String fontStyle = (content['fontStyle'] as String?) ?? (textStyle?['fontStyle'] as String?) ?? 'normal';
+    final String decoration = (content['decoration'] as String?) ?? (textStyle?['decoration'] as String?) ?? 'none';
+    final double opacity = (content['opacity'] as num? ?? textStyle?['opacity'] as num? ?? 1.0).toDouble();
+    final double letterSpacing = (content['letterSpacing'] as num? ?? textStyle?['letterSpacing'] as num? ?? 0.0).toDouble();
+    final double wordSpacing = (content['wordSpacing'] as num? ?? textStyle?['wordSpacing'] as num? ?? 0.0).toDouble();
+    final double? lineHeight = content['lineHeight'] != null
+        ? (content['lineHeight'] as num).toDouble()
+        : (textStyle?['lineHeight'] != null ? (textStyle!['lineHeight'] as num).toDouble() : null);
+    final ShadowStyle shadow = content['shadow'] != null
+        ? ShadowStyle.fromJson(Map<String, dynamic>.from(content['shadow'] as Map))
+        : (textStyle?['shadow'] != null
+            ? ShadowStyle.fromJson(Map<String, dynamic>.from(textStyle!['shadow'] as Map))
+            : const ShadowStyle());
+
     return TextNode(
       id: json['id'] as String? ?? '',
       displayName: json['displayName'] as String? ?? 'Text Layer',
@@ -1334,24 +1402,19 @@ class TextNode implements SceneNode {
       transform: NodeTransform.fromJson(
         Map<String, dynamic>.from(json['transform'] as Map? ?? {}),
       ),
-      text: content['text'] as String? ?? '',
-      fontFamily: content['fontFamily'] as String? ?? 'System',
-      fontSize: (content['fontSize'] as num? ?? 14.0).toDouble(),
-      color: content['color'] as String? ?? '#FFFFFFFF',
-      align:
-          (content['textAlign'] as String? ??
-          content['align'] as String? ??
-          'left'),
-      fontWeight: content['fontWeight'] as String? ?? 'normal',
-      fontStyle: content['fontStyle'] as String? ?? 'normal',
-      decoration: content['decoration'] as String? ?? 'none',
-      opacity: (content['opacity'] as num? ?? 1.0).toDouble(),
-      letterSpacing: (content['letterSpacing'] as num? ?? 0.0).toDouble(),
-      wordSpacing: (content['wordSpacing'] as num? ?? 0.0).toDouble(),
-      lineHeight: content['lineHeight'] != null ? (content['lineHeight'] as num).toDouble() : null,
-      shadow: content['shadow'] != null
-          ? ShadowStyle.fromJson(Map<String, dynamic>.from(content['shadow'] as Map))
-          : const ShadowStyle(),
+      text: text,
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      color: color,
+      align: align,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      decoration: decoration,
+      opacity: opacity,
+      letterSpacing: letterSpacing,
+      wordSpacing: wordSpacing,
+      lineHeight: lineHeight,
+      shadow: shadow,
       textBend: (content['textBend'] as num? ?? 0.0).toDouble(),
       textBendRadius: (content['textBendRadius'] as num? ?? 300.0).toDouble(),
     );
@@ -1517,8 +1580,12 @@ class StickerNode implements SceneNode {
       transform: NodeTransform.fromJson(
         Map<String, dynamic>.from(json['transform'] as Map? ?? {}),
       ),
-      assetId: json['assetId'] as String? ?? '',
-      mediaType: json['mediaType'] as String? ?? 'image',
+      assetId: (json['assetId'] as String?)?.isNotEmpty == true
+          ? json['assetId'] as String
+          : (json['placeholder'] is Map ? (json['placeholder']['assetId']?.toString() ?? '') : ''),
+      mediaType: (json['mediaType'] as String?)?.isNotEmpty == true
+          ? json['mediaType'] as String
+          : (json['placeholder'] is Map ? (json['placeholder']['mediaType']?.toString() ?? 'image') : 'image'),
       style: json['style'] != null
           ? NodeStyle.fromJson(Map<String, dynamic>.from(json['style'] as Map))
           : null,

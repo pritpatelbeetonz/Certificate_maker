@@ -26,6 +26,7 @@ import 'widgets/text_controls_panel.dart';
 import 'widgets/logo_controls_panel.dart';
 import 'widgets/signature_controls_panel.dart';
 import 'widgets/stickers_controls_panel.dart';
+import 'widgets/background_controls_panel.dart';
 import '../rendering_engine/export/scene_export_service.dart';
 import '../Services/nsfw_detect_service.dart';
 
@@ -81,6 +82,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   final Map<String, String> _signatureNames = {};
   final Map<String, String> _signatureDimensions = {};
 
+  List<dynamic> _backgrounds = [];
+  List<dynamic> _stickers = [];
+
   // Image pool repository mapping assetId to loaded ui.Image
   final Map<String, ui.Image> _imagePool = {};
 
@@ -115,12 +119,66 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   void initState() {
     super.initState();
     _loadLayoutAndAssets();
+    _loadFonts();
+    _loadBackgrounds();
+    _loadStickers();
     _textController.addListener(_onTextChanged);
     _textFocusNode.addListener(() {
       if (!_textFocusNode.hasFocus && _editingTextNodeId != null) {
         _endEditing();
       }
     });
+  }
+
+  Future<void> _loadFonts() async {
+    try {
+      final String jsonString = await rootBundle.loadString('assets/Final_Certificates/fonts.json');
+      final Map<String, dynamic> jsonMap = json.decode(jsonString);
+      final List<dynamic> fontList = jsonMap['fonts'] ?? [];
+
+      for (var f in fontList) {
+        final id = f['id'] as String?;
+        final path = f['path'] as String?;
+        if (id != null && path != null) {
+          try {
+            await DynamicFontManager.instance.loadFont(id, path);
+            if (!_fontFamilies.contains(id)) {
+              setState(() {
+                _fontFamilies.add(id);
+              });
+            }
+          } catch (e) {
+            debugPrint("Failed to load font $id from $path: $e");
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading fonts: $e");
+    }
+  }
+
+  Future<void> _loadBackgrounds() async {
+    try {
+      final String jsonString = await rootBundle.loadString('assets/Final_Certificates/backgrounds.json');
+      final Map<String, dynamic> jsonMap = json.decode(jsonString);
+      setState(() {
+        _backgrounds = jsonMap['backgrounds'] ?? [];
+      });
+    } catch (e) {
+      debugPrint("Error loading backgrounds: $e");
+    }
+  }
+
+  Future<void> _loadStickers() async {
+    try {
+      final String jsonString = await rootBundle.loadString('assets/Final_Certificates/stickers.json');
+      final Map<String, dynamic> jsonMap = json.decode(jsonString);
+      setState(() {
+        _stickers = jsonMap['stickers'] ?? [];
+      });
+    } catch (e) {
+      debugPrint("Error loading stickers: $e");
+    }
   }
 
   @override
@@ -384,63 +442,122 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                       ),
                     ),
                   ),
-                  // Floating Zoom Controls Capsule
+                  // Floating Controls Row: Layers Notch Button + Zoom Controls Capsule
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 5.0),
-                    child: Container(
-                      padding:  EdgeInsets.symmetric(
-                        horizontal: 10.w,
-                        vertical: 10.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GestureDetector(
-                            child: const Icon(
-                              Icons.remove,
-                              size: 22,
-                              color: Color(0xFF64748B),
+                    padding: const EdgeInsets.only(bottom: 6.0, left: 16.0, right: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Floating Layer Notch Button
+                        GestureDetector(
+                          onTap: _showLayersBottomSheet,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 14.w,
+                              vertical: 8.h,
                             ),
-                            //constraints: const BoxConstraints(),
-                            //padding: EdgeInsets.zero,
-                             onTap: () {
-                               _zoomTo((_zoomScale - 0.25).clamp(0.5, 3.0));
-                             },
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '${(_zoomScale * 100).round()}%',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F172A),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.layers_rounded,
+                                  size: 20,
+                                  color: Color(0xFF2563EB),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Layers',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEFF6FF),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${_document?.layers.length ?? 0}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                      color: Color(0xFF2563EB),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          GestureDetector(
-                            child: const Icon(
-                              Icons.add,
-                              size: 22,
-                              color: Color(0xFF64748B),
-                            ),
-                            //constraints: const BoxConstraints(),
-                           // padding: EdgeInsets.zero,
-                             onTap: () {
-                               _zoomTo((_zoomScale + 0.25).clamp(0.5, 3.0));
-                             },
+                        ),
+                        // Floating Zoom Controls Capsule
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 8.h,
                           ),
-                        ],
-                      ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                child: const Icon(
+                                  Icons.remove,
+                                  size: 20,
+                                  color: Color(0xFF64748B),
+                                ),
+                                onTap: () {
+                                  _zoomTo((_zoomScale - 0.25).clamp(0.5, 3.0));
+                                },
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                '${(_zoomScale * 100).round()}%',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                child: const Icon(
+                                  Icons.add,
+                                  size: 20,
+                                  color: Color(0xFF64748B),
+                                ),
+                                onTap: () {
+                                  _zoomTo((_zoomScale + 0.25).clamp(0.5, 3.0));
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   if (_editingTextNodeId == null) ...[
@@ -1087,6 +1204,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             fontStyle: _parseFontStyle(node.fontStyle),
             decoration: _parseTextDecoration(node.decoration),
             letterSpacing: node.letterSpacing,
+            wordSpacing: node.wordSpacing,
             height: node.lineHeight,
           ),
         ),
@@ -1227,6 +1345,29 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _saveToHistory();
     });
   }
+  double _calculateTextNodeWidth(TextNode node) {
+    if (node.id.startsWith('logo') || node.id.startsWith('signature')) {
+      return node.bounds.width;
+    }
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: node.text,
+        style: TextStyle(
+          fontFamily: node.fontFamily == 'System' ? null : node.fontFamily,
+          fontSize: node.fontSize,
+          fontWeight: _parseFontWeight(node.fontWeight),
+          fontStyle: _parseFontStyle(node.fontStyle),
+          decoration: _parseTextDecoration(node.decoration),
+          letterSpacing: node.letterSpacing,
+          wordSpacing: node.wordSpacing,
+          height: node.lineHeight,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    return textPainter.width;
+  }
 
   void _updateSelectedTextProperty({
     String? fontFamily,
@@ -1252,19 +1393,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     final node = _document!.layers[index];
     if (node is TextNode) {
-      final double newFontSize = fontSize ?? node.fontSize;
-      
-      // Calculate updated width based on font size scaling if font size changed
-      double newWidth = node.bounds.width;
-      if (fontSize != null && node.fontSize > 0) {
-        final double scaleFactor = fontSize / node.fontSize;
-        newWidth = node.bounds.width * scaleFactor;
-      }
-
       // Create a temporary node to calculate the correct height
       final tempNode = node.copyWith(
         fontFamily: fontFamily ?? node.fontFamily,
-        fontSize: newFontSize,
+        fontSize: fontSize ?? node.fontSize,
         color: color ?? node.color,
         fontWeight: fontWeight ?? node.fontWeight,
         fontStyle: fontStyle ?? node.fontStyle,
@@ -1277,6 +1409,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         textBend: textBend ?? node.textBend,
         textBendRadius: textBendRadius ?? node.textBendRadius,
       );
+
+      final double oldIntrinsicWidth = _calculateTextNodeWidth(node);
+      final double newIntrinsicWidth = _calculateTextNodeWidth(tempNode);
+      final double scaleFactor = oldIntrinsicWidth > 0 ? (newIntrinsicWidth / oldIntrinsicWidth) : 1.0;
+      final double newWidth = node.bounds.width * scaleFactor;
 
       final double newHeight = _calculateTextNodeHeight(tempNode, newWidth);
 
@@ -1724,6 +1861,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     } else if (_activeTab == 'Stickers') {
       final bool isStickerSelected = _selectedNodeId != null && _selectedNodeId!.startsWith('sticker');
       return StickersControlsPanel(
+        stickers: _stickers,
         onStickerSelected: _addSticker,
         onDismiss: _closeActiveTab,
         hasSelection: isStickerSelected,
@@ -1731,6 +1869,14 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         currentOpacity: opacity,
         onOpacityChanged: (val) => _updateSelectedNodeOpacity(val, saveHistory: false),
         onOpacityChangeEnd: () => _saveToHistory(),
+      );
+    } else if (_activeTab == 'Background') {
+      final String? currentBgPath = _document?.assets['background']?.src;
+      return BackgroundsControlPanel(
+        backgrounds: _backgrounds,
+        currentBackgroundPath: currentBgPath,
+        onBackgroundSelected: _changeBackground,
+        onDismiss: _closeActiveTab,
       );
     }
     return const SizedBox.shrink();
@@ -1962,8 +2108,427 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       return node.copyWith(zIndex: newZIndex);
     } else if (node is StickerNode) {
       return node.copyWith(zIndex: newZIndex);
+    } else if (node is ShapeNode) {
+      return node.copyWith(zIndex: newZIndex);
+    } else if (node is SvgNode) {
+      return node.copyWith(zIndex: newZIndex);
+    } else if (node is FrameNode) {
+      return node.copyWith(zIndex: newZIndex);
+    } else if (node is GroupNode) {
+      return node.copyWith(zIndex: newZIndex);
     }
     return null;
+  }
+
+  SceneNode? _updateNodeState(SceneNode node, {bool? visible, bool? locked}) {
+    final newState = node.state.copyWith(visible: visible, locked: locked);
+    if (node is TextNode) {
+      return node.copyWith(state: newState);
+    } else if (node is StickerNode) {
+      return node.copyWith(state: newState);
+    } else if (node is ShapeNode) {
+      return node.copyWith(state: newState);
+    } else if (node is SvgNode) {
+      return node.copyWith(state: newState);
+    } else if (node is FrameNode) {
+      return node.copyWith(state: newState);
+    } else if (node is GroupNode) {
+      return node.copyWith(state: newState);
+    }
+    return null;
+  }
+
+  void _toggleLayerVisibility(String nodeId) {
+    if (_document == null) return;
+    final int index = _document!.layers.indexWhere((l) => l.id == nodeId);
+    if (index == -1) return;
+
+    final current = _document!.layers[index];
+    final updated = _updateNodeState(current, visible: !current.state.visible);
+    if (updated != null) {
+      setState(() {
+        _document!.layers[index] = updated;
+        if (!updated.state.visible && _selectedNodeId == nodeId) {
+          _selectNode(null);
+        }
+        _saveToHistory();
+      });
+    }
+  }
+
+  void _toggleLayerLock(String nodeId) {
+    if (_document == null) return;
+    final int index = _document!.layers.indexWhere((l) => l.id == nodeId);
+    if (index == -1) return;
+
+    final current = _document!.layers[index];
+    final updated = _updateNodeState(current, locked: !current.state.locked);
+    if (updated != null) {
+      setState(() {
+        _document!.layers[index] = updated;
+        if (updated.state.locked && _selectedNodeId == nodeId) {
+          _selectNode(null);
+        }
+        _saveToHistory();
+      });
+    }
+  }
+
+  void _bringNodeToFrontById(String nodeId) {
+    if (_document == null) return;
+    final nonSelectableLayers = _document!.layers.where((l) => !l.interaction.selectable).toList();
+    final selectableLayers = _document!.layers.where((l) => l.interaction.selectable).toList()
+      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+
+    final node = selectableLayers.firstWhereOrNull((l) => l.id == nodeId);
+    if (node == null) return;
+
+    selectableLayers.removeWhere((l) => l.id == nodeId);
+    selectableLayers.add(node);
+
+    int maxNonSelectableZ = 0;
+    for (final l in nonSelectableLayers) {
+      if (l.zIndex > maxNonSelectableZ) {
+        maxNonSelectableZ = l.zIndex;
+      }
+    }
+
+    setState(() {
+      for (int i = 0; i < selectableLayers.length; i++) {
+        final current = selectableLayers[i];
+        final newZ = maxNonSelectableZ + 10 + (i * 10);
+        final indexInDoc = _document!.layers.indexWhere((l) => l.id == current.id);
+        if (indexInDoc != -1) {
+          final updated = _updateNodeZIndex(current, newZ);
+          if (updated != null) {
+            _document!.layers[indexInDoc] = updated;
+          }
+        }
+      }
+      _saveToHistory();
+    });
+  }
+
+  void _sendNodeToBackById(String nodeId) {
+    if (_document == null) return;
+    final nonSelectableLayers = _document!.layers.where((l) => !l.interaction.selectable).toList();
+    final selectableLayers = _document!.layers.where((l) => l.interaction.selectable).toList()
+      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+
+    final node = selectableLayers.firstWhereOrNull((l) => l.id == nodeId);
+    if (node == null) return;
+
+    selectableLayers.removeWhere((l) => l.id == nodeId);
+    selectableLayers.insert(0, node);
+
+    int maxNonSelectableZ = 0;
+    for (final l in nonSelectableLayers) {
+      if (l.zIndex > maxNonSelectableZ) {
+        maxNonSelectableZ = l.zIndex;
+      }
+    }
+
+    setState(() {
+      for (int i = 0; i < selectableLayers.length; i++) {
+        final current = selectableLayers[i];
+        final newZ = maxNonSelectableZ + 10 + (i * 10);
+        final indexInDoc = _document!.layers.indexWhere((l) => l.id == current.id);
+        if (indexInDoc != -1) {
+          final updated = _updateNodeZIndex(current, newZ);
+          if (updated != null) {
+            _document!.layers[indexInDoc] = updated;
+          }
+        }
+      }
+      _saveToHistory();
+    });
+  }
+
+  void _showLayersBottomSheet() {
+    if (_document == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            if (_document == null) return const SizedBox.shrink();
+
+            // Sorted by zIndex descending so top layers appear first
+            final layers = List<SceneNode>.from(_document!.layers)
+              ..sort((a, b) => b.zIndex.compareTo(a.zIndex));
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.62,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x1F000000),
+                    blurRadius: 20,
+                    offset: Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Handle Notch Bar
+                  Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.layers_rounded,
+                                size: 20,
+                                color: Color(0xFF2563EB),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Layers (${layers.length})',
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 22),
+                          onPressed: () => Navigator.pop(bottomSheetContext),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  // Layer List
+                  Expanded(
+                    child: layers.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No layers found',
+                              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            itemCount: layers.length,
+                            separatorBuilder: (context, index) => const SizedBox(height: 6),
+                            itemBuilder: (context, index) {
+                              final layer = layers[index];
+                              final bool isSelected = _selectedNodeId == layer.id;
+                              final bool isVisible = layer.state.visible;
+                              final bool isLocked = layer.state.locked;
+
+                              // Icon and subtitle determination
+                              IconData layerIcon = Icons.crop_square_rounded;
+                              Color iconColor = const Color(0xFF64748B);
+                              String layerTitle = layer.displayName;
+                              String layerSubtitle = 'Layer';
+
+                              if (layer is TextNode) {
+                                layerIcon = Icons.title_rounded;
+                                iconColor = const Color(0xFF2563EB);
+                                layerSubtitle = 'Text: "${layer.text.replaceAll('\n', ' ')}"';
+                                if (layerTitle.isEmpty || layerTitle == 'Text Layer') {
+                                  layerTitle = layer.text.length > 25
+                                      ? '${layer.text.substring(0, 25)}...'
+                                      : layer.text;
+                                }
+                              } else if (layer is StickerNode) {
+                                layerIcon = Icons.image_rounded;
+                                iconColor = const Color(0xFF10B981);
+                                layerSubtitle = 'Image / Sticker';
+                              } else if (layer is ShapeNode) {
+                                layerIcon = Icons.category_rounded;
+                                iconColor = const Color(0xFFF59E0B);
+                                layerSubtitle = 'Shape';
+                              } else if (layer is SvgNode) {
+                                layerIcon = Icons.draw_rounded;
+                                iconColor = const Color(0xFF8B5CF6);
+                                layerSubtitle = 'Vector / SVG';
+                              }
+
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                                    width: isSelected ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: () {
+                                    if (!isLocked) {
+                                      _selectNode(layer.id);
+                                      setSheetState(() {});
+                                      setState(() {});
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                                    child: Row(
+                                      children: [
+                                        // Leading Type Icon
+                                        Container(
+                                          width: 36,
+                                          height: 36,
+                                          decoration: BoxDecoration(
+                                            color: iconColor.withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(9),
+                                          ),
+                                          child: Icon(layerIcon, size: 20, color: iconColor),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        // Layer Info
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                layerTitle.isNotEmpty ? layerTitle : layer.id,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 13.5,
+                                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                                  color: isVisible ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                                                  decoration: isVisible ? TextDecoration.none : TextDecoration.lineThrough,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                layerSubtitle,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF64748B),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Actions: Visibility, Lock, Front/Back, Delete
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Bring to front
+                                            IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                              icon: const Icon(Icons.arrow_upward_rounded, size: 18, color: Color(0xFF64748B)),
+                                              tooltip: 'Bring to Front',
+                                              onPressed: () {
+                                                _bringNodeToFrontById(layer.id);
+                                                setSheetState(() {});
+                                                setState(() {});
+                                              },
+                                            ),
+                                            // Send to back
+                                            IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                              icon: const Icon(Icons.arrow_downward_rounded, size: 18, color: Color(0xFF64748B)),
+                                              tooltip: 'Send to Back',
+                                              onPressed: () {
+                                                _sendNodeToBackById(layer.id);
+                                                setSheetState(() {});
+                                                setState(() {});
+                                              },
+                                            ),
+                                            // Visibility Toggle
+                                            IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                              icon: Icon(
+                                                isVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                                size: 19,
+                                                color: isVisible ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                                              ),
+                                              tooltip: isVisible ? 'Hide Layer' : 'Show Layer',
+                                              onPressed: () {
+                                                _toggleLayerVisibility(layer.id);
+                                                setSheetState(() {});
+                                              },
+                                            ),
+                                            // Lock Toggle
+                                            IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                              icon: Icon(
+                                                isLocked ? Icons.lock_rounded : Icons.lock_open_rounded,
+                                                size: 19,
+                                                color: isLocked ? const Color(0xFFEF4444) : const Color(0xFF94A3B8),
+                                              ),
+                                              tooltip: isLocked ? 'Unlock Layer' : 'Lock Layer',
+                                              onPressed: () {
+                                                _toggleLayerLock(layer.id);
+                                                setSheetState(() {});
+                                              },
+                                            ),
+                                            // Delete Button
+                                            IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                              icon: const Icon(
+                                                Icons.delete_outline_rounded,
+                                                size: 19,
+                                                color: Color(0xFFEF4444),
+                                              ),
+                                              tooltip: 'Delete Layer',
+                                              onPressed: () {
+                                                _deleteLayer(layer.id);
+                                                setSheetState(() {});
+                                                setState(() {});
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _duplicateSelectedNode() {
@@ -2064,6 +2629,27 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       return node.style?.effects.opacity ?? 1.0;
     }
     return 1.0;
+  }
+
+  Future<void> _changeBackground(String path) async {
+    if (_document == null) return;
+    try {
+      final ui.Image img = await _loadUiImage(path);
+      setState(() {
+        _imagePool['background'] = img;
+        if (_document!.assets.containsKey('background')) {
+          final oldAsset = _document!.assets['background']!;
+          _document!.assets['background'] = SceneAsset(
+            type: oldAsset.type,
+            src: path,
+            fallbackSrc: oldAsset.fallbackSrc,
+          );
+        }
+      });
+      _saveToHistory();
+    } catch (e) {
+      debugPrint("Failed to change background: $e");
+    }
   }
 
   Future<void> _addNewLogo() async {
@@ -2351,6 +2937,22 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                 });
               },
             ),
+            _buildBottomTab(
+              "icon:",
+              "icon:",
+              'Background',
+              isActive: _activeTab == 'Background',
+              onTap: () {
+                setState(() {
+                  if (_activeTab == 'Background') {
+                    _activeTab = '';
+                  } else {
+                    _activeTab = 'Background';
+                    _selectedNodeId = null;
+                  }
+                });
+              },
+            ),
           ],
         ),
       ),
@@ -2375,8 +2977,17 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(isActive ? UnSelectedimage:SelectedImage,width: 24.w,height: 24.w,),
-              //Icon(icon, color: col),
+              SelectedImage.startsWith('icon:')
+                  ? Icon(
+                      Icons.wallpaper_outlined,
+                      color: col,
+                      size: 24.w,
+                    )
+                  : Image.asset(
+                      isActive ? UnSelectedimage : SelectedImage,
+                      width: 24.w,
+                      height: 24.w,
+                    ),
               const SizedBox(height: 4),
               Text(
                 label,
