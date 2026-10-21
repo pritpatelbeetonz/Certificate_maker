@@ -6,7 +6,7 @@
       "category": "Completion",
       "thumbnail": "assets/Final_Certificates/Completion/1/thumbnail.png",
       "premium": false,
-      "layoutPath": "assets/Final_Certificates/Completion/1/First_Division.json"
+      "layoutPath": "assets/Final_Certificates/Completion/1/Scholastic_Mastery.json"
     },
     {
       "id": "Achievement_2",
@@ -46,7 +46,7 @@
       "category": "Appreciation",
       "thumbnail": "assets/Final_Certificates/Appreciation/1/thumbnail.png",
       "premium": false,
-      "layoutPath": "assets/Final_Certificates/Appreciation/1/Certificate_of_Appreciation.json"
+      "layoutPath": "assets/Final_Certificates/Appreciation/1/Golden_Gratitude.json"
     }
   ]
 }

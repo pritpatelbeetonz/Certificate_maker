@@ -61,12 +61,13 @@ class _HomepageState extends State<Homepage> {
   }
 
   Timer? _bannerResumeTimer;
+  DateTime? _lastTickTime;
 
   void _startBannerAutoScroll() {
     _bannerTimer?.cancel();
     _bannerResumeTimer?.cancel();
     if (_bannerCertificates.isEmpty) return;
-    _bannerTimer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
+    _bannerTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (_bannerPageController.hasClients) {
         final nextPage = (_bannerPageController.page?.round() ?? _bannerInitialPage) + 1;
         _bannerPageController.animateToPage(
@@ -93,9 +94,11 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _loadBannerCertificates() async {
     try {
+      print("[BannerCarousel] 📂 Loading banner certificates from assets...");
       final String response = await DefaultAssetBundle.of(context).loadString('assets/Final_Certificates/banner_certificates.json');
       final data = json.decode(response);
       final List<dynamic> certs = data['banner_certificates'] ?? [];
+      print("[BannerCarousel] 📂 Loaded ${certs.length} banner certificates");
       if (mounted) {
         setState(() {
           _bannerCertificates = certs;
@@ -103,7 +106,7 @@ class _HomepageState extends State<Homepage> {
         _startBannerAutoScroll();
       }
     } catch (e) {
-      debugPrint("Error loading banner certificates: $e");
+      print("[BannerCarousel] ❌ Error loading banner certificates: $e");
     }
   }
 
@@ -433,9 +436,10 @@ class _HomepageState extends State<Homepage> {
                   height: 195.h,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
-                      if (notification is ScrollStartNotification) {
+                      // Only react to REAL user drag, not programmatic animateToPage
+                      if (notification is ScrollStartNotification && notification.dragDetails != null) {
                         _onUserInteractionStart();
-                      } else if (notification is ScrollEndNotification) {
+                      } else if (notification is ScrollEndNotification && notification.dragDetails != null) {
                         _onUserInteractionEnd();
                       }
                       return false;
