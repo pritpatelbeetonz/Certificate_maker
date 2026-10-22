@@ -236,15 +236,37 @@ class FetchDataFromServerServices {
       debugPrint("[FetchData] ⚠ Error reading layout cache for '$layoutPath': $e");
     }
 
-    final String resolvedPath = (layoutPath.isNotEmpty &&
-            !layoutPath.startsWith('assets/') &&
-            !layoutPath.startsWith('http'))
-        ? 'assets/$layoutPath'
-        : layoutPath;
+    final String fileName = layoutPath.split('/').last;
 
-    debugPrint("[FetchData] 📁 Loading layout from asset: $resolvedPath");
-    final assetContent = await rootBundle.loadString(resolvedPath);
-    debugPrint("[FetchData] 📦 Loaded layout asset '$resolvedPath' (${assetContent.length} chars)");
-    return assetContent;
+    // If not in cache and layoutPath is a server relative path, fetch it on-demand from server
+    if (layoutPath.isNotEmpty && !layoutPath.startsWith('http://') && !layoutPath.startsWith('https://')) {
+      final String remoteUrl = FetchDataFromServerServices.resolveThumbnailUrl(layoutPath);
+      debugPrint("[FetchData] 🌐 Layout '$fileName' not in cache. Fetching from server: $remoteUrl");
+      try {
+        final response = await http.get(Uri.parse(remoteUrl)).timeout(const Duration(seconds: 15));
+        if (response.statusCode == 200 && response.body.isNotEmpty) {
+          final file = await _getLocalFile(fileName);
+          await file.writeAsString(response.body);
+          debugPrint("[FetchData] ✅ Cached on-demand layout '$fileName' (${response.body.length} bytes)");
+          return response.body;
+        }
+      } catch (e) {
+        debugPrint("[FetchData] ❌ Error fetching remote layout: $e");
+      }
+    }
+
+    try {
+      final String resolvedPath = (layoutPath.isNotEmpty &&
+              !layoutPath.startsWith('assets/') &&
+              !layoutPath.startsWith('http'))
+          ? 'assets/$layoutPath'
+          : layoutPath;
+
+      debugPrint("[FetchData] 📁 Attempting layout load from asset: $resolvedPath");
+      return await rootBundle.loadString(resolvedPath);
+    } catch (e) {
+      debugPrint("[FetchData] ⚠ Asset fallback not available for '$layoutPath': $e");
+      return '{}';
+    }
   }
 }
