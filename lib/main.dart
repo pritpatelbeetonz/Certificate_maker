@@ -17,7 +17,16 @@ import 'for_ads/utils/app_constants.dart';
 import 'for_ads/utils/shared_prefrence_service.dart';
 import 'for_ads/utils/store_config.dart';
 
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() async {
+  HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox('saved_projects');
