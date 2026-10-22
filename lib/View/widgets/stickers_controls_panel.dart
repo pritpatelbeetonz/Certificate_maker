@@ -31,22 +31,22 @@ class _StickersControlsPanelState extends State<StickersControlsPanel> {
   String _selectedCategory = 'All';
 
   static const List<String> _fallbackStickerAssets = [
-    'assets/Final_Certificates/stickers/set-vintage-badges-with-red-ribbons 1.png',
-    'assets/Final_Certificates/stickers/set-vintage-badges-with-red-ribbons 2.png',
-    'assets/Final_Certificates/stickers/set-vintage-badges-with-red-ribbons 3.png',
-    'assets/Final_Certificates/stickers/set-vintage-badges-with-red-ribbons 4.png',
-    'assets/Final_Certificates/stickers/image 131.png',
-    'assets/Final_Certificates/stickers/image 132.png',
-    'assets/Final_Certificates/stickers/image 133.png',
-    'assets/Final_Certificates/stickers/image 134.png',
-    'assets/Final_Certificates/stickers/image 135.png',
-    'assets/Final_Certificates/stickers/image 136.png',
-    'assets/Final_Certificates/stickers/Group.png',
-    'assets/Final_Certificates/stickers/Group-1.png',
-    'assets/Final_Certificates/stickers/Frame 2085663520.png',
-    'assets/Final_Certificates/stickers/image 128.png',
-    'assets/Final_Certificates/stickers/image 129.png',
-    'assets/Final_Certificates/stickers/image 130.png',
+    'assets/Final_Certificates/stickers/vintage_ribbon_badge_01.png',
+    'assets/Final_Certificates/stickers/vintage_ribbon_badge_02.png',
+    'assets/Final_Certificates/stickers/vintage_ribbon_badge_03.png',
+    'assets/Final_Certificates/stickers/vintage_ribbon_badge_04.png',
+    'assets/Final_Certificates/stickers/classic_badge_07.png',
+    'assets/Final_Certificates/stickers/classic_badge_08.png',
+    'assets/Final_Certificates/stickers/classic_badge_09.png',
+    'assets/Final_Certificates/stickers/classic_badge_10.png',
+    'assets/Final_Certificates/stickers/classic_badge_11.png',
+    'assets/Final_Certificates/stickers/classic_badge_12.png',
+    'assets/Final_Certificates/stickers/classic_badge_03.png',
+    'assets/Final_Certificates/stickers/classic_badge_02.png',
+    'assets/Final_Certificates/stickers/classic_badge_01.png',
+    'assets/Final_Certificates/stickers/classic_badge_04.png',
+    'assets/Final_Certificates/stickers/classic_badge_05.png',
+    'assets/Final_Certificates/stickers/classic_badge_06.png',
   ];
 
   List<String> get _categories {
