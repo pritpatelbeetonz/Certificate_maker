@@ -561,15 +561,19 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
           package.identifier: package,
       };
 
-      setState(() {
-        _hasInternet = true;
-      });
-      fetchData();
-      getprice();
+      if (mounted) {
+        setState(() {
+          _hasInternet = true;
+        });
+        fetchData();
+        getprice();
+      }
     } on PlatformException catch (_) {
-      setState(() {
-        _hasInternet = false;
-      });
+      if (mounted) {
+        setState(() {
+          _hasInternet = false;
+        });
+      }
     }
   }
 

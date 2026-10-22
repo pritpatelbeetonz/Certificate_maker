@@ -476,21 +476,21 @@ class _HomepageState extends State<Homepage> {
                               return Transform.scale(
                                 scale: scale,
                                 alignment: Alignment.center,
-                                child: Opacity(
-                                  opacity: opacity,
-                                  child: Container(
-                                    margin: EdgeInsets.only(top: 6.h, bottom: 18.h, left: 4.w, right: 4.w),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16.r),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF0F172A).withValues(alpha: 0.14),
-                                          blurRadius: 16.r,
-                                          spreadRadius: 1,
-                                          offset: Offset(0, 8.h),
-                                        ),
-                                      ],
-                                    ),
+                                child: Container(
+                                  margin: EdgeInsets.only(top: 6.h, bottom: 18.h, left: 4.w, right: 4.w),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF0F172A).withValues(alpha: 0.14 * opacity),
+                                        blurRadius: 16.r,
+                                        spreadRadius: 1,
+                                        offset: Offset(0, 8.h),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Opacity(
+                                    opacity: opacity,
                                     child: child,
                                   ),
                                 ),
