@@ -32,23 +32,27 @@ class AdsSplashUtils {
     print("");
     prefs = await SharedPreferences.getInstance();
 
-    /// IOS
-    AdsVariable.appOpenAdsIOS = prefs.getString("tr_appOpenAd") ?? "11";
-
-    AdsVariable.interSplashIOS =
-        prefs.getString("tr_splashInterstitialAd") ?? "11";
-    AdsVariable.bigNativeSurveyAdIOS1 =
-        prefs.getString("tr_surveyBigNative1") ?? "11";
-    AdsVariable.bigNativeSurveyAdIOS2 =
-        prefs.getString("tr_surveyBigNative2") ?? "11";
-    AdsVariable.fullNativeIntroAdIOS =
-        prefs.getString("tr_introFullNative") ?? "11";
-    AdsVariable.smallThirdIntroNativeIntroAdIOS =
-        prefs.getString("tr_smallThirdIntroNative") ?? "11";
-    AdsVariable.interPreLoadIOS =
-        prefs.getString("tr_preInterstitialAd") ?? "11";
+    /// Ad unit IDs (supporting both pr_ and tr_ prefixes)
+    AdsVariable.appOpenAdsIOS = prefs.getString("pr_appOpenAd") ?? prefs.getString("tr_appOpenAd") ?? "11";
+    AdsVariable.interSplashIOS = prefs.getString("pr_splashInterstitialAd") ?? prefs.getString("tr_splashInterstitialAd") ?? "11";
+    AdsVariable.bigNativeSurveyAdIOS1 = prefs.getString("pr_surveyBigNative1") ?? prefs.getString("tr_surveyBigNative1") ?? "11";
+    AdsVariable.bigNativeSurveyAdIOS2 = prefs.getString("pr_surveyBigNative2") ?? prefs.getString("tr_surveyBigNative2") ?? "11";
+    AdsVariable.fullNativeIntroAdIOS = prefs.getString("pr_introFullNative") ?? prefs.getString("tr_introFullNative") ?? "11";
+    AdsVariable.smallThirdIntroNativeIntroAdIOS = prefs.getString("pr_smallThirdIntroNative") ?? prefs.getString("tr_smallThirdIntroNative") ?? "11";
+    AdsVariable.interPreLoadIOS = prefs.getString("pr_preInterstitialAd") ?? prefs.getString("tr_preInterstitialAd") ?? "11";
     AdsVariable.click = prefs.getString("click") ?? "2";
     AdsVariable.supportContactEmail = prefs.getString("supportContactEmail") ?? "qwertyui567@testing.com";
+
+    // Ad Revenue Analytics switches from SharedPreferences
+    AdsVariable.sendRevenueToAnalytics = prefs.getBool("sendRevenueToAnalytics") ?? true;
+    AdsVariable.sendRevenueAppOpenSplash = prefs.getBool("send_revenue_app_open_splash") ?? true;
+    AdsVariable.sendRevenueAppOpenIntro = prefs.getBool("send_revenue_app_open_intro") ?? true;
+    AdsVariable.sendRevenueInterSplash = prefs.getBool("send_revenue_inter_splash") ?? true;
+    AdsVariable.sendRevenueInterMain = prefs.getBool("send_revenue_inter_main") ?? true;
+    AdsVariable.sendRevenueSurveyNative1 = prefs.getBool("send_revenue_survey_native_1") ?? true;
+    AdsVariable.sendRevenueSurveyNative2 = prefs.getBool("send_revenue_survey_native_2") ?? true;
+    AdsVariable.sendRevenueIntroFullNative = prefs.getBool("send_revenue_intro_full_native") ?? false;
+    AdsVariable.sendRevenueIntroSmallNative = prefs.getBool("send_revenue_intro_small_native") ?? false;
 
     AdsVariable.nativeBGColor = prefs.getString("nativeBGColor") ?? "#141414";
     AdsVariable.headerTextColor =
@@ -108,15 +112,15 @@ class AdsSplashUtils {
         AdsVariable.facebookToken = mapValues1["fb_token"]?.toString() ?? "11";
         AdsVariable.freeUserTempletAllowed = int.tryParse(mapValues1['freeUserTempletAllowed']?.toString() ?? '') ?? AdsVariable.freeUserTempletAllowed;
         AdsVariable.freeUserLayoutsAllowed = int.tryParse(mapValues1['freeUserLayoutsAllowed']?.toString() ?? '') ?? AdsVariable.freeUserLayoutsAllowed;
-        AdsVariable.appOpenAdsIOS = mapValues1["tr_appOpenAd"]?.toString() ?? "11";
-        AdsVariable.interSplashIOS = mapValues1["tr_splashInterstitialAd"]?.toString() ?? "11";
+        AdsVariable.appOpenAdsIOS = mapValues1["pr_appOpenAd"]?.toString() ?? mapValues1["tr_appOpenAd"]?.toString() ?? "11";
+        AdsVariable.interSplashIOS = mapValues1["pr_splashInterstitialAd"]?.toString() ?? mapValues1["tr_splashInterstitialAd"]?.toString() ?? "11";
 
-        AdsVariable.bigNativeSurveyAdIOS1 = mapValues1["tr_surveyBigNative1"]?.toString() ?? "11";
-        AdsVariable.bigNativeSurveyAdIOS2 = mapValues1["tr_surveyBigNative2"]?.toString() ?? "11";
-        AdsVariable.fullNativeIntroAdIOS = mapValues1["tr_introFullNative"]?.toString() ?? "11";
+        AdsVariable.bigNativeSurveyAdIOS1 = mapValues1["pr_surveyBigNative1"]?.toString() ?? mapValues1["tr_surveyBigNative1"]?.toString() ?? "11";
+        AdsVariable.bigNativeSurveyAdIOS2 = mapValues1["pr_surveyBigNative2"]?.toString() ?? mapValues1["tr_surveyBigNative2"]?.toString() ?? "11";
+        AdsVariable.fullNativeIntroAdIOS = mapValues1["pr_introFullNative"]?.toString() ?? mapValues1["tr_introFullNative"]?.toString() ?? "11";
         AdsVariable.smallThirdIntroNativeIntroAdIOS =
-            mapValues1["tr_smallThirdIntroNative"]?.toString() ?? "11";
-        AdsVariable.interPreLoadIOS = mapValues1["tr_preInterstitialAd"]?.toString() ?? "11";
+            mapValues1["pr_smallThirdIntroNative"]?.toString() ?? mapValues1["tr_smallThirdIntroNative"]?.toString() ?? "11";
+        AdsVariable.interPreLoadIOS = mapValues1["pr_preInterstitialAd"]?.toString() ?? mapValues1["tr_preInterstitialAd"]?.toString() ?? "11";
 
         AdsVariable.nativeBGColor = mapValues1['nativeBGColor']?.toString() ?? '#141414';
         AdsVariable.headerTextColor = mapValues1["headlineTxtColor"]?.toString() ?? "#FFFFFF";
@@ -126,6 +130,17 @@ class AdsSplashUtils {
         AdsVariable.btnTextColor = mapValues1["buttonTxtColor"]?.toString() ?? "#FFFFFF";
         AdsVariable.click = mapValues1["click"]?.toString() ?? "2";
         AdsVariable.OpenAdInSplash = mapValues1["showOpenAdInSplash"] ?? false;
+
+        // Parse ad revenue switches from Remote Config
+        AdsVariable.sendRevenueToAnalytics = mapValues1["sendRevenueToAnalytics"] ?? AdsVariable.sendRevenueToAnalytics;
+        AdsVariable.sendRevenueAppOpenSplash = mapValues1["send_revenue_app_open_splash"] ?? AdsVariable.sendRevenueAppOpenSplash;
+        AdsVariable.sendRevenueAppOpenIntro = mapValues1["send_revenue_app_open_intro"] ?? AdsVariable.sendRevenueAppOpenIntro;
+        AdsVariable.sendRevenueInterSplash = mapValues1["send_revenue_inter_splash"] ?? AdsVariable.sendRevenueInterSplash;
+        AdsVariable.sendRevenueInterMain = mapValues1["send_revenue_inter_main"] ?? AdsVariable.sendRevenueInterMain;
+        AdsVariable.sendRevenueSurveyNative1 = mapValues1["send_revenue_survey_native_1"] ?? AdsVariable.sendRevenueSurveyNative1;
+        AdsVariable.sendRevenueSurveyNative2 = mapValues1["send_revenue_survey_native_2"] ?? AdsVariable.sendRevenueSurveyNative2;
+        AdsVariable.sendRevenueIntroFullNative = mapValues1["send_revenue_intro_full_native"] ?? AdsVariable.sendRevenueIntroFullNative;
+        AdsVariable.sendRevenueIntroSmallNative = mapValues1["send_revenue_intro_small_native"] ?? AdsVariable.sendRevenueIntroSmallNative;
 
         AdsVariable.GeminiApi =
             mapValues1["GeminiApi"]?.toString() ??
@@ -174,30 +189,37 @@ class AdsSplashUtils {
         prefs.setString("fb_appid", mapValues1["fb_appid"]?.toString() ?? "11");
         prefs.setString("fb_token", mapValues1["fb_token"]?.toString() ?? "11");
 
-        prefs.setString("tr_appOpenAd", mapValues1["tr_appOpenAd"]?.toString() ?? "11");
+        prefs.setString("pr_appOpenAd", AdsVariable.appOpenAdsIOS);
+        prefs.setString("tr_appOpenAd", AdsVariable.appOpenAdsIOS);
+        prefs.setString("pr_splashInterstitialAd", AdsVariable.interSplashIOS);
         prefs.setString(
           "tr_splashInterstitialAd",
-          mapValues1["tr_splashInterstitialAd"]?.toString() ?? "11",
+          AdsVariable.interSplashIOS,
         );
+        prefs.setString("pr_preInterstitialAd", AdsVariable.interPreLoadIOS);
         prefs.setString(
           "tr_preInterstitialAd",
-          mapValues1["tr_preInterstitialAd"]?.toString() ?? "11",
+          AdsVariable.interPreLoadIOS,
         );
+        prefs.setString("pr_surveyBigNative1", AdsVariable.bigNativeSurveyAdIOS1);
         prefs.setString(
           "tr_surveyBigNative1",
-          mapValues1["tr_surveyBigNative1"]?.toString() ?? "11",
+          AdsVariable.bigNativeSurveyAdIOS1,
         );
+        prefs.setString("pr_surveyBigNative2", AdsVariable.bigNativeSurveyAdIOS2);
         prefs.setString(
           "tr_surveyBigNative2",
-          mapValues1["tr_surveyBigNative2"]?.toString() ?? "11",
+          AdsVariable.bigNativeSurveyAdIOS2,
         );
+        prefs.setString("pr_introFullNative", AdsVariable.fullNativeIntroAdIOS);
         prefs.setString(
           "tr_introFullNative",
-          mapValues1["tr_introFullNative"]?.toString() ?? "11",
+          AdsVariable.fullNativeIntroAdIOS,
         );
+        prefs.setString("pr_smallThirdIntroNative", AdsVariable.smallThirdIntroNativeIntroAdIOS);
         prefs.setString(
           "tr_smallThirdIntroNative",
-          mapValues1["tr_smallThirdIntroNative"]?.toString() ?? "11",
+          AdsVariable.smallThirdIntroNativeIntroAdIOS,
         );
         prefs.setString("click", mapValues1["click"]?.toString() ?? "2");
         prefs.setString("supportContactEmail", mapValues1["supportContactEmail"]?.toString() ?? "qwertyui567@testing.com");
@@ -205,6 +227,17 @@ class AdsSplashUtils {
           "showOpenAdInSplash",
           mapValues1["showOpenAdInSplash"] ?? false,
         );
+
+        // Persist revenue analytics switches
+        prefs.setBool("sendRevenueToAnalytics", AdsVariable.sendRevenueToAnalytics);
+        prefs.setBool("send_revenue_app_open_splash", AdsVariable.sendRevenueAppOpenSplash);
+        prefs.setBool("send_revenue_app_open_intro", AdsVariable.sendRevenueAppOpenIntro);
+        prefs.setBool("send_revenue_inter_splash", AdsVariable.sendRevenueInterSplash);
+        prefs.setBool("send_revenue_inter_main", AdsVariable.sendRevenueInterMain);
+        prefs.setBool("send_revenue_survey_native_1", AdsVariable.sendRevenueSurveyNative1);
+        prefs.setBool("send_revenue_survey_native_2", AdsVariable.sendRevenueSurveyNative2);
+        prefs.setBool("send_revenue_intro_full_native", AdsVariable.sendRevenueIntroFullNative);
+        prefs.setBool("send_revenue_intro_small_native", AdsVariable.sendRevenueIntroSmallNative);
 
         /// Check available purchases
         debugPrint('=======hi prit =======');

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
@@ -339,5 +340,67 @@ class FetchDataFromServerServices {
       debugPrint("[FetchData] ⚠ Asset fallback not available for '$layoutPath': $e");
       return '{}';
     }
+  }
+
+  /// 7. Load raw image bytes from server, cache on disk, or fallback to bundled asset
+  static Future<Uint8List> loadAssetBytes(String source) async {
+    if (source.isEmpty) {
+      throw Exception('Empty source path');
+    }
+
+    // 1. If it's already a local file path that exists on disk
+    if (File(source).existsSync()) {
+      return await File(source).readAsBytes();
+    }
+
+    // 2. Derive a deterministic local cache filename for this resource
+    final String cleanPath = source.replaceFirst('assets/', '');
+    final String sanitizedFileName = cleanPath.replaceAll('/', '_').replaceAll('\\', '_');
+    final file = await _getLocalFile(sanitizedFileName);
+
+    if (await file.exists()) {
+      final bytes = await file.readAsBytes();
+      if (bytes.isNotEmpty) {
+        return bytes;
+      }
+    }
+
+    // 3. Resolve remote URL on server
+    final String remoteUrl = resolveThumbnailUrl(source);
+    if (remoteUrl.startsWith('http://') || remoteUrl.startsWith('https://')) {
+      try {
+        final client = HttpClient();
+        client.badCertificateCallback = (cert, host, port) => true;
+        final request = await client.getUrl(Uri.parse(remoteUrl)).timeout(const Duration(seconds: 15));
+        final response = await request.close();
+        if (response.statusCode == 200) {
+          final bytes = await consolidateHttpClientResponseBytes(response);
+          if (bytes.isNotEmpty) {
+            await file.writeAsBytes(bytes);
+            debugPrint("[FetchData] ✅ Downloaded and cached image asset '$sanitizedFileName' (${bytes.length} bytes)");
+            return bytes;
+          }
+        } else {
+          debugPrint("[FetchData] ⚠ Server returned HTTP ${response.statusCode} for '$remoteUrl'");
+        }
+      } catch (e) {
+        debugPrint("[FetchData] ❌ Error downloading asset from '$remoteUrl': $e");
+      }
+    }
+
+    // 4. Fallback to bundled asset if still present in APK
+    final String assetFallback = (source.isNotEmpty && !source.startsWith('assets/') && !source.startsWith('http'))
+        ? 'assets/$source'
+        : source;
+    final byteData = await rootBundle.load(assetFallback);
+    return byteData.buffer.asUint8List();
+  }
+
+  /// 8. Decode a ui.Image from server, disk cache, or local bundle
+  static Future<ui.Image> loadUiImage(String source) async {
+    final Uint8List bytes = await loadAssetBytes(source);
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    return frame.image;
   }
 }

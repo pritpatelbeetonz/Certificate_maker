@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, unused_local_variable
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -20,6 +20,7 @@ import 'package:hive/hive.dart';
 import 'HomePage.dart';
 import 'previewCertificatePage.dart';
 import 'fullScreenViewerPage.dart';
+import 'package:lottie/lottie.dart';
 import '../Services/fetch_data_from_server_service.dart';
 
 import 'widgets/realtime_certificate_painter.dart';
@@ -48,6 +49,9 @@ class EditCertificatePage extends StatefulWidget {
 class _EditCertificatePageState extends State<EditCertificatePage> {
   SceneDocument? _document;
   bool _isLoading = true;
+  String _loadingStatus = 'Preparing your certificate...';
+  int _loadingStep = 0;
+  Timer? _tipTimer;
   String? _selectedNodeId;
   String _activeTab = '';
   double _zoomScale = 1.0;
@@ -116,9 +120,18 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     'OoohBaby',
   ];
 
+  static const List<String> _loadingTips = [
+    'Preparing high-resolution certificate canvas...',
+    'Downloading premium backgrounds & borders...',
+    'Syncing beautiful typography & fonts...',
+    'Fetching stickers & official badges...',
+    'Almost ready to design your masterpiece...',
+  ];
+
   @override
   void initState() {
     super.initState();
+    _startTipTimer();
     _loadLayoutAndAssets();
     _loadFonts();
     _loadBackgrounds();
@@ -131,9 +144,23 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     });
   }
 
+  void _startTipTimer() {
+    _tipTimer = Timer.periodic(const Duration(milliseconds: 1800), (timer) {
+      if (!mounted || !_isLoading) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        _loadingStep = (_loadingStep + 1) % _loadingTips.length;
+        _loadingStatus = _loadingTips[_loadingStep];
+      });
+    });
+  }
+
   Future<void> _loadFonts() async {
     try {
-      final String jsonString = await FetchDataFromServerServices.loadFontsJson();
+      final String jsonString =
+          await FetchDataFromServerServices.loadFontsJson();
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       final List<dynamic> fontList = jsonMap['fonts'] ?? [];
 
@@ -142,7 +169,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         final path = f['path'] as String?;
         if (id != null && path != null) {
           try {
-            await DynamicFontManager.instance.loadFont(id, path);
+            await DynamicFontManager.instance.loadFont(
+              id,
+              path,
+              assetByteProvider: (p) =>
+                  FetchDataFromServerServices.loadAssetBytes(p),
+            );
             if (!_fontFamilies.contains(id)) {
               setState(() {
                 _fontFamilies.add(id);
@@ -160,7 +192,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   Future<void> _loadBackgrounds() async {
     try {
-      final String jsonString = await FetchDataFromServerServices.loadBackgroundsJson();
+      final String jsonString =
+          await FetchDataFromServerServices.loadBackgroundsJson();
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       setState(() {
         _backgrounds = jsonMap['backgrounds'] ?? [];
@@ -172,7 +205,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   Future<void> _loadStickers() async {
     try {
-      final String jsonString = await FetchDataFromServerServices.loadStickersJson();
+      final String jsonString =
+          await FetchDataFromServerServices.loadStickersJson();
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       setState(() {
         _stickers = jsonMap['stickers'] ?? [];
@@ -184,6 +218,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   @override
   void dispose() {
+    _tipTimer?.cancel();
     _textController.removeListener(_onTextChanged);
     _textController.dispose();
     _textFocusNode.dispose();
@@ -192,13 +227,104 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     super.dispose();
   }
 
+  Widget _buildLoadingView() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: const Color(0xFFF8F9FA),
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Center(
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Lottie Illustration
+              SizedBox(
+                width: 260.w,
+                height: 260.w,
+                child: Lottie.asset(
+                  'assets/animations/Business plan.json',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 140.w,
+                      height: 140.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6F5BFF).withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.workspace_premium_outlined,
+                          size: 56,
+                          color: Color(0xFF6F5BFF),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 10.h),
+
+              // Engaging Header
+              Text(
+                'Setting Up Your Canvas',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF0F172A),
+                  fontFamily: 'Inter',
+                  letterSpacing: -0.3,
+                ),
+              ),
+              SizedBox(height: 10.h),
+
+              // Animated rotating tips/text
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.0, 0.2),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Text(
+                  _loadingStatus,
+                  key: ValueKey<String>(_loadingStatus),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: const Color(0xFF64748B),
+                    fontFamily: 'Inter',
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final selectedLayer = (_selectedNodeId != null && _document != null)
         ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
         : null;
-    final TextNode? selectedNode = selectedLayer is TextNode ? selectedLayer : null;
+    final TextNode? selectedNode = selectedLayer is TextNode
+        ? selectedLayer
+        : null;
 
     return PopScope(
       canPop: false,
@@ -207,102 +333,139 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         _onBackPress();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8F9Fa),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leadingWidth: 140.w,
-          leading: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
-                onPressed: _onBackPress,
-              ),
-              GestureDetector(
-                onLongPress: _historyIndex > 0 ? _resetToFirstState : null,
-                child: GestureDetector(
-                  onTap: _historyIndex > 0 ? _undo : null,
-                  child: Image.asset( _historyIndex > 0 ?
-                    "assets/Text edit/Button.png":"assets/Text edit/Button ON.png",width: 32.w,height: 32.w
-                  ),
+        backgroundColor: const Color(0xFFF8F9FA),
+        appBar: _isLoading
+            ? null
+            : AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                leadingWidth: 140.w,
+                leading: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Color(0xFF0F172A),
+                      ),
+                      onPressed: _onBackPress,
+                    ),
+                    GestureDetector(
+                      onLongPress: _historyIndex > 0
+                          ? _resetToFirstState
+                          : null,
+                      child: GestureDetector(
+                        onTap: _historyIndex > 0 ? _undo : null,
+                        child: Image.asset(
+                          _historyIndex > 0
+                              ? "assets/Text edit/Button.png"
+                              : "assets/Text edit/Button ON.png",
+                          width: 32.w,
+                          height: 32.w,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onLongPress: _historyIndex < _history.length - 1
+                          ? _resetToLastState
+                          : null,
+                      child: GestureDetector(
+                        onTap: _historyIndex < _history.length - 1
+                            ? _redo
+                            : null,
+                        child: Image.asset(
+                          _historyIndex < _history.length - 1
+                              ? "assets/Text edit/Button_margin.png"
+                              : "assets/Text edit/Button_margin ON.png",
+                          width: 32.w,
+                          height: 32.w,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              GestureDetector(
-                onLongPress: _historyIndex < _history.length - 1 ? _resetToLastState : null,
-                child: GestureDetector(
-                  onTap: _historyIndex < _history.length - 1 ? _redo : null,
-                  child: Image.asset( _historyIndex < _history.length - 1?
-                    "assets/Text edit/Button_margin.png":"assets/Text edit/Button_margin ON.png",width: 32.w,height: 32.w,
+                actions: [
+                  if (_selectedNodeId != null) ...[
+                    IconButton(
+                      icon: const Icon(
+                        Icons.vertical_align_top,
+                        color: Color(0xFF0F172A),
+                      ),
+                      tooltip: 'Bring to Front',
+                      onPressed: _bringSelectedNodeToFront,
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.vertical_align_bottom,
+                        color: Color(0xFF0F172A),
+                      ),
+                      tooltip: 'Send to Back',
+                      onPressed: _sendSelectedNodeToBack,
+                    ),
+                  ],
+                  if (_selectedNodeId == null)
+                    GestureDetector(
+                      child: const Icon(
+                        Icons.fullscreen,
+                        color: Color(0xFF0F172A),
+                      ),
+                      //tooltip: 'Preview Landscape',
+                      onTap: () async {
+                        if (_document == null) return;
+                        await Get.to(
+                          () => FullScreenViewerPage(
+                            document: _document!,
+                            imagePool: _imagePool,
+                            picturePool: _picturePool,
+                          ),
+                        );
+                        await SystemChrome.setEnabledSystemUIMode(
+                          SystemUiMode.edgeToEdge,
+                        );
+                        await SystemChrome.setPreferredOrientations([
+                          DeviceOrientation.portraitUp,
+                        ]);
+                        setState(() {});
+                      },
+                    ),
+                  //const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 12,
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_document == null) return;
+                        Get.to(
+                          () => PreviewCertificatePage(
+                            document: _document!,
+                            imagePool: _imagePool,
+                            picturePool: _picturePool,
+                            layoutPath: widget.layoutPath,
+                            savedProjectName: widget.savedProjectName,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5B21B6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      child: const Text(
+                        'Export',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-          actions: [
-            if (_selectedNodeId != null) ...[
-              IconButton(
-                icon: const Icon(Icons.vertical_align_top, color: Color(0xFF0F172A)),
-                tooltip: 'Bring to Front',
-                onPressed: _bringSelectedNodeToFront,
-              ),
-              IconButton(
-                icon: const Icon(Icons.vertical_align_bottom, color: Color(0xFF0F172A)),
-                tooltip: 'Send to Back',
-                onPressed: _sendSelectedNodeToBack,
-              ),
-            ],
-            if (_selectedNodeId == null)
-              GestureDetector(
-                child: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
-                //tooltip: 'Preview Landscape',
-                onTap: () async {
-                  if (_document == null) return;
-                  await Get.to(() => FullScreenViewerPage(
-                        document: _document!,
-                        imagePool: _imagePool,
-                        picturePool: _picturePool,
-                      ));
-                  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-                  await SystemChrome.setPreferredOrientations([
-                    DeviceOrientation.portraitUp,
-                  ]);
-                  setState(() {});
-                },
-              ),
-            //const SizedBox(width: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_document == null) return;
-                  Get.to(() => PreviewCertificatePage(
-                        document: _document!,
-                        imagePool: _imagePool,
-                        picturePool: _picturePool,
-                        layoutPath: widget.layoutPath,
-                        savedProjectName: widget.savedProjectName,
-                      ));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5B21B6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                child: const Text(
-                  'Export',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
         body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? _buildLoadingView()
             : _document == null
             ? const Center(child: Text("Error loading layout"))
             : Column(
@@ -367,10 +530,14 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                         height: targetH,
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withOpacity(0.08),
+                                              color: Colors.black.withOpacity(
+                                                0.08,
+                                              ),
                                               blurRadius: 20,
                                               offset: const Offset(0, 8),
                                             ),
@@ -396,37 +563,56 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                               onScaleUpdate: _onScaleUpdate,
                                               child: CustomPaint(
                                                 size: canvasPaintSize,
-                                                painter: RealtimeCertificatePainter(
-                                                  document: _document!,
-                                                  loadedImages: _imagePool,
-                                                  picturePool: _picturePool,
-                                                  selectedNodeId: _selectedNodeId,
-                                                  editingNodeId: _editingTextNodeId,
-                                                ),
+                                                painter:
+                                                    RealtimeCertificatePainter(
+                                                      document: _document!,
+                                                      loadedImages: _imagePool,
+                                                      picturePool: _picturePool,
+                                                      selectedNodeId:
+                                                          _selectedNodeId,
+                                                      editingNodeId:
+                                                          _editingTextNodeId,
+                                                    ),
                                               ),
                                             ),
-                                              if (_isInteracting || _showHorizontalGuideline || _showVerticalGuideline)
-                                                IgnorePointer(
-                                                  child: CustomPaint(
-                                                    size: canvasPaintSize,
-                                                    painter: GuidelinePainter(
-                                                      showHorizontal: _isInteracting || _showHorizontalGuideline,
-                                                      showVertical: _isInteracting || _showVerticalGuideline,
-                                                      horizontalY: canvasPaintSize.height / 2.0,
-                                                      verticalX: canvasPaintSize.width / 2.0,
-                                                      isCenterHorizontal: _showHorizontalGuideline && _isCenterHorizontalGuideline,
-                                                      isCenterVertical: _showVerticalGuideline && _isCenterVerticalGuideline,
-                                                      showGrid: _isInteracting,
-                                                    ),
+                                            if (_isInteracting ||
+                                                _showHorizontalGuideline ||
+                                                _showVerticalGuideline)
+                                              IgnorePointer(
+                                                child: CustomPaint(
+                                                  size: canvasPaintSize,
+                                                  painter: GuidelinePainter(
+                                                    showHorizontal:
+                                                        _isInteracting ||
+                                                        _showHorizontalGuideline,
+                                                    showVertical:
+                                                        _isInteracting ||
+                                                        _showVerticalGuideline,
+                                                    horizontalY:
+                                                        canvasPaintSize.height /
+                                                        2.0,
+                                                    verticalX:
+                                                        canvasPaintSize.width /
+                                                        2.0,
+                                                    isCenterHorizontal:
+                                                        _showHorizontalGuideline &&
+                                                        _isCenterHorizontalGuideline,
+                                                    isCenterVertical:
+                                                        _showVerticalGuideline &&
+                                                        _isCenterVerticalGuideline,
+                                                    showGrid: _isInteracting,
                                                   ),
                                                 ),
-                                              if (selectedLayer != null && _editingTextNodeId != selectedLayer.id) ...[
-                                               _buildSelectedOverlay(
-                                                 selectedLayer,
-                                                 transformer,
-                                                 canvasPaintSize,
-                                               ),
-                                             ],
+                                              ),
+                                            if (selectedLayer != null &&
+                                                _editingTextNodeId !=
+                                                    selectedLayer.id) ...[
+                                              _buildSelectedOverlay(
+                                                selectedLayer,
+                                                transformer,
+                                                canvasPaintSize,
+                                              ),
+                                            ],
                                             if (_editingTextNodeId != null) ...[
                                               _buildInlineEditor(transformer),
                                             ],
@@ -445,7 +631,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   ),
                   // Floating Controls Row: Layers Notch Button + Zoom Controls Capsule
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 6.0, left: 16.0, right: 16.0),
+                    padding: const EdgeInsets.only(
+                      bottom: 6.0,
+                      left: 16.0,
+                      right: 16.0,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -487,7 +677,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                 ),
                                 const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFEFF6FF),
                                     borderRadius: BorderRadius.circular(12),
@@ -580,11 +773,17 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     final RenderBox? viewportBox = context.findRenderObject() as RenderBox?;
     if (viewportBox == null) return;
-    
-    final Offset focal = customFocalPoint ?? Offset(viewportBox.size.width / 2, viewportBox.size.height / 2);
-    final double currentScrollX = _horizontalScrollController.hasClients ? _horizontalScrollController.offset : 0.0;
-    final double currentScrollY = _verticalScrollController.hasClients ? _verticalScrollController.offset : 0.0;
-    
+
+    final Offset focal =
+        customFocalPoint ??
+        Offset(viewportBox.size.width / 2, viewportBox.size.height / 2);
+    final double currentScrollX = _horizontalScrollController.hasClients
+        ? _horizontalScrollController.offset
+        : 0.0;
+    final double currentScrollY = _verticalScrollController.hasClients
+        ? _verticalScrollController.offset
+        : 0.0;
+
     final double ratio = newZoom / _zoomScale;
     final double targetScrollX = (currentScrollX + focal.dx) * ratio - focal.dx;
     final double targetScrollY = (currentScrollY + focal.dy) * ratio - focal.dy;
@@ -602,10 +801,20 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_horizontalScrollController.hasClients) {
-        _horizontalScrollController.jumpTo(targetScrollX.clamp(0.0, _horizontalScrollController.position.maxScrollExtent));
+        _horizontalScrollController.jumpTo(
+          targetScrollX.clamp(
+            0.0,
+            _horizontalScrollController.position.maxScrollExtent,
+          ),
+        );
       }
       if (_verticalScrollController.hasClients) {
-        _verticalScrollController.jumpTo(targetScrollY.clamp(0.0, _verticalScrollController.position.maxScrollExtent));
+        _verticalScrollController.jumpTo(
+          targetScrollY.clamp(
+            0.0,
+            _verticalScrollController.position.maxScrollExtent,
+          ),
+        );
       }
     });
   }
@@ -615,8 +824,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     final RenderBox? viewportBox = context.findRenderObject() as RenderBox?;
     if (viewportBox != null) {
       _startFocalPoint = viewportBox.globalToLocal(details.focalPoint);
-      _startScrollX = _horizontalScrollController.hasClients ? _horizontalScrollController.offset : 0.0;
-      _startScrollY = _verticalScrollController.hasClients ? _verticalScrollController.offset : 0.0;
+      _startScrollX = _horizontalScrollController.hasClients
+          ? _horizontalScrollController.offset
+          : 0.0;
+      _startScrollY = _verticalScrollController.hasClients
+          ? _verticalScrollController.offset
+          : 0.0;
     }
   }
 
@@ -632,8 +845,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     }
 
     final double ratio = newZoom / _zoomStartScale;
-    final double targetScrollX = (_startScrollX + _startFocalPoint!.dx) * ratio - _startFocalPoint!.dx;
-    final double targetScrollY = (_startScrollY + _startFocalPoint!.dy) * ratio - _startFocalPoint!.dy;
+    final double targetScrollX =
+        (_startScrollX + _startFocalPoint!.dx) * ratio - _startFocalPoint!.dx;
+    final double targetScrollY =
+        (_startScrollY + _startFocalPoint!.dy) * ratio - _startFocalPoint!.dy;
 
     setState(() {
       _zoomScale = newZoom;
@@ -648,10 +863,20 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_horizontalScrollController.hasClients) {
-        _horizontalScrollController.jumpTo(targetScrollX.clamp(0.0, _horizontalScrollController.position.maxScrollExtent));
+        _horizontalScrollController.jumpTo(
+          targetScrollX.clamp(
+            0.0,
+            _horizontalScrollController.position.maxScrollExtent,
+          ),
+        );
       }
       if (_verticalScrollController.hasClients) {
-        _verticalScrollController.jumpTo(targetScrollY.clamp(0.0, _verticalScrollController.position.maxScrollExtent));
+        _verticalScrollController.jumpTo(
+          targetScrollY.clamp(
+            0.0,
+            _verticalScrollController.position.maxScrollExtent,
+          ),
+        );
       }
     });
   }
@@ -699,7 +924,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     final selectedLayer = (_selectedNodeId != null && _document != null)
         ? _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId)
         : null;
-    final TextNode? selectedNode = selectedLayer is TextNode ? selectedLayer : null;
+    final TextNode? selectedNode = selectedLayer is TextNode
+        ? selectedLayer
+        : null;
 
     if (selectedLayer != null && _lastCanvasPaintSize != Size.zero) {
       final renderBox =
@@ -766,7 +993,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _editingTextNodeId = null;
     });
     _textFocusNode.unfocus();
-    
+
     // Only save history if the current state is different from the last history state
     if (_document != null && _history.isNotEmpty) {
       final currentJson = json.encode(_document!.toJson());
@@ -785,7 +1012,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       targetSize: paintSize,
     );
 
-    final reversedLayers = List<SceneNode>.from(_document!.layers).reversed.toList();
+    final reversedLayers = List<SceneNode>.from(
+      _document!.layers,
+    ).reversed.toList();
     for (final node in reversedLayers) {
       if (node is! TextNode || !node.state.visible) continue;
 
@@ -800,11 +1029,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       if (node.transform.rotation != 0.0) {
         final center = rect.center;
         final angleRad = -node.transform.rotation * pi / 180.0;
-        
-        final rotatedTapX = cos(angleRad) * (localTapPos.dx - center.dx) -
+
+        final rotatedTapX =
+            cos(angleRad) * (localTapPos.dx - center.dx) -
             sin(angleRad) * (localTapPos.dy - center.dy) +
             center.dx;
-        final rotatedTapY = sin(angleRad) * (localTapPos.dx - center.dx) +
+        final rotatedTapY =
+            sin(angleRad) * (localTapPos.dx - center.dx) +
             cos(angleRad) * (localTapPos.dy - center.dy) +
             center.dy;
 
@@ -831,8 +1062,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   Widget _buildInlineEditor(ViewportTransformer transformer) {
-    if (_document == null || _editingTextNodeId == null) return const SizedBox.shrink();
-    final node = _document!.layers.firstWhereOrNull((l) => l.id == _editingTextNodeId);
+    if (_document == null || _editingTextNodeId == null)
+      return const SizedBox.shrink();
+    final node = _document!.layers.firstWhereOrNull(
+      (l) => l.id == _editingTextNodeId,
+    );
     if (node is! TextNode) return const SizedBox.shrink();
 
     final double sx = transformer.toScreenX(node.bounds.x);
@@ -1016,7 +1250,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       textDirection: TextDirection.ltr,
     );
     textPainter.layout(maxWidth: virtualWidth);
-    final double textPainterHeight = textPainter.height > 0 ? textPainter.height : 10.0;
+    final double textPainterHeight = textPainter.height > 0
+        ? textPainter.height
+        : 10.0;
     if (node.textBend != 0.0) {
       final double W = virtualWidth;
       final double bendStrength = node.textBend.abs() / 100.0;
@@ -1056,7 +1292,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   Future<void> _loadLayoutAndAssets() async {
     try {
       SceneDocument doc;
-      final String resolvedLayoutPath = (widget.layoutPath.isNotEmpty &&
+      final String resolvedLayoutPath =
+          (widget.layoutPath.isNotEmpty &&
               !widget.layoutPath.startsWith('assets/') &&
               !widget.layoutPath.startsWith('http'))
           ? 'assets/${widget.layoutPath}'
@@ -1064,64 +1301,80 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
       if (widget.savedProjectName != null) {
         final box = Hive.box('saved_projects');
-        final projectData = box.get(widget.savedProjectName) as Map<dynamic, dynamic>?;
+        final projectData =
+            box.get(widget.savedProjectName) as Map<dynamic, dynamic>?;
         if (projectData != null && projectData['document'] != null) {
-          final docJson = Map<String, dynamic>.from(projectData['document'] as Map);
+          final docJson = Map<String, dynamic>.from(
+            projectData['document'] as Map,
+          );
           doc = SceneDocument.fromJson(docJson);
         } else {
-          final String jsonString = await FetchDataFromServerServices.loadLayoutJson(resolvedLayoutPath);
+          final String jsonString =
+              await FetchDataFromServerServices.loadLayoutJson(
+                resolvedLayoutPath,
+              );
           final Map<String, dynamic> jsonMap = json.decode(jsonString);
           doc = SceneDocument.fromJson(jsonMap);
         }
       } else {
-        final String jsonString = await FetchDataFromServerServices.loadLayoutJson(resolvedLayoutPath);
+        final String jsonString =
+            await FetchDataFromServerServices.loadLayoutJson(
+              resolvedLayoutPath,
+            );
         final Map<String, dynamic> jsonMap = json.decode(jsonString);
         doc = SceneDocument.fromJson(jsonMap);
       }
 
-      // Preload images and fonts from assets
+      // Preload images and fonts from server/cache
       for (var entry in doc.assets.entries) {
         final assetId = entry.key;
         final asset = entry.value;
-        final String resolvedSrc = (asset.src.isNotEmpty && !asset.src.startsWith('assets/') && !asset.src.startsWith('http'))
-            ? 'assets/${asset.src}'
-            : asset.src;
+        final String rawSrc = asset.src;
 
         if (asset.type == 'image') {
           try {
-            final ui.Image img = await _loadUiImage(resolvedSrc);
+            final ui.Image img = await _loadUiImage(rawSrc);
             _imagePool[assetId] = img;
           } catch (e) {
-            debugPrint("Failed to load image asset: $resolvedSrc ($e)");
+            debugPrint("Failed to load image asset: $rawSrc ($e)");
           }
         } else if (asset.type == 'svg') {
           try {
+            final Uint8List svgBytes =
+                await FetchDataFromServerServices.loadAssetBytes(rawSrc);
             final PictureInfo pictureInfo = await vg.loadPicture(
-              SvgAssetLoader(resolvedSrc),
+              SvgBytesLoader(svgBytes),
               null,
             );
             _picturePool[assetId] = pictureInfo.picture;
           } catch (e) {
-            debugPrint("Failed to load SVG asset: $resolvedSrc ($e)");
+            debugPrint("Failed to load SVG asset: $rawSrc ($e)");
           }
         } else if (asset.type == 'font') {
           try {
-            await DynamicFontManager.instance.loadFont(assetId, resolvedSrc);
+            await DynamicFontManager.instance.loadFont(
+              assetId,
+              rawSrc,
+              assetByteProvider: (p) =>
+                  FetchDataFromServerServices.loadAssetBytes(p),
+            );
             if (!_fontFamilies.contains(assetId)) {
               _fontFamilies.add(assetId);
             }
           } catch (e) {
-            debugPrint("Failed to load font asset: $resolvedSrc ($e)");
+            debugPrint("Failed to load font asset: $rawSrc ($e)");
           }
         }
       }
 
+      _tipTimer?.cancel();
       setState(() {
         _document = doc;
         _isLoading = false;
         _saveToHistory();
       });
     } catch (e) {
+      _tipTimer?.cancel();
       setState(() {
         _isLoading = false;
       });
@@ -1130,10 +1383,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   Future<ui.Image> _loadUiImage(String assetPath) async {
-    final byteData = await rootBundle.load(assetPath);
-    final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
-    final frame = await codec.getNextFrame();
-    return frame.image;
+    return await FetchDataFromServerServices.loadUiImage(assetPath);
   }
 
   void _saveToHistory() {
@@ -1223,12 +1473,15 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       )..layout();
 
       // Add a small safety buffer (e.g. 10 pixels in virtual coordinates)
-      final double newVirtualWidth = textPainter.width > 0 ? textPainter.width + 10.0 : 30.0;
-      
-      final tempNode = node.copyWith(
-        text: _textController.text,
+      final double newVirtualWidth = textPainter.width > 0
+          ? textPainter.width + 10.0
+          : 30.0;
+
+      final tempNode = node.copyWith(text: _textController.text);
+      final double newVirtualHeight = _calculateTextNodeHeight(
+        tempNode,
+        newVirtualWidth,
       );
-      final double newVirtualHeight = _calculateTextNodeHeight(tempNode, newVirtualWidth);
 
       // Adjust X position based on alignment to keep the text correctly anchored
       double newX = node.bounds.x;
@@ -1356,6 +1609,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _saveToHistory();
     });
   }
+
   double _calculateTextNodeWidth(TextNode node) {
     if (node.id.startsWith('logo') || node.id.startsWith('signature')) {
       return node.bounds.width;
@@ -1423,7 +1677,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
       final double oldIntrinsicWidth = _calculateTextNodeWidth(node);
       final double newIntrinsicWidth = _calculateTextNodeWidth(tempNode);
-      final double scaleFactor = oldIntrinsicWidth > 0 ? (newIntrinsicWidth / oldIntrinsicWidth) : 1.0;
+      final double scaleFactor = oldIntrinsicWidth > 0
+          ? (newIntrinsicWidth / oldIntrinsicWidth)
+          : 1.0;
       final double newWidth = node.bounds.width * scaleFactor;
 
       final double newHeight = _calculateTextNodeHeight(tempNode, newWidth);
@@ -1476,7 +1732,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       _document!.layers,
     ).reversed.toList();
     for (final node in reversedLayers) {
-      if ((node is! TextNode && node is! StickerNode) || !node.state.visible) continue;
+      if ((node is! TextNode && node is! StickerNode) || !node.state.visible)
+        continue;
 
       final double sx = transformer.toScreenX(node.bounds.x);
       final double sy = transformer.toScreenY(node.bounds.y);
@@ -1533,9 +1790,16 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       isSelected: true,
     );
 
-    final bool isLogoOrSigOrSticker = node.id.startsWith('logo') || node.id.startsWith('signature') || node is StickerNode;
-    final int lineCount = node is TextNode ? _calculateTextNodeLineCount(node, node.bounds.width) : 1;
-    final bool isMultiLine = node is TextNode ? (lineCount > 1 || node.text.contains('\n')) : false;
+    final bool isLogoOrSigOrSticker =
+        node.id.startsWith('logo') ||
+        node.id.startsWith('signature') ||
+        node is StickerNode;
+    final int lineCount = node is TextNode
+        ? _calculateTextNodeLineCount(node, node.bounds.width)
+        : 1;
+    final bool isMultiLine = node is TextNode
+        ? (lineCount > 1 || node.text.contains('\n'))
+        : false;
     final bool showTopBottom = isLogoOrSigOrSticker ? true : isMultiLine;
 
     return InteractiveOverlay(
@@ -1582,23 +1846,31 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         final double virtualH = currentVirtualH * finalScale;
 
         final double snapThresholdScreen = 6.0;
-        final double canvasCenterScreenX = transformer.toScreenX(_document!.canvas.virtualWidth / 2.0);
-        final double canvasCenterScreenY = transformer.toScreenY(_document!.canvas.virtualHeight / 2.0);
-        
-        double nodeCenterScreenX = stickerModel.left + (currentSw * finalScale) / 2.0;
-        double nodeCenterScreenY = stickerModel.top + (currentSh * finalScale) / 2.0;
+        final double canvasCenterScreenX = transformer.toScreenX(
+          _document!.canvas.virtualWidth / 2.0,
+        );
+        final double canvasCenterScreenY = transformer.toScreenY(
+          _document!.canvas.virtualHeight / 2.0,
+        );
+
+        double nodeCenterScreenX =
+            stickerModel.left + (currentSw * finalScale) / 2.0;
+        double nodeCenterScreenY =
+            stickerModel.top + (currentSh * finalScale) / 2.0;
 
         bool showVertical = false;
         bool showHorizontal = false;
         bool isCenterVert = false;
         bool isCenterHoriz = false;
 
-        if ((nodeCenterScreenX - canvasCenterScreenX).abs() < snapThresholdScreen) {
+        if ((nodeCenterScreenX - canvasCenterScreenX).abs() <
+            snapThresholdScreen) {
           nodeCenterScreenX = canvasCenterScreenX;
-          stickerModel.left = nodeCenterScreenX - (currentSw * finalScale) / 2.0;
+          stickerModel.left =
+              nodeCenterScreenX - (currentSw * finalScale) / 2.0;
           showVertical = true;
           isCenterVert = true;
-          
+
           if (!_hasVibratedX) {
             HapticFeedback.lightImpact();
             _hasVibratedX = true;
@@ -1607,12 +1879,13 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           _hasVibratedX = false;
         }
 
-        if ((nodeCenterScreenY - canvasCenterScreenY).abs() < snapThresholdScreen) {
+        if ((nodeCenterScreenY - canvasCenterScreenY).abs() <
+            snapThresholdScreen) {
           nodeCenterScreenY = canvasCenterScreenY;
           stickerModel.top = nodeCenterScreenY - (currentSh * finalScale) / 2.0;
           showHorizontal = true;
           isCenterHoriz = true;
-          
+
           if (!_hasVibratedY) {
             HapticFeedback.lightImpact();
             _hasVibratedY = true;
@@ -1678,11 +1951,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   ),
                 );
               } else if (originalNode is TextNode) {
-                if (originalNode.id.startsWith('logo') || originalNode.id.startsWith('signature')) {
+                if (originalNode.id.startsWith('logo') ||
+                    originalNode.id.startsWith('signature')) {
                   // Logos and signatures: proportional scale bounds only
                   final double scaledW = currentVirtualW * finalScale;
                   final double scaledH = currentVirtualH * finalScale;
-                  
+
                   final double logoX = currentVirtualCenterX - (scaledW / 2.0);
                   final double logoY = currentVirtualCenterY - (scaledH / 2.0);
 
@@ -1703,17 +1977,19 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   );
                 } else {
                   // Actual text nodes: dynamic height wrapper based on text layout
-                  final double newFontSize = (originalNode.fontSize * finalScale)
-                      .clamp(6.0, 72.0);
-                  
+                  final double newFontSize =
+                      (originalNode.fontSize * finalScale).clamp(6.0, 72.0);
+
                   final double textW = currentVirtualW * finalScale;
                   final double textX = currentVirtualCenterX - (textW / 2.0);
 
-                  final tempNode = originalNode.copyWith(
-                    fontSize: newFontSize,
+                  final tempNode = originalNode.copyWith(fontSize: newFontSize);
+                  final double calculatedVirtualH = _calculateTextNodeHeight(
+                    tempNode,
+                    textW,
                   );
-                  final double calculatedVirtualH = _calculateTextNodeHeight(tempNode, textW);
-                  final double dynamicVirtualY = currentVirtualCenterY - (calculatedVirtualH / 2.0);
+                  final double dynamicVirtualY =
+                      currentVirtualCenterY - (calculatedVirtualH / 2.0);
 
                   _document!.layers[index] = originalNode.copyWith(
                     fontSize: newFontSize,
@@ -1741,7 +2017,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         final SceneNode originalNode = (_document != null)
             ? _document!.layers.firstWhereOrNull((l) => l.id == node.id) ?? node
             : node;
-        
+
         final int index = _document!.layers.indexWhere((l) => l.id == node.id);
         if (index != -1) {
           setState(() {
@@ -1763,8 +2039,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             } else if (originalNode is TextNode) {
               // Recalculate wrapping height for text layers dynamically
               double calculatedVirtualH = virtualH;
-              if (!originalNode.id.startsWith('logo') && !originalNode.id.startsWith('signature')) {
-                calculatedVirtualH = _calculateTextNodeHeight(originalNode, virtualW);
+              if (!originalNode.id.startsWith('logo') &&
+                  !originalNode.id.startsWith('signature')) {
+                calculatedVirtualH = _calculateTextNodeHeight(
+                  originalNode,
+                  virtualW,
+                );
               }
 
               _document!.layers[index] = originalNode.copyWith(
@@ -1832,7 +2112,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         onDismiss: _closeActiveTab,
         onCopy: _duplicateSelectedNode,
         currentOpacity: opacity,
-        onOpacityChanged: (val) => _updateSelectedNodeOpacity(val, saveHistory: false),
+        onOpacityChanged: (val) =>
+            _updateSelectedNodeOpacity(val, saveHistory: false),
         onOpacityChangeEnd: () => _saveToHistory(),
       );
     } else if (_activeTab == 'Logo') {
@@ -1857,7 +2138,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         onDismiss: _closeActiveTab,
         onCopy: _duplicateSelectedNode,
         currentOpacity: opacity,
-        onOpacityChanged: (val) => _updateSelectedNodeOpacity(val, saveHistory: false),
+        onOpacityChanged: (val) =>
+            _updateSelectedNodeOpacity(val, saveHistory: false),
         onOpacityChangeEnd: () => _saveToHistory(),
       );
     } else if (_activeTab == 'Signature') {
@@ -1870,7 +2152,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         onDismiss: _closeActiveTab,
       );
     } else if (_activeTab == 'Stickers') {
-      final bool isStickerSelected = _selectedNodeId != null && _selectedNodeId!.startsWith('sticker');
+      final bool isStickerSelected =
+          _selectedNodeId != null && _selectedNodeId!.startsWith('sticker');
       return StickersControlsPanel(
         stickers: _stickers,
         onStickerSelected: _addSticker,
@@ -1878,7 +2161,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         hasSelection: isStickerSelected,
         onCopy: _duplicateSelectedNode,
         currentOpacity: opacity,
-        onOpacityChanged: (val) => _updateSelectedNodeOpacity(val, saveHistory: false),
+        onOpacityChanged: (val) =>
+            _updateSelectedNodeOpacity(val, saveHistory: false),
         onOpacityChangeEnd: () => _saveToHistory(),
       );
     } else if (_activeTab == 'Background') {
@@ -1908,7 +2192,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   void _onSignatureExported(ui.Image img) {
-    final String newSigId = 'signature_${DateTime.now().millisecondsSinceEpoch}';
+    final String newSigId =
+        'signature_${DateTime.now().millisecondsSinceEpoch}';
     final double aspect = img.height.toDouble() / img.width.toDouble();
 
     String? oldSigId =
@@ -1977,8 +2262,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
     if (_document == null) return;
     try {
       final isSvg = assetPath.toLowerCase().endsWith('.svg');
-      final String stickerId = 'sticker_${DateTime.now().millisecondsSinceEpoch}';
-      
+      final String stickerId =
+          'sticker_${DateTime.now().millisecondsSinceEpoch}';
+
       double width = 80.0;
       double height = 80.0;
 
@@ -2002,7 +2288,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
         width = 80.0;
         height = width * aspect;
       }
-      
+
       final stickerNode = StickerNode(
         id: stickerId,
         displayName: 'Sticker',
@@ -2015,10 +2301,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           width: width,
           height: height,
         ),
-        transform: NodeTransform(
-          rotation: 0.0,
-          pivot: const Offset(0.5, 0.5),
-        ),
+        transform: NodeTransform(rotation: 0.0, pivot: const Offset(0.5, 0.5)),
         state: NodeState(visible: true, locked: false),
         interaction: NodeInteraction(
           selectable: true,
@@ -2045,11 +2328,16 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   void _bringSelectedNodeToFront() {
     if (_document == null || _selectedNodeId == null) return;
 
-    final nonSelectableLayers = _document!.layers.where((l) => !l.interaction.selectable).toList();
-    final selectableLayers = _document!.layers.where((l) => l.interaction.selectable).toList()
-      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+    final nonSelectableLayers = _document!.layers
+        .where((l) => !l.interaction.selectable)
+        .toList();
+    final selectableLayers =
+        _document!.layers.where((l) => l.interaction.selectable).toList()
+          ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
 
-    final node = selectableLayers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    final node = selectableLayers.firstWhereOrNull(
+      (l) => l.id == _selectedNodeId,
+    );
     if (node == null) return;
 
     selectableLayers.removeWhere((l) => l.id == _selectedNodeId);
@@ -2066,7 +2354,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       for (int i = 0; i < selectableLayers.length; i++) {
         final current = selectableLayers[i];
         final newZ = maxNonSelectableZ + 10 + (i * 10);
-        final indexInDoc = _document!.layers.indexWhere((l) => l.id == current.id);
+        final indexInDoc = _document!.layers.indexWhere(
+          (l) => l.id == current.id,
+        );
         if (indexInDoc != -1) {
           final updated = _updateNodeZIndex(current, newZ);
           if (updated != null) {
@@ -2081,11 +2371,16 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   void _sendSelectedNodeToBack() {
     if (_document == null || _selectedNodeId == null) return;
 
-    final nonSelectableLayers = _document!.layers.where((l) => !l.interaction.selectable).toList();
-    final selectableLayers = _document!.layers.where((l) => l.interaction.selectable).toList()
-      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+    final nonSelectableLayers = _document!.layers
+        .where((l) => !l.interaction.selectable)
+        .toList();
+    final selectableLayers =
+        _document!.layers.where((l) => l.interaction.selectable).toList()
+          ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
 
-    final node = selectableLayers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    final node = selectableLayers.firstWhereOrNull(
+      (l) => l.id == _selectedNodeId,
+    );
     if (node == null) return;
 
     selectableLayers.removeWhere((l) => l.id == _selectedNodeId);
@@ -2102,7 +2397,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       for (int i = 0; i < selectableLayers.length; i++) {
         final current = selectableLayers[i];
         final newZ = maxNonSelectableZ + 10 + (i * 10);
-        final indexInDoc = _document!.layers.indexWhere((l) => l.id == current.id);
+        final indexInDoc = _document!.layers.indexWhere(
+          (l) => l.id == current.id,
+        );
         if (indexInDoc != -1) {
           final updated = _updateNodeZIndex(current, newZ);
           if (updated != null) {
@@ -2187,9 +2484,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   void _bringNodeToFrontById(String nodeId) {
     if (_document == null) return;
-    final nonSelectableLayers = _document!.layers.where((l) => !l.interaction.selectable).toList();
-    final selectableLayers = _document!.layers.where((l) => l.interaction.selectable).toList()
-      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+    final nonSelectableLayers = _document!.layers
+        .where((l) => !l.interaction.selectable)
+        .toList();
+    final selectableLayers =
+        _document!.layers.where((l) => l.interaction.selectable).toList()
+          ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
 
     final node = selectableLayers.firstWhereOrNull((l) => l.id == nodeId);
     if (node == null) return;
@@ -2208,7 +2508,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       for (int i = 0; i < selectableLayers.length; i++) {
         final current = selectableLayers[i];
         final newZ = maxNonSelectableZ + 10 + (i * 10);
-        final indexInDoc = _document!.layers.indexWhere((l) => l.id == current.id);
+        final indexInDoc = _document!.layers.indexWhere(
+          (l) => l.id == current.id,
+        );
         if (indexInDoc != -1) {
           final updated = _updateNodeZIndex(current, newZ);
           if (updated != null) {
@@ -2222,9 +2524,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   void _sendNodeToBackById(String nodeId) {
     if (_document == null) return;
-    final nonSelectableLayers = _document!.layers.where((l) => !l.interaction.selectable).toList();
-    final selectableLayers = _document!.layers.where((l) => l.interaction.selectable).toList()
-      ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+    final nonSelectableLayers = _document!.layers
+        .where((l) => !l.interaction.selectable)
+        .toList();
+    final selectableLayers =
+        _document!.layers.where((l) => l.interaction.selectable).toList()
+          ..sort((a, b) => a.zIndex.compareTo(b.zIndex));
 
     final node = selectableLayers.firstWhereOrNull((l) => l.id == nodeId);
     if (node == null) return;
@@ -2243,7 +2548,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       for (int i = 0; i < selectableLayers.length; i++) {
         final current = selectableLayers[i];
         final newZ = maxNonSelectableZ + 10 + (i * 10);
-        final indexInDoc = _document!.layers.indexWhere((l) => l.id == current.id);
+        final indexInDoc = _document!.layers.indexWhere(
+          (l) => l.id == current.id,
+        );
         if (indexInDoc != -1) {
           final updated = _updateNodeZIndex(current, newZ);
           if (updated != null) {
@@ -2301,7 +2608,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                   ),
                   // Header
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -2331,7 +2641,11 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                           ],
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 22),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: Color(0xFF64748B),
+                            size: 22,
+                          ),
                           onPressed: () => Navigator.pop(bottomSheetContext),
                         ),
                       ],
@@ -2344,16 +2658,24 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                         ? const Center(
                             child: Text(
                               'No layers found',
-                              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                              style: TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 14,
+                              ),
                             ),
                           )
                         : ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
                             itemCount: layers.length,
-                            separatorBuilder: (context, index) => const SizedBox(height: 6),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 6),
                             itemBuilder: (context, index) {
                               final layer = layers[index];
-                              final bool isSelected = _selectedNodeId == layer.id;
+                              final bool isSelected =
+                                  _selectedNodeId == layer.id;
                               final bool isVisible = layer.state.visible;
                               final bool isLocked = layer.state.locked;
 
@@ -2366,8 +2688,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                               if (layer is TextNode) {
                                 layerIcon = Icons.title_rounded;
                                 iconColor = const Color(0xFF2563EB);
-                                layerSubtitle = 'Text: "${layer.text.replaceAll('\n', ' ')}"';
-                                if (layerTitle.isEmpty || layerTitle == 'Text Layer') {
+                                layerSubtitle =
+                                    'Text: "${layer.text.replaceAll('\n', ' ')}"';
+                                if (layerTitle.isEmpty ||
+                                    layerTitle == 'Text Layer') {
                                   layerTitle = layer.text.length > 25
                                       ? '${layer.text.substring(0, 25)}...'
                                       : layer.text;
@@ -2389,10 +2713,14 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                               return AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC),
+                                  color: isSelected
+                                      ? const Color(0xFFEFF6FF)
+                                      : const Color(0xFFF8FAFC),
                                   borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
-                                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                                    color: isSelected
+                                        ? const Color(0xFF2563EB)
+                                        : const Color(0xFFE2E8F0),
                                     width: isSelected ? 1.5 : 1.0,
                                   ),
                                 ),
@@ -2406,7 +2734,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                     }
                                   },
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 9,
+                                    ),
                                     child: Row(
                                       children: [
                                         // Leading Type Icon
@@ -2415,25 +2746,41 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                           height: 36,
                                           decoration: BoxDecoration(
                                             color: iconColor.withOpacity(0.12),
-                                            borderRadius: BorderRadius.circular(9),
+                                            borderRadius: BorderRadius.circular(
+                                              9,
+                                            ),
                                           ),
-                                          child: Icon(layerIcon, size: 20, color: iconColor),
+                                          child: Icon(
+                                            layerIcon,
+                                            size: 20,
+                                            color: iconColor,
+                                          ),
                                         ),
                                         const SizedBox(width: 12),
                                         // Layer Info
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                layerTitle.isNotEmpty ? layerTitle : layer.id,
+                                                layerTitle.isNotEmpty
+                                                    ? layerTitle
+                                                    : layer.id,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
                                                   fontSize: 13.5,
-                                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                                  color: isVisible ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
-                                                  decoration: isVisible ? TextDecoration.none : TextDecoration.lineThrough,
+                                                  fontWeight: isSelected
+                                                      ? FontWeight.w700
+                                                      : FontWeight.w600,
+                                                  color: isVisible
+                                                      ? const Color(0xFF0F172A)
+                                                      : const Color(0xFF94A3B8),
+                                                  decoration: isVisible
+                                                      ? TextDecoration.none
+                                                      : TextDecoration
+                                                            .lineThrough,
                                                 ),
                                               ),
                                               const SizedBox(height: 2),
@@ -2443,7 +2790,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
                                                   fontSize: 11,
-                                                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF64748B),
+                                                  color: isSelected
+                                                      ? const Color(0xFF3B82F6)
+                                                      : const Color(0xFF64748B),
                                                 ),
                                               ),
                                             ],
@@ -2456,8 +2805,15 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                             // Bring to front
                                             IconButton(
                                               padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                                              icon: const Icon(Icons.arrow_upward_rounded, size: 18, color: Color(0xFF64748B)),
+                                              constraints: const BoxConstraints(
+                                                minWidth: 30,
+                                                minHeight: 30,
+                                              ),
+                                              icon: const Icon(
+                                                Icons.arrow_upward_rounded,
+                                                size: 18,
+                                                color: Color(0xFF64748B),
+                                              ),
                                               tooltip: 'Bring to Front',
                                               onPressed: () {
                                                 _bringNodeToFrontById(layer.id);
@@ -2468,8 +2824,15 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                             // Send to back
                                             IconButton(
                                               padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                                              icon: const Icon(Icons.arrow_downward_rounded, size: 18, color: Color(0xFF64748B)),
+                                              constraints: const BoxConstraints(
+                                                minWidth: 30,
+                                                minHeight: 30,
+                                              ),
+                                              icon: const Icon(
+                                                Icons.arrow_downward_rounded,
+                                                size: 18,
+                                                color: Color(0xFF64748B),
+                                              ),
                                               tooltip: 'Send to Back',
                                               onPressed: () {
                                                 _sendNodeToBackById(layer.id);
@@ -2480,28 +2843,49 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                             // Visibility Toggle
                                             IconButton(
                                               padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                                              icon: Icon(
-                                                isVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-                                                size: 19,
-                                                color: isVisible ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                                              constraints: const BoxConstraints(
+                                                minWidth: 30,
+                                                minHeight: 30,
                                               ),
-                                              tooltip: isVisible ? 'Hide Layer' : 'Show Layer',
+                                              icon: Icon(
+                                                isVisible
+                                                    ? Icons.visibility_rounded
+                                                    : Icons
+                                                          .visibility_off_rounded,
+                                                size: 19,
+                                                color: isVisible
+                                                    ? const Color(0xFF2563EB)
+                                                    : const Color(0xFF94A3B8),
+                                              ),
+                                              tooltip: isVisible
+                                                  ? 'Hide Layer'
+                                                  : 'Show Layer',
                                               onPressed: () {
-                                                _toggleLayerVisibility(layer.id);
+                                                _toggleLayerVisibility(
+                                                  layer.id,
+                                                );
                                                 setSheetState(() {});
                                               },
                                             ),
                                             // Lock Toggle
                                             IconButton(
                                               padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                                              icon: Icon(
-                                                isLocked ? Icons.lock_rounded : Icons.lock_open_rounded,
-                                                size: 19,
-                                                color: isLocked ? const Color(0xFFEF4444) : const Color(0xFF94A3B8),
+                                              constraints: const BoxConstraints(
+                                                minWidth: 30,
+                                                minHeight: 30,
                                               ),
-                                              tooltip: isLocked ? 'Unlock Layer' : 'Lock Layer',
+                                              icon: Icon(
+                                                isLocked
+                                                    ? Icons.lock_rounded
+                                                    : Icons.lock_open_rounded,
+                                                size: 19,
+                                                color: isLocked
+                                                    ? const Color(0xFFEF4444)
+                                                    : const Color(0xFF94A3B8),
+                                              ),
+                                              tooltip: isLocked
+                                                  ? 'Unlock Layer'
+                                                  : 'Lock Layer',
                                               onPressed: () {
                                                 _toggleLayerLock(layer.id);
                                                 setSheetState(() {});
@@ -2510,7 +2894,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                                             // Delete Button
                                             IconButton(
                                               padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                              constraints: const BoxConstraints(
+                                                minWidth: 30,
+                                                minHeight: 30,
+                                              ),
                                               icon: const Icon(
                                                 Icons.delete_outline_rounded,
                                                 size: 19,
@@ -2544,7 +2931,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   void _duplicateSelectedNode() {
     if (_document == null || _selectedNodeId == null) return;
-    final node = _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    final node = _document!.layers.firstWhereOrNull(
+      (l) => l.id == _selectedNodeId,
+    );
     if (node == null) return;
 
     final String baseId = node.id.split('_').first;
@@ -2608,7 +2997,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   void _updateSelectedNodeOpacity(double value, {bool saveHistory = false}) {
     if (_document == null || _selectedNodeId == null) return;
-    final int index = _document!.layers.indexWhere((l) => l.id == _selectedNodeId);
+    final int index = _document!.layers.indexWhere(
+      (l) => l.id == _selectedNodeId,
+    );
     if (index == -1) return;
 
     final node = _document!.layers[index];
@@ -2633,7 +3024,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   double _getSelectedNodeOpacity() {
     if (_document == null || _selectedNodeId == null) return 1.0;
-    final node = _document!.layers.firstWhereOrNull((l) => l.id == _selectedNodeId);
+    final node = _document!.layers.firstWhereOrNull(
+      (l) => l.id == _selectedNodeId,
+    );
     if (node is TextNode) {
       return node.opacity;
     } else if (node is StickerNode) {
@@ -2670,7 +3063,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final XFile? file = await picker.pickImage(source: ImageSource.gallery);
       if (file == null) return;
 
-      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(imagePathOrUrl: file.path);
+      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(
+        imagePathOrUrl: file.path,
+      );
       if (isNsfw) return;
 
       final Uint8List bytes = await File(file.path).readAsBytes();
@@ -2740,7 +3135,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final XFile? file = await picker.pickImage(source: ImageSource.gallery);
       if (file == null) return;
 
-      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(imagePathOrUrl: file.path);
+      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(
+        imagePathOrUrl: file.path,
+      );
       if (isNsfw) return;
 
       final Uint8List bytes = await File(file.path).readAsBytes();
@@ -2791,7 +3188,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       final XFile? file = await picker.pickImage(source: ImageSource.gallery);
       if (file == null) return;
 
-      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(imagePathOrUrl: file.path);
+      final bool isNsfw = await NsfwDetectService.checkIsNSFWImage(
+        imagePathOrUrl: file.path,
+      );
       if (isNsfw) return;
 
       final Uint8List bytes = await File(file.path).readAsBytes();
@@ -2922,7 +3321,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                     _selectedNodeId = null;
                   } else {
                     _activeTab = 'Signature';
-                    if (_selectedNodeId == null || !_selectedNodeId!.startsWith('signature')) {
+                    if (_selectedNodeId == null ||
+                        !_selectedNodeId!.startsWith('signature')) {
                       _selectedNodeId = null;
                     }
                   }
@@ -2941,7 +3341,8 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                     _selectedNodeId = null;
                   } else {
                     _activeTab = 'Stickers';
-                    if (_selectedNodeId == null || !_selectedNodeId!.startsWith('sticker')) {
+                    if (_selectedNodeId == null ||
+                        !_selectedNodeId!.startsWith('sticker')) {
                       _selectedNodeId = null;
                     }
                   }
@@ -2971,7 +3372,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   }
 
   Widget _buildBottomTab(
-     String SelectedImage,
+    String SelectedImage,
     String UnSelectedimage,
     String label, {
     required bool isActive,
@@ -2989,11 +3390,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SelectedImage.startsWith('icon:')
-                  ? Icon(
-                      Icons.wallpaper_outlined,
-                      color: col,
-                      size: 24.w,
-                    )
+                  ? Icon(Icons.wallpaper_outlined, color: col, size: 24.w)
                   : Image.asset(
                       isActive ? UnSelectedimage : SelectedImage,
                       width: 24.w,
@@ -3169,7 +3566,9 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                               ),
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                               ),
                               onChanged: (val) {
                                 setDialogState(() {});
@@ -3222,94 +3621,106 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () async {
-                              final String name = nameController.text.trim().isEmpty
+                              final String name =
+                                  nameController.text.trim().isEmpty
                                   ? 'Project ${projectCount + 1}'
                                   : nameController.text.trim();
-                                
-                                // Show loading indicator dialog
-                                showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (context) => const Center(
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4C00C6)),
+
+                              // Show loading indicator dialog
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) => const Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFF4C00C6),
                                     ),
                                   ),
-                                );
-
-                                String? renderedPath;
-                                try {
-                                  if (_document != null) {
-                                    final double aspectDouble = _document!.canvas.virtualWidth / _document!.canvas.virtualHeight;
-                                    renderedPath = await SceneExportService().renderSceneToFile(
-                                      doc: _document!,
-                                      assetImageLoader: (src) async {
-                                        final byteData = await rootBundle.load(src);
-                                        final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
-                                        final frame = await codec.getNextFrame();
-                                        return frame.image;
-                                      },
-                                      fileImageLoader: (path) async {
-                                        final bytes = await File(path).readAsBytes();
-                                        final codec = await ui.instantiateImageCodec(bytes);
-                                        final frame = await codec.getNextFrame();
-                                        return frame.image;
-                                      },
-                                      aspectDouble: aspectDouble,
-                                      editorImagePool: _imagePool,
-                                      watermarkEnabled: false,
-                                    );
-                                  }
-                                } catch (e) {
-                                  debugPrint("Failed to render preview thumbnail: $e");
-                                }
-
-                                final box = Hive.box('saved_projects');
-                                final projectData = {
-                                  'name': name,
-                                  'document': _document?.toJson(),
-                                  'layoutPath': widget.layoutPath,
-                                  'thumbnailPath': renderedPath,
-                                  'updatedAt': DateTime.now().toIso8601String(),
-                                };
-                                if (widget.savedProjectName != null && widget.savedProjectName != name) {
-                                  await box.delete(widget.savedProjectName);
-                                }
-                                await box.put(name, projectData);
-                                
-                                if (context.mounted) {
-                                  // Pop the loading dialog
-                                  Navigator.of(context).pop();
-                                  // Pop the project naming dialog
-                                  Navigator.of(context).pop();
-                                }
-                                Get.offAll(() => const Homepage());
-                              },
-                              child: Container(
-                                padding: EdgeInsets.symmetric(vertical: 12.h),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4200AD),
-                                  borderRadius: BorderRadius.circular(12.r),
                                 ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Save name',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'Inter',
-                                  ),
+                              );
+
+                              String? renderedPath;
+                              try {
+                                if (_document != null) {
+                                  final double aspectDouble =
+                                      _document!.canvas.virtualWidth /
+                                      _document!.canvas.virtualHeight;
+                                  renderedPath = await SceneExportService()
+                                      .renderSceneToFile(
+                                        doc: _document!,
+                                        assetImageLoader: (src) async {
+                                          return await FetchDataFromServerServices.loadUiImage(
+                                            src,
+                                          );
+                                        },
+                                        fileImageLoader: (path) async {
+                                          final bytes = await File(
+                                            path,
+                                          ).readAsBytes();
+                                          final codec = await ui
+                                              .instantiateImageCodec(bytes);
+                                          final frame = await codec
+                                              .getNextFrame();
+                                          return frame.image;
+                                        },
+                                        aspectDouble: aspectDouble,
+                                        editorImagePool: _imagePool,
+                                        watermarkEnabled: false,
+                                      );
+                                }
+                              } catch (e) {
+                                debugPrint(
+                                  "Failed to render preview thumbnail: $e",
+                                );
+                              }
+
+                              final box = Hive.box('saved_projects');
+                              final projectData = {
+                                'name': name,
+                                'document': _document?.toJson(),
+                                'layoutPath': widget.layoutPath,
+                                'thumbnailPath': renderedPath,
+                                'updatedAt': DateTime.now().toIso8601String(),
+                              };
+                              if (widget.savedProjectName != null &&
+                                  widget.savedProjectName != name) {
+                                await box.delete(widget.savedProjectName);
+                              }
+                              await box.put(name, projectData);
+
+                              if (context.mounted) {
+                                // Pop the loading dialog
+                                Navigator.of(context).pop();
+                                // Pop the project naming dialog
+                                Navigator.of(context).pop();
+                              }
+                              Get.offAll(() => const Homepage());
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 12.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4200AD),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                'Save name',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Inter',
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              );
+              ),
+            );
           },
         );
       },
@@ -3379,22 +3790,38 @@ class GuidelinePainter extends CustomPainter {
       final double thirdH = size.height / 3.0;
       // 2 vertical lines
       drawDottedLine(Offset(thirdW, 0), Offset(thirdW, size.height), gridPaint);
-      drawDottedLine(Offset(thirdW * 2, 0), Offset(thirdW * 2, size.height), gridPaint);
+      drawDottedLine(
+        Offset(thirdW * 2, 0),
+        Offset(thirdW * 2, size.height),
+        gridPaint,
+      );
       // 2 horizontal lines
       drawDottedLine(Offset(0, thirdH), Offset(size.width, thirdH), gridPaint);
-      drawDottedLine(Offset(0, thirdH * 2), Offset(size.width, thirdH * 2), gridPaint);
+      drawDottedLine(
+        Offset(0, thirdH * 2),
+        Offset(size.width, thirdH * 2),
+        gridPaint,
+      );
     }
 
     // Center snap vertical guideline
     if (showVertical && verticalX >= 0 && verticalX <= size.width) {
       final paint = isCenterVertical ? centerPaint : normalPaint;
-      drawDottedLine(Offset(verticalX, 0), Offset(verticalX, size.height), paint);
+      drawDottedLine(
+        Offset(verticalX, 0),
+        Offset(verticalX, size.height),
+        paint,
+      );
     }
 
     // Center snap horizontal guideline
     if (showHorizontal && horizontalY >= 0 && horizontalY <= size.height) {
       final paint = isCenterHorizontal ? centerPaint : normalPaint;
-      drawDottedLine(Offset(0, horizontalY), Offset(size.width, horizontalY), paint);
+      drawDottedLine(
+        Offset(0, horizontalY),
+        Offset(size.width, horizontalY),
+        paint,
+      );
     }
   }
 
@@ -3409,4 +3836,3 @@ class GuidelinePainter extends CustomPainter {
         oldDelegate.showGrid != showGrid;
   }
 }
-

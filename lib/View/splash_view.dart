@@ -18,6 +18,8 @@ import '../../for_ads/utils/shared_prefrence_service.dart';
 import 'PremiumCreditView.dart';
 import 'SurveyScreen.dart';
 
+import 'widgets/no_internet_dialog.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -26,21 +28,64 @@ class SplashScreen extends StatefulWidget {
 }
 
 class SplashScreenState extends State<SplashScreen> {
+  bool _isDialogShowing = false;
+
   @override
   void initState() {
     super.initState();
     debugPrint("*****///***** adsvarible === ${AdsVariable.isPurchase}......");
     WidgetsBinding.instance.addPostFrameCallback((callback) async {
       FirebaseAnalyticsService.logEvent(eventName: 'SPLASH_SCREEN');
-      await AdsSplashUtils().getOnlineIds(
-        navigateScreen: () async {
-          log('navigate screen');
-          /// todo :- when to test purchase
-          fetchData();
-          navigatingToNextActivity();
-        },
-      );
+      _startSplashInitialization();
     });
+  }
+
+  Future<void> _startSplashInitialization() async {
+    final bool isOnline = await AdsVariable.isInternetConnected();
+    if (!isOnline && mounted) {
+      _showNoInternetDialog();
+      return;
+    }
+    _runSplashOnlineIds();
+  }
+
+  Future<void> _runSplashOnlineIds() async {
+    await AdsSplashUtils().getOnlineIds(
+      navigateScreen: () async {
+        log('navigate screen');
+        fetchData();
+        navigatingToNextActivity();
+      },
+    );
+  }
+
+  void _showNoInternetDialog() {
+    if (_isDialogShowing || !mounted) return;
+    _isDialogShowing = true;
+
+    NoInternetDialog.show(
+      context,
+      onRetry: () async {
+        if (_isDialogShowing && mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+          _isDialogShowing = false;
+        }
+        // Small delay to let dialog dismiss smoothly before re-checking
+        await Future.delayed(const Duration(milliseconds: 250));
+        if (mounted) {
+          _startSplashInitialization();
+        }
+      },
+      onCancel: () {
+        if (_isDialogShowing && mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+          _isDialogShowing = false;
+        }
+        // User chooses Cancel/Continue: don't get stuck, navigate to app
+        fetchData();
+        navigatingToNextActivity();
+      },
+    );
   }
 
   void navigatingToNextActivity() async {

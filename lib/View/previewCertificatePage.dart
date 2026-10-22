@@ -11,6 +11,7 @@ import '../rendering_engine/models/scene_node.dart';
 import '../rendering_engine/export/scene_export_service.dart';
 import 'package:hive/hive.dart';
 import 'HomePage.dart';
+import '../Services/fetch_data_from_server_service.dart';
 import 'fullScreenViewerPage.dart';
 import 'package:open_filex/open_filex.dart';
 import '../for_ads/ads/ads_variable.dart';
@@ -53,10 +54,7 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
       final path = await SceneExportService().renderSceneToFile(
         doc: widget.document,
         assetImageLoader: (src) async {
-          final byteData = await rootBundle.load(src);
-          final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
-          final frame = await codec.getNextFrame();
-          return frame.image;
+          return await FetchDataFromServerServices.loadUiImage(src);
         },
         fileImageLoader: (path) async {
           final bytes = await File(path).readAsBytes();

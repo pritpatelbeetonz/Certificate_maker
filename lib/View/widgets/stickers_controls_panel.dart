@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'smart_certificate_thumbnail.dart';
 
 class StickersControlsPanel extends StatefulWidget {
   final List<dynamic>? stickers;
@@ -286,12 +287,17 @@ class _StickersControlsPanelState extends State<StickersControlsPanel> {
                               ),
                             ),
                             padding: const EdgeInsets.all(8),
-                            child: Image.asset(
-                              (assetPath.isNotEmpty && !assetPath.startsWith('assets/') && !assetPath.startsWith('http'))
-                                  ? 'assets/$assetPath'
-                                  : assetPath,
+                            child: SmartCertificateThumbnail(
+                              thumbnailPath: assetPath,
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const Icon(
+                              placeholder: const Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: const Icon(
                                 Icons.broken_image,
                                 color: Colors.grey,
                                 size: 24,

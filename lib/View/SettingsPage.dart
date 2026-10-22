@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../for_ads/ads/ads_variable.dart';
 import '../../for_ads/utils/app_constants.dart';
 import 'PremiumCreditView.dart';
 import 'contact_support_screen.dart';
@@ -116,29 +115,45 @@ class SettingsPage extends StatelessWidget {
     required String iconPath,
     required String title,
     required VoidCallback onTap,
+    BorderRadius? borderRadius,
   }) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 2.h),
-      leading: Image.asset(
-        iconPath,
-        width: 24.w,
-        height: 24.w,
-        fit: BoxFit.contain,
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: Color(0xFF0F172A),
-          fontFamily: 'Inter',
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: borderRadius,
+        splashColor: const Color(0xFF6F5BFF).withOpacity(0.12),
+        highlightColor: const Color(0xFF6F5BFF).withOpacity(0.06),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          child: Row(
+            children: [
+              Image.asset(
+                iconPath,
+                width: 24.w,
+                height: 24.w,
+                fit: BoxFit.contain,
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF0F172A),
+                    fontFamily: 'Inter',
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFFCBD5E1),
+              ),
+            ],
+          ),
         ),
       ),
-      trailing: const Icon(
-        Icons.chevron_right_rounded,
-        color: Color(0xFFCBD5E1),
-      ),
-      onTap: onTap,
     );
   }
 
@@ -204,35 +219,38 @@ class SettingsPage extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      Get.to(() => PremiumCreditView(onboarding: false, onDone: () {}));
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4200AD),
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Go Premium',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Inter',
+                  Material(
+                    color: const Color(0xFF4200AD),
+                    borderRadius: BorderRadius.circular(20.r),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20.r),
+                      splashColor: Colors.white.withOpacity(0.2),
+                      highlightColor: Colors.white.withOpacity(0.1),
+                      onTap: () {
+                        Get.to(() => PremiumCreditView(onboarding: false, onDone: () {}));
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Go Premium',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Inter',
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 6.w),
-                          Icon(
-                            Icons.arrow_forward,
-                            color: Colors.white,
-                            size: 14.w,
-                          ),
-                        ],
+                            SizedBox(width: 6.w),
+                            Icon(
+                              Icons.arrow_forward,
+                              color: Colors.white,
+                              size: 14.w,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -253,24 +271,31 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
-                children: [
-                  _buildNewSettingsItem(
-                    iconPath: 'assets/Settings/rate.png',
-                    title: 'Rate App',
-                    onTap: () => rateUs(context),
-                  ),
-                  _buildNewSettingsItem(
-                    iconPath: 'assets/Settings/share_app.png',
-                    title: 'Share App',
-                    onTap: () => shareApp(context),
-                  ),
-                  _buildNewSettingsItem(
-                    iconPath: 'assets/Settings/moreApps.png',
-                    title: 'More Apps',
-                    onTap: moreAppOnTap,
-                  ),
-                ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: Column(
+                  children: [
+                    _buildNewSettingsItem(
+                      iconPath: 'assets/Settings/rate.png',
+                      title: 'Rate App',
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+                      onTap: () => rateUs(context),
+                    ),
+                    Divider(height: 1, thickness: 1, color: const Color(0xFFF1F5F9), indent: 54.w),
+                    _buildNewSettingsItem(
+                      iconPath: 'assets/Settings/share_app.png',
+                      title: 'Share App',
+                      onTap: () => shareApp(context),
+                    ),
+                    Divider(height: 1, thickness: 1, color: const Color(0xFFF1F5F9), indent: 54.w),
+                    _buildNewSettingsItem(
+                      iconPath: 'assets/Settings/moreApps.png',
+                      title: 'More Apps',
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(16.r)),
+                      onTap: moreAppOnTap,
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -287,30 +312,37 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
-                children: [
-                  _buildNewSettingsItem(
-                    iconPath: 'assets/Settings/privacyPolicy.png',
-                    title: 'Privacy Policy',
-                    onTap: () {
-                      Get.to(() => const PrivacyPolicyView());
-                    },
-                  ),
-                  _buildNewSettingsItem(
-                    iconPath: 'assets/Settings/privacyPolicy.png',
-                    title: 'Terms of Use',
-                    onTap: () {
-                      Get.to(() => const TermsAndConditionView());
-                    },
-                  ),
-                  _buildNewSettingsItem(
-                    iconPath: 'assets/Settings/contanct_support.png',
-                    title: 'Contact Support',
-                    onTap: () {
-                      Get.to(() => const ContactSupportScreen());
-                    },
-                  ),
-                ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: Column(
+                  children: [
+                    _buildNewSettingsItem(
+                      iconPath: 'assets/Settings/privacyPolicy.png',
+                      title: 'Privacy Policy',
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+                      onTap: () {
+                        Get.to(() => const PrivacyPolicyView());
+                      },
+                    ),
+                    Divider(height: 1, thickness: 1, color: const Color(0xFFF1F5F9), indent: 54.w),
+                    _buildNewSettingsItem(
+                      iconPath: 'assets/Settings/privacyPolicy.png',
+                      title: 'Terms of Use',
+                      onTap: () {
+                        Get.to(() => const TermsAndConditionView());
+                      },
+                    ),
+                    Divider(height: 1, thickness: 1, color: const Color(0xFFF1F5F9), indent: 54.w),
+                    _buildNewSettingsItem(
+                      iconPath: 'assets/Settings/contanct_support.png',
+                      title: 'Contact Support',
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(16.r)),
+                      onTap: () {
+                        Get.to(() => const ContactSupportScreen());
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
             SizedBox(height: 20.h),

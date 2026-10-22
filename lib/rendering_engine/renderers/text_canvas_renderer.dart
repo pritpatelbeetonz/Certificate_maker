@@ -139,7 +139,7 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
                     ? [
                         Shadow(
                           color: PaintFactory.parseHexColor(node.shadow.color)
-                              .withOpacity(node.shadow.opacity),
+                              .withValues(alpha: node.shadow.opacity),
                           offset: node.shadow.offset * scale * screenScale,
                           blurRadius: node.shadow.blurRadius * scale * screenScale,
                         )
@@ -180,7 +180,7 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
               ? [
                   Shadow(
                     color: PaintFactory.parseHexColor(node.shadow.color)
-                        .withOpacity(node.shadow.opacity),
+                        .withValues(alpha: node.shadow.opacity),
                     offset: node.shadow.offset * scale * screenScale,
                     blurRadius: node.shadow.blurRadius * scale * screenScale,
                   )
@@ -214,13 +214,18 @@ class TextCanvasRenderer extends BaseNodeRenderer<TextNode> implements CanvasNod
     // 7. Align the text horizontally based on parsedTextAlign and center vertically within the bounding box
     double xOffset = 0.0;
     if (parsedTextAlign == TextAlign.center) {
-      xOffset = (size.width - textPainter.width) / 2.0;
+      xOffset = ((size.width - textPainter.width) / 2.0).roundToDouble();
     } else if (parsedTextAlign == TextAlign.right) {
-      xOffset = size.width - textPainter.width;
+      xOffset = (size.width - textPainter.width).roundToDouble();
     } else {
       xOffset = 0.0; // Left and justify
     }
-    final double yOffset = (size.height - textPainter.height) / 2.0;
+
+    // Prevent ascenders/top serifs from clipping or splitting across fractional sub-pixel boundaries
+    final double rawYOffset = (size.height - textPainter.height) / 2.0;
+    final double yOffset = rawYOffset < 0.0
+        ? 0.0
+        : rawYOffset.floorToDouble() + (!context.isExportMode && screenScale < 0.8 ? 1.0 : 0.0);
     textPainter.paint(canvas, Offset(xOffset, yOffset));
 
     canvas.restore();

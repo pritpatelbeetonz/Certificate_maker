@@ -14,38 +14,39 @@ class DynamicFontManager {
     if (_loadedFonts.contains(family)) return;
     try {
       final fontLoader = FontLoader(family);
-      final String resolvedSource = (source.isNotEmpty &&
-              !source.startsWith('assets/') &&
-              !source.startsWith('http://') &&
-              !source.startsWith('https://') &&
-              source.startsWith('Final_Certificates/'))
-          ? 'assets/$source'
-          : source;
+      Uint8List? fontBytes;
 
-      if (resolvedSource.startsWith('http://') || resolvedSource.startsWith('https://')) {
+      if (assetByteProvider != null) {
+        fontBytes = await assetByteProvider(source);
+      } else if (source.startsWith('http://') || source.startsWith('https://')) {
         final client = HttpClient();
-        final request = await client.getUrl(Uri.parse(resolvedSource));
+        client.badCertificateCallback = (cert, host, port) => true;
+        final request = await client.getUrl(Uri.parse(source));
         final response = await request.close();
-        final bytes = await consolidateHttpClientResponseBytes(response);
-        fontLoader.addFont(Future.value(ByteData.view(bytes.buffer)));
-      } else if (resolvedSource.startsWith('assets/')) {
-        if (assetByteProvider != null) {
-          final bytes = await assetByteProvider(resolvedSource);
-          fontLoader.addFont(Future.value(ByteData.view(bytes.buffer)));
-        } else {
-          final byteData = await rootBundle.load(resolvedSource);
-          fontLoader.addFont(Future.value(byteData));
-        }
+        fontBytes = await consolidateHttpClientResponseBytes(response);
+      } else if (File(source).existsSync()) {
+        fontBytes = await File(source).readAsBytes();
       } else {
-        final file = File(resolvedSource);
-        if (await file.exists()) {
-          final bytes = await file.readAsBytes();
-          fontLoader.addFont(Future.value(ByteData.view(bytes.buffer)));
+        // Fallback or asset loader
+        try {
+          final String resolved = (source.isNotEmpty && !source.startsWith('assets/') && !source.startsWith('http'))
+              ? 'assets/$source'
+              : source;
+          final byteData = await rootBundle.load(resolved);
+          fontBytes = byteData.buffer.asUint8List();
+        } catch (_) {
+          fontBytes = null;
         }
       }
-      await fontLoader.load();
-      _loadedFonts.add(family);
-      debugPrint('Successfully loaded dynamic font: $family');
+
+      if (fontBytes != null && fontBytes.isNotEmpty) {
+        fontLoader.addFont(Future.value(ByteData.view(fontBytes.buffer)));
+        await fontLoader.load();
+        _loadedFonts.add(family);
+        debugPrint('Successfully loaded dynamic font: $family');
+      } else {
+        debugPrint('Could not obtain bytes for dynamic font: $family from $source');
+      }
     } catch (e) {
       debugPrint('Failed to load dynamic font: $family from $source. Error: $e');
     }

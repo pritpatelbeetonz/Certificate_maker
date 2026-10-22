@@ -89,6 +89,17 @@ class AdsVariable {
   static bool showSurveyScreen = false;
   static int reviewAfterExports = 0;
 
+  /// Ad Revenue Analytics Switches (Master & Sub-switches)
+  static bool sendRevenueToAnalytics = true;
+  static bool sendRevenueAppOpenSplash = true;
+  static bool sendRevenueAppOpenIntro = true;
+  static bool sendRevenueInterSplash = true;
+  static bool sendRevenueInterMain = true;
+  static bool sendRevenueSurveyNative1 = true;
+  static bool sendRevenueSurveyNative2 = true;
+  static bool sendRevenueIntroFullNative = false; // Disabled by default per user request
+  static bool sendRevenueIntroSmallNative = false; // Disabled by default per user request
+
 
 
   static Future<void> onShowAds(BuildContext context, {required Function onComplete}) async {

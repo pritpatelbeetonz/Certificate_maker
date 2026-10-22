@@ -11,6 +11,8 @@ class SmartCertificateThumbnail extends StatelessWidget {
   final BoxFit fit;
   final double? width;
   final double? height;
+  final Widget? placeholder;
+  final Widget? errorWidget;
 
   const SmartCertificateThumbnail({
     super.key,
@@ -18,6 +20,8 @@ class SmartCertificateThumbnail extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.width,
     this.height,
+    this.placeholder,
+    this.errorWidget,
   });
 
   @override
@@ -38,10 +42,11 @@ class SmartCertificateThumbnail extends StatelessWidget {
         memCacheWidth: memWidth,
         fadeInDuration: Duration.zero,
         fadeOutDuration: Duration.zero,
-        placeholder: (context, url) => Container(
+        placeholder: (context, url) => placeholder ?? Container(
           color: const Color(0xFFE2E8F0),
         ),
         errorWidget: (context, url, error) {
+          if (errorWidget != null) return errorWidget!;
           // Fallback to local asset if bundled
           final String localAsset = thumbnailPath.startsWith('assets/')
               ? thumbnailPath
@@ -50,7 +55,7 @@ class SmartCertificateThumbnail extends StatelessWidget {
             localAsset,
             fit: fit,
             cacheWidth: memWidth,
-            errorBuilder: (ctx, err, stack) => _buildErrorPlaceholder(),
+            errorBuilder: (ctx, err, stack) => errorWidget ?? _buildErrorPlaceholder(),
           );
         },
       );

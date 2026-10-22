@@ -12,6 +12,7 @@ import '../widgets/loading_screen.dart';
 import 'ads_variable.dart';
 import 'app_open_ad.dart';
 import 'life_cycle.dart';
+import '../utils/ad_revenue_analytics_service.dart';
 
 class AdsLoadUtil extends GetxController {
   late SharedPreferences prefs;
@@ -53,10 +54,34 @@ class AdsLoadUtil extends GetxController {
             log(
               "Ad Loaded:=====================================================================",
             );
+            ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+              // Standard ad_impression (controlled by switches)
+              AdRevenueAnalyticsService.trackAdImpression(
+                ad: ad,
+                valueMicros: valueMicros,
+                precision: precision,
+                currencyCode: currencyCode,
+                placement: 'splash_app_open',
+                isSubSwitchEnabled: AdsVariable.sendRevenueAppOpenSplash,
+              );
+              // Compulsory Revenue Event
+              AdRevenueAnalyticsService.trackCompulsoryRevenue(
+                eventName: 'Rev_AppOpen_Splash',
+                ad: ad,
+                valueMicros: valueMicros,
+                precision: precision,
+                currencyCode: currencyCode,
+              );
+            };
             ad.show();
             ad.fullScreenContentCallback = FullScreenContentCallback(
               onAdShowedFullScreenContent: (ad) {
                 log('Ad showed full screen content');
+                // Compulsory Show Event
+                AdRevenueAnalyticsService.trackCompulsoryShow(
+                  eventName: 'Show_AppOpen_Splash',
+                  adUnitId: ad.adUnitId,
+                );
                 // showToast("Splash Intertial Add show");
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
@@ -115,10 +140,35 @@ class AdsLoadUtil extends GetxController {
                 eventName: 'LOAD_SPLASH_INERTIAL_AD',
               );
 
+              ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+                // Standard ad_impression (controlled by switches)
+                AdRevenueAnalyticsService.trackAdImpression(
+                  ad: ad,
+                  valueMicros: valueMicros,
+                  precision: precision,
+                  currencyCode: currencyCode,
+                  placement: 'splash_interstitial',
+                  isSubSwitchEnabled: AdsVariable.sendRevenueInterSplash,
+                );
+                // Compulsory Revenue Event
+                AdRevenueAnalyticsService.trackCompulsoryRevenue(
+                  eventName: 'Rev_Inter_Splash',
+                  ad: ad,
+                  valueMicros: valueMicros,
+                  precision: precision,
+                  currencyCode: currencyCode,
+                );
+              };
+
               ad.fullScreenContentCallback = FullScreenContentCallback(
                 // Called when the ad showed the full screen content.
                 onAdShowedFullScreenContent: (ad) async {
                   debugPrint("[SplashAd] 📺 [loadInterSplash] Ad showed full screen content");
+                  // Compulsory Show Event
+                  AdRevenueAnalyticsService.trackCompulsoryShow(
+                    eventName: 'Show_Inter_Splash',
+                    adUnitId: ad.adUnitId,
+                  );
                 },
                 // Called when an impression occurs on the ad.
                 onAdImpression: (ad) async {
@@ -189,6 +239,25 @@ class AdsLoadUtil extends GetxController {
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           FirebaseAnalyticsService.logEvent(eventName: 'SHOW_PRE_INTERSTITIAL');
+          ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+            // Standard ad_impression (controlled by switches)
+            AdRevenueAnalyticsService.trackAdImpression(
+              ad: ad,
+              valueMicros: valueMicros,
+              precision: precision,
+              currencyCode: currencyCode,
+              placement: 'interstitial_main',
+              isSubSwitchEnabled: AdsVariable.sendRevenueInterMain,
+            );
+            // Compulsory Revenue Event
+            AdRevenueAnalyticsService.trackCompulsoryRevenue(
+              eventName: 'Rev_Inter_Main',
+              ad: ad,
+              valueMicros: valueMicros,
+              precision: precision,
+              currencyCode: currencyCode,
+            );
+          };
           _interstitialAd = ad;
           isAdLoaded = true;
           showLog("Pre Inter Loaded");
@@ -218,6 +287,13 @@ class AdsLoadUtil extends GetxController {
         // Show the ad
         _interstitialAd!.show();
         _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+          onAdShowedFullScreenContent: (ad) {
+            // Compulsory Show Event
+            AdRevenueAnalyticsService.trackCompulsoryShow(
+              eventName: 'Show_Inter_Main',
+              adUnitId: ad.adUnitId,
+            );
+          },
           onAdImpression: (ad) {
             FirebaseAnalyticsService.logEvent(eventName: 'SHOW_INITIAL_AD');
             showLog("onAdImpression---> true");
@@ -272,6 +348,23 @@ class AdsLoadUtil extends GetxController {
         adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: (ad) {
             FirebaseAnalyticsService.logEvent(eventName: 'LOADED_INITIAL_AD');
+            ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+              AdRevenueAnalyticsService.trackAdImpression(
+                ad: ad,
+                valueMicros: valueMicros,
+                precision: precision,
+                currencyCode: currencyCode,
+                placement: 'interstitial_main',
+                isSubSwitchEnabled: AdsVariable.sendRevenueInterMain,
+              );
+              AdRevenueAnalyticsService.trackCompulsoryRevenue(
+                eventName: 'Rev_Inter_Main',
+                ad: ad,
+                valueMicros: valueMicros,
+                precision: precision,
+                currencyCode: currencyCode,
+              );
+            };
             _interstitialAd = ad;
             showLog(ad.toString());
             showLog(adId);
@@ -280,11 +373,14 @@ class AdsLoadUtil extends GetxController {
             _interstitialAd!.show();
             _interstitialAd!.fullScreenContentCallback =
                 FullScreenContentCallback(
+                  onAdShowedFullScreenContent: (ad) {
+                    AdRevenueAnalyticsService.trackCompulsoryShow(
+                      eventName: 'Show_Inter_Main',
+                      adUnitId: ad.adUnitId,
+                    );
+                  },
                   onAdImpression: (ad) {
                     showLog("onAdImpression");
-                    // Future.delayed(const Duration(seconds: 1), () {
-                    //   onDismissed();
-                    // });
                   },
                   onAdDismissedFullScreenContent: (ad) {
                     ad.dispose();
@@ -345,6 +441,29 @@ class AdsLoadUtil extends GetxController {
       adUnitId: adUnitId.toString(),
       factoryId: isBigNative ? 'bigNativeAds' : 'fullNativeAds',
       listener: NativeAdListener(
+        onPaidEvent: (ad, valueMicros, precision, currencyCode) {
+          AdRevenueAnalyticsService.trackAdImpression(
+            ad: ad,
+            valueMicros: valueMicros,
+            precision: precision,
+            currencyCode: currencyCode,
+            placement: 'survey_native_1',
+            isSubSwitchEnabled: AdsVariable.sendRevenueSurveyNative1,
+          );
+          AdRevenueAnalyticsService.trackCompulsoryRevenue(
+            eventName: 'Rev_Survey_Native_1',
+            ad: ad,
+            valueMicros: valueMicros,
+            precision: precision,
+            currencyCode: currencyCode,
+          );
+        },
+        onAdImpression: (ad) {
+          AdRevenueAnalyticsService.trackCompulsoryShow(
+            eventName: 'Show_Survey_Native_1',
+            adUnitId: ad.adUnitId,
+          );
+        },
         onAdLoaded: (ad) {
           FirebaseAnalyticsService.logEvent(
             eventName: 'LOAD LANGUAGE BIG NATIVE 1',
@@ -379,6 +498,29 @@ class AdsLoadUtil extends GetxController {
       adUnitId: adUnitId.toString(),
       factoryId: isBigNative ? 'bigNativeAds' : 'fullNativeAds',
       listener: NativeAdListener(
+        onPaidEvent: (ad, valueMicros, precision, currencyCode) {
+          AdRevenueAnalyticsService.trackAdImpression(
+            ad: ad,
+            valueMicros: valueMicros,
+            precision: precision,
+            currencyCode: currencyCode,
+            placement: 'survey_native_2',
+            isSubSwitchEnabled: AdsVariable.sendRevenueSurveyNative2,
+          );
+          AdRevenueAnalyticsService.trackCompulsoryRevenue(
+            eventName: 'Rev_Survey_Native_2',
+            ad: ad,
+            valueMicros: valueMicros,
+            precision: precision,
+            currencyCode: currencyCode,
+          );
+        },
+        onAdImpression: (ad) {
+          AdRevenueAnalyticsService.trackCompulsoryShow(
+            eventName: 'Show_Survey_Native_2',
+            adUnitId: ad.adUnitId,
+          );
+        },
         onAdLoaded: (ad) {
           FirebaseAnalyticsService.logEvent(
             eventName: 'LOAD LANGUAGE BIG NATIVE 2',
@@ -413,6 +555,29 @@ class AdsLoadUtil extends GetxController {
       adUnitId: adUnitId.toString(),
       factoryId: isSmallNative ? 'bigNativeAds' : 'fullNativeAds',
       listener: NativeAdListener(
+        onPaidEvent: (ad, valueMicros, precision, currencyCode) {
+          AdRevenueAnalyticsService.trackAdImpression(
+            ad: ad,
+            valueMicros: valueMicros,
+            precision: precision,
+            currencyCode: currencyCode,
+            placement: 'intro_full_native',
+            isSubSwitchEnabled: AdsVariable.sendRevenueIntroFullNative,
+          );
+          AdRevenueAnalyticsService.trackCompulsoryRevenue(
+            eventName: 'Rev_Intro_Full_Native',
+            ad: ad,
+            valueMicros: valueMicros,
+            precision: precision,
+            currencyCode: currencyCode,
+          );
+        },
+        onAdImpression: (ad) {
+          AdRevenueAnalyticsService.trackCompulsoryShow(
+            eventName: 'Show_Intro_Full_Native',
+            adUnitId: ad.adUnitId,
+          );
+        },
         onAdLoaded: (ad) {
           FirebaseAnalyticsService.logEvent(eventName: 'FULL_NATIVE_AD_LOAD');
           fullNativeAdIntro = ad as NativeAd?;
@@ -445,6 +610,29 @@ class AdsLoadUtil extends GetxController {
       adUnitId: adUnitId.toString(),
       factoryId: isSmallNative ? 'bigNativeAds' : 'fullNativeAds',
       listener: NativeAdListener(
+        onPaidEvent: (ad, valueMicros, precision, currencyCode) {
+          AdRevenueAnalyticsService.trackAdImpression(
+            ad: ad,
+            valueMicros: valueMicros,
+            precision: precision,
+            currencyCode: currencyCode,
+            placement: 'intro_small_native',
+            isSubSwitchEnabled: AdsVariable.sendRevenueIntroSmallNative,
+          );
+          AdRevenueAnalyticsService.trackCompulsoryRevenue(
+            eventName: 'Rev_Intro_Small_Native',
+            ad: ad,
+            valueMicros: valueMicros,
+            precision: precision,
+            currencyCode: currencyCode,
+          );
+        },
+        onAdImpression: (ad) {
+          AdRevenueAnalyticsService.trackCompulsoryShow(
+            eventName: 'Show_Intro_Small_Native',
+            adUnitId: ad.adUnitId,
+          );
+        },
         onAdLoaded: (ad) {
           FirebaseAnalyticsService.logEvent(eventName: 'FULL_NATIVE_AD_LOAD');
           smallThirdNativeAdIntro = ad as NativeAd?;

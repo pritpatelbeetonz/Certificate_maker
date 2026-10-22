@@ -10,6 +10,7 @@ import '../../for_ads/ads/ads_load_util.dart';
 import '../../for_ads/ads/ads_variable.dart';
 import '../../for_ads/utils/app_constants.dart';
 import '../../for_ads/utils/firebase_analysis.dart';
+import '../../for_ads/utils/ad_revenue_analytics_service.dart';
 import '../../for_ads/widgets/loading_screen.dart';
 import 'PremiumCreditView.dart';
 import 'RatingScreen.dart';
@@ -112,14 +113,14 @@ class WelPageviewState extends State<WelPageview> {
             ad.dispose();
             return;
           }
-          timeoutTimer?.cancel();
+          timeoutTimer.cancel();
           loadingScreen.hide();
           debugPrint("[IntroAppOpen] 🟢 On-the-spot App Open Ad loaded -> Showing now!");
           _displayAppOpenAd(ad);
         },
         onAdFailedToLoad: (error) {
           if (hasTimedOut) return;
-          timeoutTimer?.cancel();
+          timeoutTimer.cancel();
           loadingScreen.hide();
           debugPrint("[IntroAppOpen] ❌ On-the-spot App Open Ad failed: ${error.message} -> Proceeding to Premium");
           _navigateToPremium();
@@ -130,9 +131,30 @@ class WelPageviewState extends State<WelPageview> {
 
   void _displayAppOpenAd(AppOpenAd ad) {
     _isShowingIntroAd = true;
+    ad.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+      AdRevenueAnalyticsService.trackAdImpression(
+        ad: ad,
+        valueMicros: valueMicros,
+        precision: precision,
+        currencyCode: currencyCode,
+        placement: 'intro_app_open',
+        isSubSwitchEnabled: AdsVariable.sendRevenueAppOpenIntro,
+      );
+      AdRevenueAnalyticsService.trackCompulsoryRevenue(
+        eventName: 'Rev_AppOpen_Intro',
+        ad: ad,
+        valueMicros: valueMicros,
+        precision: precision,
+        currencyCode: currencyCode,
+      );
+    };
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (ad) {
         debugPrint("[IntroAppOpen] 📺 App Open Ad showed full screen");
+        AdRevenueAnalyticsService.trackCompulsoryShow(
+          eventName: 'Show_AppOpen_Intro',
+          adUnitId: ad.adUnitId,
+        );
       },
       onAdDismissedFullScreenContent: (ad) {
         debugPrint("[IntroAppOpen] 👋 App Open Ad dismissed -> Navigating to Premium");

@@ -57,6 +57,7 @@ dev_dependencies:
 
 flutter:
   assets:
+    - assets/
     - assets/Survay/
     - assets/Premium/
     - assets/Settings/
@@ -70,6 +71,7 @@ flutter:
     - "assets/Create with AI/"
     - "assets/Browse template/"
     - "assets/Preview Certificate/"
+    - assets/animations/
 
   uses-material-design: true
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'smart_certificate_thumbnail.dart';
 
 class BackgroundsControlPanel extends StatelessWidget {
   final List<dynamic> backgrounds;
@@ -122,20 +123,23 @@ class BackgroundsControlPanel extends StatelessWidget {
                                   padding: EdgeInsets.all(6.r),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8.r),
-                                    child: Image.asset(
-                                      (path.isNotEmpty && !path.startsWith('assets/') && !path.startsWith('http'))
-                                          ? 'assets/$path'
-                                          : path,
+                                    child: SmartCertificateThumbnail(
+                                      thumbnailPath: path,
                                       fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          color: const Color(0xFFF1F5F9),
-                                          child: const Icon(
-                                            Icons.image_not_supported_outlined,
-                                            color: Color(0xFF94A3B8),
-                                          ),
-                                        );
-                                      },
+                                      placeholder: const Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        ),
+                                      ),
+                                      errorWidget: Container(
+                                        color: const Color(0xFFF1F5F9),
+                                        child: const Icon(
+                                          Icons.image_not_supported_outlined,
+                                          color: Color(0xFF94A3B8),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
