@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../for_ads/ads/ads_variable.dart';
 import '../../for_ads/utils/app_constants.dart';
 import 'PremiumCreditView.dart';
+import 'contact_support_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_and_condition_screen.dart';
 
@@ -95,21 +96,6 @@ class SettingsPage extends StatelessWidget {
     }
   }
 
-  void _contactUs() async {
-    final email = AdsVariable.supportContactEmail;
-    final Uri emailLaunchUri = Uri(
-      scheme: 'mailto',
-      path: email,
-      queryParameters: {
-        'subject': 'Certificate Maker Support Request',
-      },
-    );
-    if (await canLaunchUrl(emailLaunchUri)) {
-      await launchUrl(emailLaunchUri);
-    } else {
-      Fluttertoast.showToast(msg: "Could not launch email app. Support: $email");
-    }
-  }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
@@ -320,7 +306,9 @@ class SettingsPage extends StatelessWidget {
                   _buildNewSettingsItem(
                     iconPath: 'assets/Settings/contanct_support.png',
                     title: 'Contact Support',
-                    onTap: _contactUs,
+                    onTap: () {
+                      Get.to(() => const ContactSupportScreen());
+                    },
                   ),
                 ],
               ),
