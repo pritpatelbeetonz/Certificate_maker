@@ -14,22 +14,30 @@ class DynamicFontManager {
     if (_loadedFonts.contains(family)) return;
     try {
       final fontLoader = FontLoader(family);
-      if (source.startsWith('http://') || source.startsWith('https://')) {
+      final String resolvedSource = (source.isNotEmpty &&
+              !source.startsWith('assets/') &&
+              !source.startsWith('http://') &&
+              !source.startsWith('https://') &&
+              source.startsWith('Final_Certificates/'))
+          ? 'assets/$source'
+          : source;
+
+      if (resolvedSource.startsWith('http://') || resolvedSource.startsWith('https://')) {
         final client = HttpClient();
-        final request = await client.getUrl(Uri.parse(source));
+        final request = await client.getUrl(Uri.parse(resolvedSource));
         final response = await request.close();
         final bytes = await consolidateHttpClientResponseBytes(response);
         fontLoader.addFont(Future.value(ByteData.view(bytes.buffer)));
-      } else if (source.startsWith('assets/')) {
+      } else if (resolvedSource.startsWith('assets/')) {
         if (assetByteProvider != null) {
-          final bytes = await assetByteProvider(source);
+          final bytes = await assetByteProvider(resolvedSource);
           fontLoader.addFont(Future.value(ByteData.view(bytes.buffer)));
         } else {
-          final byteData = await rootBundle.load(source);
+          final byteData = await rootBundle.load(resolvedSource);
           fontLoader.addFont(Future.value(byteData));
         }
       } else {
-        final file = File(source);
+        final file = File(resolvedSource);
         if (await file.exists()) {
           final bytes = await file.readAsBytes();
           fontLoader.addFont(Future.value(ByteData.view(bytes.buffer)));

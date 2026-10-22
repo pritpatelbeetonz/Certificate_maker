@@ -216,7 +216,7 @@ class AdsSplashUtils {
         }
 
         if(kDebugMode){
-          AdsVariable.isPurchase =true;
+         // AdsVariable.isPurchase =true;
         }
 
         // Removed the debug mode override of AdsVariable.isPurchase = false;
@@ -268,14 +268,22 @@ class AdsSplashUtils {
         }
 
         Future.delayed(const Duration(seconds: 0), () async {
-          if (AdsVariable.OpenAdInSplash!) {
-            print('call open ad in splash condition');
+          debugPrint("[SplashAd] 🎯 Determining post-splash ad...");
+          debugPrint("[SplashAd] ⚙️ AdsVariable.OpenAdInSplash = ${AdsVariable.OpenAdInSplash}");
+          debugPrint("[SplashAd] 🔑 Interstitial Ad Unit ID (tr_splashInterstitialAd) = '${AdsVariable.interSplashIOS}'");
+          debugPrint("[SplashAd] 🔑 App Open Ad Unit ID (tr_appOpenAd) = '${AdsVariable.appOpenAdsIOS}'");
+
+          if (AdsVariable.OpenAdInSplash == true) {
+            debugPrint('[SplashAd] 📱 Condition matched: OpenAdInSplash is TRUE -> Calling loadAndShowOpenAd()');
             AdsLoadUtil().loadAndShowOpenAd(
               navigateScreen,
               AdsVariable.appOpenAdsIOS,
             );
           } else {
-            print('----call else part-----');
+            debugPrint('[SplashAd] 🎬 Condition matched: OpenAdInSplash is FALSE/null -> Calling Interstitial loadInterSplash()');
+            if (AdsVariable.interSplashIOS == "11" || AdsVariable.interSplashIOS.isEmpty) {
+              debugPrint('[SplashAd] ⚠️ WARNING: Splash interstitial ad ID is "${AdsVariable.interSplashIOS}". If this is "11", AdMob will fail to load real ads (fallback dummy ID).');
+            }
             AdsLoadUtil().loadInterSplash(
               navigateScreen,
               AdsVariable.interSplashIOS,

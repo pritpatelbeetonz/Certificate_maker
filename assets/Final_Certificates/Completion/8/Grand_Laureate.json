@@ -17,35 +17,35 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/8/bg.png"
+      "src": "Final_Certificates/Completion/8/bg.png"
     },
     "sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/8/sticker.png"
+      "src": "Final_Certificates/Completion/8/sticker.png"
     },
     "Kanit": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kanit-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kanit-Regular.ttf"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "Meddon": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Meddon-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Meddon-Regular.ttf"
     },
     "Arizonia": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Arizonia-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Arizonia-Regular.ttf"
     }
   },
   "scene": {

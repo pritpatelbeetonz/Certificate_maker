@@ -19,43 +19,43 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Participation/1/bg.png"
+      "src": "Final_Certificates/Participation/1/bg.png"
     },
     "ribbon_sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Participation/1/sticker.png"
+      "src": "Final_Certificates/Participation/1/sticker.png"
     },
     "logo": {
       "type": "image",
-      "src": "assets/Final_Certificates/Participation/1/logo.png"
+      "src": "Final_Certificates/Participation/1/logo.png"
     },
     "LibreBodoni": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBodoni-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBodoni-VariableFont_wght.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "Inter": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Inter-VariableFont_opsz,wght.ttf"
+      "src": "Final_Certificates/Fonts/Inter-VariableFont_opsz,wght.ttf"
     },
     "Licorice": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Licorice-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Licorice-Regular.ttf"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "Lugrasimo": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Lugrasimo-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Lugrasimo-Regular.ttf"
     }
   },
   "scene": {

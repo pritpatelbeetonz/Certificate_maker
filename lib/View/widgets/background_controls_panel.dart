@@ -123,7 +123,9 @@ class BackgroundsControlPanel extends StatelessWidget {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8.r),
                                     child: Image.asset(
-                                      path,
+                                      (path.isNotEmpty && !path.startsWith('assets/') && !path.startsWith('http'))
+                                          ? 'assets/$path'
+                                          : path,
                                       fit: BoxFit.contain,
                                       errorBuilder: (context, error, stackTrace) {
                                         return Container(

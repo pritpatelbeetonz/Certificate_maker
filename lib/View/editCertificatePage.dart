@@ -1055,6 +1055,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
   Future<void> _loadLayoutAndAssets() async {
     try {
       SceneDocument doc;
+      final String resolvedLayoutPath = (widget.layoutPath.isNotEmpty &&
+              !widget.layoutPath.startsWith('assets/') &&
+              !widget.layoutPath.startsWith('http'))
+          ? 'assets/${widget.layoutPath}'
+          : widget.layoutPath;
+
       if (widget.savedProjectName != null) {
         final box = Hive.box('saved_projects');
         final projectData = box.get(widget.savedProjectName) as Map<dynamic, dynamic>?;
@@ -1062,12 +1068,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           final docJson = Map<String, dynamic>.from(projectData['document'] as Map);
           doc = SceneDocument.fromJson(docJson);
         } else {
-          final String jsonString = await rootBundle.loadString(widget.layoutPath);
+          final String jsonString = await rootBundle.loadString(resolvedLayoutPath);
           final Map<String, dynamic> jsonMap = json.decode(jsonString);
           doc = SceneDocument.fromJson(jsonMap);
         }
       } else {
-        final String jsonString = await rootBundle.loadString(widget.layoutPath);
+        final String jsonString = await rootBundle.loadString(resolvedLayoutPath);
         final Map<String, dynamic> jsonMap = json.decode(jsonString);
         doc = SceneDocument.fromJson(jsonMap);
       }
@@ -1076,31 +1082,35 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
       for (var entry in doc.assets.entries) {
         final assetId = entry.key;
         final asset = entry.value;
+        final String resolvedSrc = (asset.src.isNotEmpty && !asset.src.startsWith('assets/') && !asset.src.startsWith('http'))
+            ? 'assets/${asset.src}'
+            : asset.src;
+
         if (asset.type == 'image') {
           try {
-            final ui.Image img = await _loadUiImage(asset.src);
+            final ui.Image img = await _loadUiImage(resolvedSrc);
             _imagePool[assetId] = img;
           } catch (e) {
-            debugPrint("Failed to load image asset: ${asset.src} ($e)");
+            debugPrint("Failed to load image asset: $resolvedSrc ($e)");
           }
         } else if (asset.type == 'svg') {
           try {
             final PictureInfo pictureInfo = await vg.loadPicture(
-              SvgAssetLoader(asset.src),
+              SvgAssetLoader(resolvedSrc),
               null,
             );
             _picturePool[assetId] = pictureInfo.picture;
           } catch (e) {
-            debugPrint("Failed to load SVG asset: ${asset.src} ($e)");
+            debugPrint("Failed to load SVG asset: $resolvedSrc ($e)");
           }
         } else if (asset.type == 'font') {
           try {
-            await DynamicFontManager.instance.loadFont(assetId, asset.src);
+            await DynamicFontManager.instance.loadFont(assetId, resolvedSrc);
             if (!_fontFamilies.contains(assetId)) {
               _fontFamilies.add(assetId);
             }
           } catch (e) {
-            debugPrint("Failed to load font asset: ${asset.src} ($e)");
+            debugPrint("Failed to load font asset: $resolvedSrc ($e)");
           }
         }
       }

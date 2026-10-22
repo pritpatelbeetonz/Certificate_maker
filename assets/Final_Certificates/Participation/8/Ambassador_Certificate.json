@@ -17,27 +17,27 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Participation/8/bg.png"
+      "src": "Final_Certificates/Participation/8/bg.png"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "MeowScript": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/MeowScript-Regular.ttf"
+      "src": "Final_Certificates/Fonts/MeowScript-Regular.ttf"
     }
   },
   "scene": {

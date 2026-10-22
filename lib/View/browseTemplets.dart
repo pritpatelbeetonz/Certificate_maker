@@ -275,7 +275,14 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                             itemBuilder: (context, index) {
                               final item = _filteredTemplates[index];
                               final String displayName = item['name'] ?? '';
-                              final String thumbnail = item['thumbnail'] ?? '';
+                              final String rawThumb = item['thumbnail'] ?? '';
+                              final String thumbnail = (rawThumb.isNotEmpty && !rawThumb.startsWith('assets/') && !rawThumb.startsWith('http'))
+                                  ? 'assets/$rawThumb'
+                                  : rawThumb;
+                              final String rawLayout = item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json';
+                              final String layoutPath = (rawLayout.isNotEmpty && !rawLayout.startsWith('assets/') && !rawLayout.startsWith('http'))
+                                  ? 'assets/$rawLayout'
+                                  : rawLayout;
                               final String displaySubtitle = item['category'] ?? '';
 
                               return GestureDetector(
@@ -288,7 +295,7 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                                   } else {
                                     AdsVariable.onShowAds(context, onComplete: () {
                                       Get.to(() => EditCertificatePage(
-                                            layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
+                                            layoutPath: layoutPath,
                                           ));
                                     });
                                   }

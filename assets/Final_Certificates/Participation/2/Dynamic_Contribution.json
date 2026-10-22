@@ -19,35 +19,35 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Participation/2/bg.png"
+      "src": "Final_Certificates/Participation/2/bg.png"
     },
     "sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Participation/2/sticker.png"
+      "src": "Final_Certificates/Participation/2/sticker.png"
     },
     "logo": {
       "type": "image",
-      "src": "assets/Final_Certificates/Participation/2/logo.png"
+      "src": "Final_Certificates/Participation/2/logo.png"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "Licorice": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Licorice-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Licorice-Regular.ttf"
     },
     "Kanit": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kanit-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kanit-Regular.ttf"
     }
   },
   "scene": {

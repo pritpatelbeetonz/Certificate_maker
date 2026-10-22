@@ -10,6 +10,7 @@ import '../../for_ads/ads/ads_load_util.dart';
 import '../../for_ads/ads/ads_variable.dart';
 import '../../for_ads/utils/app_constants.dart';
 import '../../for_ads/utils/firebase_analysis.dart';
+import '../../for_ads/widgets/loading_screen.dart';
 import 'PremiumCreditView.dart';
 import 'RatingScreen.dart';
 import 'welcome1.dart';
@@ -26,32 +27,144 @@ class WelPageviewState extends State<WelPageview> {
   final PageController pageController = PageController(initialPage: 0);
   int currentIndex = 0;
   bool isInterNetConnected = false;
-  bool _hasRequestedReview = false; // <-- Add this
+  bool _hasRequestedReview = false;
 
-  StreamSubscription? _adLoadedSubscription;
-  StreamSubscription? _adFailedSubscription;
+  // Intro AppOpen Ad state
+  AppOpenAd? _introAppOpenAd;
+  bool _isIntroAdLoading = false;
+  bool _isShowingIntroAd = false;
 
   @override
   void initState() {
-    //FirebaseAnalyticsService.logEvent(eventName: 'INTROSCREENS');
     super.initState();
     checkInterNetConnectivity();
-    _adLoadedSubscription = AdsLoadUtil.isFullNativeIntroAdLoaded.listen((_) {
-      if (mounted) setDataLength();
-    });
-    _adFailedSubscription = AdsLoadUtil.isFullNativeAdFailedToLoadIntro.listen((
-      _,
-    ) {
-      if (mounted) setDataLength();
-    });
+    _preloadIntroAppOpenAd();
   }
 
   @override
   void dispose() {
-    _adLoadedSubscription?.cancel();
-    _adFailedSubscription?.cancel();
+    _introAppOpenAd?.dispose();
     pageController.dispose();
     super.dispose();
+  }
+
+  void _preloadIntroAppOpenAd() {
+    if (AdsVariable.isPurchase || AdsVariable.appOpenAdsIOS == "11") {
+      debugPrint("[IntroAppOpen] 👑 Premium user or dummy ad unit -> Skipping intro app open preload");
+      return;
+    }
+    if (_introAppOpenAd != null || _isIntroAdLoading) {
+      return;
+    }
+    _isIntroAdLoading = true;
+    debugPrint("[IntroAppOpen] ⏳ Preloading App Open Ad from Intro 1... Unit: '${AdsVariable.appOpenAdsIOS}'");
+    AppOpenAd.load(
+      adUnitId: AdsVariable.appOpenAdsIOS,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          _isIntroAdLoading = false;
+          _introAppOpenAd = ad;
+          debugPrint("[IntroAppOpen] 🟢 Intro App Open Ad preloaded and ready!");
+        },
+        onAdFailedToLoad: (error) {
+          _isIntroAdLoading = false;
+          _introAppOpenAd = null;
+          debugPrint("[IntroAppOpen] 🔴 Intro App Open Ad preload failed: ${error.message}");
+        },
+      ),
+    );
+  }
+
+  void _showIntroAppOpenAndProceed() {
+    // If premium, proceed immediately
+    if (AdsVariable.isPurchase || AdsVariable.appOpenAdsIOS == "11") {
+      _navigateToPremium();
+      return;
+    }
+
+    if (_isShowingIntroAd) return;
+
+    // Case 1: Ad is already preloaded
+    if (_introAppOpenAd != null) {
+      debugPrint("[IntroAppOpen] 🚀 Preloaded ad available -> Showing immediately!");
+      _displayAppOpenAd(_introAppOpenAd!);
+      return;
+    }
+
+    // Case 2: Ad is still loading in-flight OR failed previously -> Show loader and load on the spot
+    debugPrint("[IntroAppOpen] ⏳ Ad not ready yet -> Showing loader & waiting/fetching on the spot...");
+    loadingScreen.show();
+    bool hasTimedOut = false;
+    Timer? timeoutTimer = Timer(const Duration(seconds: 4), () {
+      hasTimedOut = true;
+      debugPrint("[IntroAppOpen] ⏱️ Timeout reached (4s) -> Hiding loader and proceeding");
+      loadingScreen.hide();
+      _navigateToPremium();
+    });
+
+    AppOpenAd.load(
+      adUnitId: AdsVariable.appOpenAdsIOS,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          if (hasTimedOut) {
+            ad.dispose();
+            return;
+          }
+          timeoutTimer?.cancel();
+          loadingScreen.hide();
+          debugPrint("[IntroAppOpen] 🟢 On-the-spot App Open Ad loaded -> Showing now!");
+          _displayAppOpenAd(ad);
+        },
+        onAdFailedToLoad: (error) {
+          if (hasTimedOut) return;
+          timeoutTimer?.cancel();
+          loadingScreen.hide();
+          debugPrint("[IntroAppOpen] ❌ On-the-spot App Open Ad failed: ${error.message} -> Proceeding to Premium");
+          _navigateToPremium();
+        },
+      ),
+    );
+  }
+
+  void _displayAppOpenAd(AppOpenAd ad) {
+    _isShowingIntroAd = true;
+    ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (ad) {
+        debugPrint("[IntroAppOpen] 📺 App Open Ad showed full screen");
+      },
+      onAdDismissedFullScreenContent: (ad) {
+        debugPrint("[IntroAppOpen] 👋 App Open Ad dismissed -> Navigating to Premium");
+        _isShowingIntroAd = false;
+        ad.dispose();
+        _introAppOpenAd = null;
+        _navigateToPremium();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        debugPrint("[IntroAppOpen] ❌ App Open Ad failed to show: $error -> Navigating to Premium");
+        _isShowingIntroAd = false;
+        ad.dispose();
+        _introAppOpenAd = null;
+        _navigateToPremium();
+      },
+    );
+    ad.show();
+  }
+
+  void _navigateToPremium() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PremiumCreditView(
+          onboarding: true,
+          onDone: () {
+            Get.offAll(() => Homepage());
+          },
+        ),
+      ),
+      (route) => false,
+    );
   }
 
   Future<void> checkInterNetConnectivity() async {
@@ -59,46 +172,18 @@ class WelPageviewState extends State<WelPageview> {
       setState(() {
         isInterNetConnected = true;
       });
-      setDataLength();
+      _preloadIntroAppOpenAd();
     }
   }
 
-  // Without ad: 3 pages (intro1, intro2, intro3)
-  // With ad:    4 pages (intro1, intro2, ad, intro3)
-  int dataLength = 3;
+  static const int dataLength = 3;
 
-  void setDataLength() {
-    if (AdsVariable.fullNativeIntroAdIOS == "11" ||
-        AdsLoadUtil.isFullNativeAdFailedToLoadIntro.value == true ||
-        AdsLoadUtil.isFullNativeIntroAdLoaded.value == false ||
-        (!isInterNetConnected || AdsVariable.isPurchase)) {
-      setState(() {
-        dataLength = 3; // intro1, intro2, intro3
-      });
-    } else {
-      setState(() {
-        dataLength = 4; // intro1, intro2, ad, intro3
-      });
-    }
-  }
-
-  // Returns number of visible dots (always 3 — one per intro screen)
-  int GetDots(int dataLength) {
+  int GetDots(int length) {
     return 3;
   }
 
-  // Maps the raw page index to a dot index (0, 1, or 2).
-  // When ad is present (dataLength == 4), page 2 is the ad — skip it for dots.
-  // Page 0 → dot 0, Page 1 → dot 1, ad page → dot 1, Page 3 → dot 2.
-  int getDotIndex(int currentIndex, int dataLength) {
-    if (dataLength == 4) {
-      if (currentIndex == 0) return 0;
-      if (currentIndex == 1) return 1;
-      if (currentIndex == 2) return 1; // ad page
-      if (currentIndex == 3) return 2;
-    }
-    // No ad: page 0 → dot 0, page 1 → dot 1, page 2 → dot 2
-    return currentIndex;
+  int getDotIndex(int index, int length) {
+    return index;
   }
 
   Widget bottomnavigation(int dataLength, int currentIndex) {
@@ -114,12 +199,7 @@ class WelPageviewState extends State<WelPageview> {
       "Enhance your certificate with elegant stickers. ",
     ];
 
-    // Hide bottom nav on the ad page
-    if (dataLength == 4 && currentIndex == 2) {
-      return const SizedBox.shrink();
-    }
-
-    final int dotIdx = getDotIndex(currentIndex, dataLength);
+    final int dotIdx = currentIndex;
 
     return PopScope(
       canPop: false,
@@ -162,7 +242,7 @@ class WelPageviewState extends State<WelPageview> {
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(GetDots(dataLength), (index) {
+                  children: List.generate(3, (index) {
                     final bool isActive = dotIdx == index;
                     return Container(
                       margin: EdgeInsets.symmetric(horizontal: 4.w),
@@ -186,18 +266,7 @@ class WelPageviewState extends State<WelPageview> {
                 GestureDetector(
                   onTap: () {
                     if (currentIndex == dataLength - 1) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PremiumCreditView(
-                            onboarding: true,
-                            onDone: () {
-                              Get.offAll(() => Homepage());
-                            },
-                          ),
-                        ),
-                        (route) => false,
-                      );
+                      _showIntroAppOpenAndProceed();
                     } else {
                       pageController.nextPage(
                         duration: const Duration(milliseconds: 300),
@@ -255,24 +324,17 @@ class WelPageviewState extends State<WelPageview> {
                     checkAndShowInAppReview('onboarding_rate_us'):null;
                   }
                 },
-                 // Without ad: [Welcome1, Welcome2, Welcome3]
-                // With ad:    [Welcome1, Welcome2, FullNativeAdScreen, Welcome3]
-                children: dataLength == 3
-                    ? [const Welcome1(), const Welcome2(), const  Welcome3()]
-                    : [
-                        const Welcome1(),
-                        const Welcome2(),
-                        const FullNativeAdScreen(),
-                        const Welcome3(),
-                       ],
+                children: const [
+                  Welcome1(),
+                  Welcome2(),
+                  Welcome3(),
+                ],
               ),
 
-              // Show bottom nav ONLY if not the ad page
-              if (!(dataLength == 4 && currentIndex == 2))
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: bottomnavigation(dataLength, currentIndex),
-                ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: bottomnavigation(dataLength, currentIndex),
+              ),
             ],
           ),
         ),

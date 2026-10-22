@@ -19,35 +19,35 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Appreciation/1/bg.png"
+      "src": "Final_Certificates/Appreciation/1/bg.png"
     },
     "logo": {
       "type": "image",
-      "src": "assets/Final_Certificates/Appreciation/1/logo.png"
+      "src": "Final_Certificates/Appreciation/1/logo.png"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "sticker_1": {
       "type": "image",
-      "src": "assets/Final_Certificates/Appreciation/1/sticker_1.png"
+      "src": "Final_Certificates/Appreciation/1/sticker_1.png"
     },
     "sticker_2": {
       "type": "image",
-      "src": "assets/Final_Certificates/Appreciation/1/sticker_2.png"
+      "src": "Final_Certificates/Appreciation/1/sticker_2.png"
     }
   },
   "scene": {

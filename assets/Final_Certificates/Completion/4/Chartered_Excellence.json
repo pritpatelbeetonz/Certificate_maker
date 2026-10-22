@@ -17,35 +17,35 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/4/bg.png"
+      "src": "Final_Certificates/Completion/4/bg.png"
     },
     "sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/4/sticker.png"
+      "src": "Final_Certificates/Completion/4/sticker.png"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "MeowScript": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/MeowScript-Regular.ttf"
+      "src": "Final_Certificates/Fonts/MeowScript-Regular.ttf"
     },
     "Licorice": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Licorice-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Licorice-Regular.ttf"
     }
   },
   "scene": {

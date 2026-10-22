@@ -100,8 +100,7 @@ class AdsLoadUtil extends GetxController {
   /// -------------------- Splash inter loading ------------------------
   loadInterSplash(Function() navigateScreen, String adUnitId) async {
     prefs = await SharedPreferences.getInstance();
-    showLog('>> SHOW INTER CALL <<');
-    showLog('AdsVariable.appOpenSplashIOS >>${AdsVariable.interSplashIOS}');
+    debugPrint("[SplashAd] ⏳ [loadInterSplash] Requesting Interstitial Ad with unit ID: '$adUnitId'");
 
     if (!AdsVariable.isPurchase) {
       try {
@@ -111,20 +110,19 @@ class AdsLoadUtil extends GetxController {
           adLoadCallback: InterstitialAdLoadCallback(
             // Called when an ad is successfully received.
             onAdLoaded: (ad) async {
-              ///CHANGES IT FROM onAdShowedFullScreenContent To onAdLoaded
+              debugPrint("[SplashAd] 🟢 [loadInterSplash] Interstitial Ad loaded successfully!");
               FirebaseAnalyticsService.logEvent(
                 eventName: 'LOAD_SPLASH_INERTIAL_AD',
               );
-              // await loadPreLoadAds();
 
               ad.fullScreenContentCallback = FullScreenContentCallback(
                 // Called when the ad showed the full screen content.
                 onAdShowedFullScreenContent: (ad) async {
-                  showLog("onAdShowedFullScreenContent loadInterSplash");
+                  debugPrint("[SplashAd] 📺 [loadInterSplash] Ad showed full screen content");
                 },
                 // Called when an impression occurs on the ad.
                 onAdImpression: (ad) async {
-                  showLog("onAdImpression loadInterSplash");
+                  debugPrint("[SplashAd] 👁️ [loadInterSplash] Ad impression recorded");
                   Future.delayed(const Duration(milliseconds: 500)).then((value) {
                     navigateScreen();
                   });
@@ -132,47 +130,46 @@ class AdsLoadUtil extends GetxController {
 
                 // Called when the ad failed to show full screen content.
                 onAdFailedToShowFullScreenContent: (ad, err) async {
-                  // Dispose the ad here to free resources.
+                  debugPrint("[SplashAd] ❌ [loadInterSplash] Failed to show full screen content: $err");
                   ad.dispose();
-                  showLog("onAdFailedToShowFullScreenContent loadInterSplash");
                   navigateScreen();
                 },
                 // Called when the ad dismissed full screen content.
                 onAdDismissedFullScreenContent: (ad) async {
+                  debugPrint("[SplashAd] 👋 [loadInterSplash] Ad dismissed -> Navigating to next screen");
                   AppOpenAdManager adManager = AppOpenAdManager();
                   AppLifecycleReactor life = AppLifecycleReactor(
                     appOpenAdManager: adManager,
                   );
                   life.listenToAppStateChanges(shouldShow: true);
                   ad.dispose();
-                  showLog("onAdDismissedFullScreenContent loadInterSplash");
                   navigateScreen();
                 },
                 // Called when a click is recorded for an ad.
                 onAdClicked: (ad) {
-                  showLog("onAdClicked loadInterSplash");
+                  debugPrint("[SplashAd] 👆 [loadInterSplash] Ad clicked");
                 },
               );
 
-              showLog('$ad loaded.loadInterSplash ');
-              // Keep a reference to the ad so you can show it later.
-
+              debugPrint("[SplashAd] 🚀 [loadInterSplash] Showing Interstitial Ad now");
               splashInterAd = ad;
               splashInterAd!.show();
             },
 
             // Called when an ad request failed.
             onAdFailedToLoad: (LoadAdError error) async {
-              showLog('InterstitialAd failed to load loadInterSplash: $error');
-              // await loadPreLoadAds();
+              debugPrint("[SplashAd] 🔴 [loadInterSplash] InterstitialAd failed to load: code=${error.code}, message=${error.message}, domain=${error.domain}");
               navigateScreen();
             },
           ),
         );
       } catch (e) {
-        showLog("Exception loading InterstitialAd: $e");
+        debugPrint("[SplashAd] 💥 [loadInterSplash] Exception caught: $e");
         navigateScreen();
       }
+    } else {
+      debugPrint("[SplashAd] 👑 User is premium (isPurchase == true) -> Skipping splash ad");
+      navigateScreen();
     }
   }
 

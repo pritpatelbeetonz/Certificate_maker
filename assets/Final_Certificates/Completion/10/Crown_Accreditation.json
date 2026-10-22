@@ -17,31 +17,31 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/10/bg.png"
+      "src": "Final_Certificates/Completion/10/bg.png"
     },
     "sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/10/sticker.png"
+      "src": "Final_Certificates/Completion/10/sticker.png"
     },
     "signature": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/10/signature.png"
+      "src": "Final_Certificates/Completion/10/signature.png"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "Meddon": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Meddon-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Meddon-Regular.ttf"
     }
   },
   "scene": {

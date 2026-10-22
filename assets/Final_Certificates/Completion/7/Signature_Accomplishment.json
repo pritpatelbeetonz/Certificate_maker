@@ -17,35 +17,35 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/7/bg.png"
+      "src": "Final_Certificates/Completion/7/bg.png"
     },
     "logo": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/7/logo.png"
+      "src": "Final_Certificates/Completion/7/logo.png"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "Arizonia": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Arizonia-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Arizonia-Regular.ttf"
     },
     "sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/7/sticker.png"
+      "src": "Final_Certificates/Completion/7/sticker.png"
     }
   },
   "scene": {

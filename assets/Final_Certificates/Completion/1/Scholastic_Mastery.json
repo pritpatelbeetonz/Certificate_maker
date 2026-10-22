@@ -17,47 +17,47 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/1/bg.png"
+      "src": "Final_Certificates/Completion/1/bg.png"
     },
     "sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Completion/1/sticker.png"
+      "src": "Final_Certificates/Completion/1/sticker.png"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "Licorice": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Licorice-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Licorice-Regular.ttf"
     },
     "KaiseiTokumin": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/KaiseiTokumin-Regular.ttf"
+      "src": "Final_Certificates/Fonts/KaiseiTokumin-Regular.ttf"
     },
     "Kanit":{
   "type": "font",
-  "src": "assets/Final_Certificates/Fonts/Kanit-Regular.ttf"
+  "src": "Final_Certificates/Fonts/Kanit-Regular.ttf"
 },
     "Kalnia": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kalnia-VariableFont_wdth,wght.ttf"
+      "src": "Final_Certificates/Fonts/Kalnia-VariableFont_wdth,wght.ttf"
     },
     "meddon": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Meddon-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Meddon-Regular.ttf"
     }
   },
 

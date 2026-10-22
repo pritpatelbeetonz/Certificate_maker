@@ -287,7 +287,9 @@ class _StickersControlsPanelState extends State<StickersControlsPanel> {
                             ),
                             padding: const EdgeInsets.all(8),
                             child: Image.asset(
-                              assetPath,
+                              (assetPath.isNotEmpty && !assetPath.startsWith('assets/') && !assetPath.startsWith('http'))
+                                  ? 'assets/$assetPath'
+                                  : assetPath,
                               fit: BoxFit.contain,
                               errorBuilder: (_, __, ___) => const Icon(
                                 Icons.broken_image,

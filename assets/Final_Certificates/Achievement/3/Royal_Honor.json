@@ -17,39 +17,39 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/3/bg.png"
+      "src": "Final_Certificates/Achievement/3/bg.png"
     },
     "sticker_seal": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/3/sticker_1.png"
+      "src": "Final_Certificates/Achievement/3/sticker_1.png"
     },
     "sticker_guaranteed": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/3/sticker_2.png"
+      "src": "Final_Certificates/Achievement/3/sticker_2.png"
     },
     "sticker_gold_award": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/3/sticker_3.png"
+      "src": "Final_Certificates/Achievement/3/sticker_3.png"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "kunstlerscript": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/kunstlerscript.ttf"
+      "src": "Final_Certificates/Fonts/kunstlerscript.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     }
   },
   "scene": {

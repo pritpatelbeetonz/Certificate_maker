@@ -19,47 +19,47 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Appreciation/4/bg.png"
+      "src": "Final_Certificates/Appreciation/4/bg.png"
     },
     "sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Appreciation/4/sticker.png"
+      "src": "Final_Certificates/Appreciation/4/sticker.png"
     },
     "LibreBodoni": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBodoni-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBodoni-VariableFont_wght.ttf"
     },
     "Kanit": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kanit-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kanit-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "Kedebideri": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kedebideri-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kedebideri-Regular.ttf"
     },
     "MeowScript": {
       "type": "font",
-      "src":"assets/Final_Certificates/Fonts/MeowScript-Regular.ttf"
+      "src":"Final_Certificates/Fonts/MeowScript-Regular.ttf"
     },
     "Licorice": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Licorice-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Licorice-Regular.ttf"
     }
   },
   "scene": {

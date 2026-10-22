@@ -17,31 +17,31 @@
   "assets": {
     "logo": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/1/logo.png"
+      "src": "Final_Certificates/Achievement/1/logo.png"
     },
     "logo_sticker": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/1/sticker.png"
+      "src": "Final_Certificates/Achievement/1/sticker.png"
     },
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/1/bg.png"
+      "src": "Final_Certificates/Achievement/1/bg.png"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "Kunstler Script": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/kunstlerscript.ttf"
+      "src": "Final_Certificates/Fonts/kunstlerscript.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "Licorice": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Licorice-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Licorice-Regular.ttf"
     }
   },
   "scene": {

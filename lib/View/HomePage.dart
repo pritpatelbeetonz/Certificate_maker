@@ -188,7 +188,14 @@ class _HomepageState extends State<Homepage> {
                       itemCount: categoryTemplates.length,
                       itemBuilder: (context, index) {
                         final item = categoryTemplates[index];
-                        final String thumbnail = item['thumbnail'] ?? '';
+                        final String rawThumb = item['thumbnail'] ?? '';
+                        final String thumbnail = (rawThumb.isNotEmpty && !rawThumb.startsWith('assets/') && !rawThumb.startsWith('http'))
+                            ? 'assets/$rawThumb'
+                            : rawThumb;
+                        final String rawLayout = item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json';
+                        final String layoutPath = (rawLayout.isNotEmpty && !rawLayout.startsWith('assets/') && !rawLayout.startsWith('http'))
+                            ? 'assets/$rawLayout'
+                            : rawLayout;
                         return Padding(
                           padding: EdgeInsets.only(right: 12.w),
                           child: GestureDetector(
@@ -201,7 +208,7 @@ class _HomepageState extends State<Homepage> {
                               } else {
                                 AdsVariable.onShowAds(context, onComplete: () {
                                   Get.to(() => EditCertificatePage(
-                                        layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
+                                        layoutPath: layoutPath,
                                       ));
                                 });
                               }
@@ -433,7 +440,7 @@ class _HomepageState extends State<Homepage> {
               // 2. Auto-animating Focus-Enlarge Certificate Carousel Banner
               if (_bannerCertificates.isNotEmpty)
                 SizedBox(
-                  height: 195.h,
+                  height: 220.h,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       // Only react to REAL user drag, not programmatic animateToPage
@@ -451,10 +458,18 @@ class _HomepageState extends State<Homepage> {
                       child: PageView.builder(
                         controller: _bannerPageController,
                         physics: const BouncingScrollPhysics(),
+                        clipBehavior: Clip.none,
                         itemBuilder: (context, index) {
                       final itemIndex = index % _bannerCertificates.length;
                       final item = _bannerCertificates[itemIndex];
-                      final String thumbnail = item['thumbnail'] ?? '';
+                      final String rawThumb = item['thumbnail'] ?? '';
+                      final String thumbnail = (rawThumb.isNotEmpty && !rawThumb.startsWith('assets/') && !rawThumb.startsWith('http'))
+                          ? 'assets/$rawThumb'
+                          : rawThumb;
+                      final String rawLayout = item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json';
+                      final String layoutPath = (rawLayout.isNotEmpty && !rawLayout.startsWith('assets/') && !rawLayout.startsWith('http'))
+                          ? 'assets/$rawLayout'
+                          : rawLayout;
 
                       return AnimatedBuilder(
                         animation: _bannerPageController,
@@ -474,14 +489,15 @@ class _HomepageState extends State<Homepage> {
                             child: Opacity(
                               opacity: opacity,
                               child: Container(
-                                margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 4.w),
+                                margin: EdgeInsets.only(top: 6.h, bottom: 18.h, left: 4.w, right: 4.w),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16.r),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.08 + (scale - 0.85) * 0.4),
-                                      blurRadius: 10.r + (scale - 0.85) * 20.r,
-                                      offset: Offset(0, 4.h + (scale - 0.85) * 6.h),
+                                      color: const Color(0xFF0F172A).withValues(alpha: 0.14),
+                                      blurRadius: 16.r,
+                                      spreadRadius: 1,
+                                      offset: Offset(0, 8.h),
                                     ),
                                   ],
                                 ),
@@ -500,7 +516,7 @@ class _HomepageState extends State<Homepage> {
                             } else {
                               AdsVariable.onShowAds(context, onComplete: () {
                                 Get.to(() => EditCertificatePage(
-                                      layoutPath: item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json',
+                                      layoutPath: layoutPath,
                                     ));
                               });
                             }

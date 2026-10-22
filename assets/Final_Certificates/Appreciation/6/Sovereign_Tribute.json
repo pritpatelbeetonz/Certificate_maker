@@ -17,35 +17,35 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Appreciation/6/bg.png"
+      "src": "Final_Certificates/Appreciation/6/bg.png"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     },
     "Licorice": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Licorice-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Licorice-Regular.ttf"
     },
     "LibertinusMath": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibertinusMath-Regular.ttf"
+      "src": "Final_Certificates/Fonts/LibertinusMath-Regular.ttf"
     },
     "Arizonia": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Arizonia-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Arizonia-Regular.ttf"
     }
   },
   "scene": {

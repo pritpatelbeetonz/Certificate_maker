@@ -74,7 +74,7 @@ class NativeAdFactoryBig : NativeAdFactory {
         adView.iconView = adView.findViewById(R.id.ad_app_icon)
 
         // "Ad" Text background
-        adView.priceView = adView.findViewById(R.id.native_ad_attribution_small)
+        val attributionView = adView.findViewById<TextView>(R.id.native_ad_attribution_small)
         val priceGradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TR_BL, // 135 degrees
             intArrayOf(safeParseColor(startColor), safeParseColor(endColor))
@@ -86,8 +86,8 @@ class NativeAdFactoryBig : NativeAdFactory {
                 5f *  adView.context.resources.displayMetrics.density, 5f *  adView.context.resources.displayMetrics.density  // bottom-left radius
             )
         }
-        adView.priceView?.background = priceGradientDrawable
-        (adView.priceView as? TextView)?.setTextColor(safeParseColor(buttonTextColor))
+        attributionView?.background = priceGradientDrawable
+        attributionView?.setTextColor(safeParseColor(buttonTextColor))
 
         // Star Color
         adView.starRatingView = adView.findViewById(R.id.ad_stars)
@@ -192,7 +192,7 @@ class NativeAdFactoryFull : NativeAdFactory {
         adView.iconView = adView.findViewById(R.id.ad_app_icon)
 
         // "Ad" Text background
-        adView.priceView = adView.findViewById(R.id.native_ad_attribution_small)
+        val attributionView = adView.findViewById<TextView>(R.id.native_ad_attribution_small)
         val priceGradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TR_BL, // 135 degrees
             intArrayOf(safeParseColor(startColor), safeParseColor(endColor))
@@ -204,8 +204,8 @@ class NativeAdFactoryFull : NativeAdFactory {
                 5f *  adView.context.resources.displayMetrics.density, 5f *  adView.context.resources.displayMetrics.density  // bottom-left radius
             )
         }
-        adView.priceView?.background = priceGradientDrawable
-        (adView.priceView as? TextView)?.setTextColor(safeParseColor(buttonTextColor))
+        attributionView?.background = priceGradientDrawable
+        attributionView?.setTextColor(safeParseColor(buttonTextColor))
 
         // Star Color
         adView.starRatingView = adView.findViewById(R.id.ad_stars)
@@ -307,7 +307,7 @@ class NativeAdFactorySmall : NativeAdFactory {
         adView.iconView = adView.findViewById(R.id.ad_app_icon)
 
         // "Ad" Text background
-        adView.priceView = adView.findViewById(R.id.native_ad_attribution_small)
+        val attributionViewSmall = adView.findViewById<TextView>(R.id.native_ad_attribution_small)
         val priceGradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TR_BL, // 135 degrees
             intArrayOf(safeParseColor(startColor), safeParseColor(endColor))
@@ -319,8 +319,8 @@ class NativeAdFactorySmall : NativeAdFactory {
                 5f *  adView.context.resources.displayMetrics.density, 5f *  adView.context.resources.displayMetrics.density  // bottom-left radius
             )
         }
-        adView.priceView?.background = priceGradientDrawable
-        (adView.priceView as? TextView)?.setTextColor(safeParseColor(buttonTextColor))
+        attributionViewSmall?.background = priceGradientDrawable
+        attributionViewSmall?.setTextColor(safeParseColor(buttonTextColor))
 
         adView.starRatingView = adView.findViewById(R.id.ad_stars)
 

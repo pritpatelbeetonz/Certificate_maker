@@ -38,6 +38,10 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3337431729725485~4574357218"/>
+        <!-- Disable AdMob test native ad validator dialog popup during development -->
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.NATIVE_AD_DEBUGGER_ENABLED"
+            android:value="false"/>
         <provider
             android:name="com.facebook.internal.FacebookInitProvider"
             android:authorities="com.test.app.testfeature.apps.FacebookInitProvider"

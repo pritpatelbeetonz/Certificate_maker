@@ -17,35 +17,35 @@
   "assets": {
     "background": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/6/bg.png"
+      "src": "Final_Certificates/Achievement/6/bg.png"
     },
     "sticker_medal": {
       "type": "image",
-      "src": "assets/Final_Certificates/Achievement/6/sticker.png"
+      "src": "Final_Certificates/Achievement/6/sticker.png"
     },
     "Kadwa": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Kadwa-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
     },
     "LibreBaskerville": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
     },
     "LibertinusMath": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/LibertinusMath-Regular.ttf"
+      "src": "Final_Certificates/Fonts/LibertinusMath-Regular.ttf"
     },
     "Hurricane": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Hurricane-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Hurricane-Regular.ttf"
     },
     "Jomolhari": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
     },
     "GreatVibes": {
       "type": "font",
-      "src": "assets/Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
     }
   },
   "scene": {

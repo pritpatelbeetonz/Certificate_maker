@@ -227,7 +227,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                               Expanded(
                                 child: _planCard(
                                   index: 1,
-                                  title: "Monthly Plan",
+                                  title: "Weekly Plan",
                                   price: price1,
                                   subtitle: "Cancel Anytime",
                                   hasRibbon: false,
@@ -818,7 +818,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                             ),
                           ),
                           TextSpan(
-                            text: index == 0 ? '/year' : '/month',
+                            text: index == 0 ? '/year' : '/week',
                             style: TextStyle(
                               color: Colors.black45,
                               fontSize: 13.sp,

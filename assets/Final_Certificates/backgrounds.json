@@ -4,241 +4,241 @@
       "id": "achievement_1_bg",
       "name": "Achievement_1",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/1/bg.png"
+      "path": "Final_Certificates/Achievement/1/bg.png"
     },
     {
       "id": "achievement_2_bg",
       "name": "Elegant Gold",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/2/bg.png"
+      "path": "Final_Certificates/Achievement/2/bg.png"
     },
     {
       "id": "achievement_3_bg",
       "name": "Royal Honor",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/3/bg.png"
+      "path": "Final_Certificates/Achievement/3/bg.png"
     },
     {
       "id": "achievement_4_bg",
       "name": "Classic Vintage",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/4/bg.png"
+      "path": "Final_Certificates/Achievement/4/bg.png"
     },
     {
       "id": "achievement_5_bg",
       "name": "Modern Prestige",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/5/bg.png"
+      "path": "Final_Certificates/Achievement/5/bg.png"
     },
     {
       "id": "achievement_6_bg",
       "name": "Crimson Crest",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/6/bg.png"
+      "path": "Final_Certificates/Achievement/6/bg.png"
     },
     {
       "id": "achievement_7_bg",
       "name": "Emerald Elegance",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/7/bg.png"
+      "path": "Final_Certificates/Achievement/7/bg.png"
     },
     {
       "id": "achievement_8_bg",
       "name": "Imperial Ribbon",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/8/bg.png"
+      "path": "Final_Certificates/Achievement/8/bg.png"
     },
     {
       "id": "achievement_9_bg",
       "name": "Scarlet Ribbon",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/9/bg.png"
+      "path": "Final_Certificates/Achievement/9/bg.png"
     },
     {
       "id": "achievement_10_bg",
       "name": "Geometric Apex",
       "category": "Achievement",
-      "path": "assets/Final_Certificates/Achievement/10/bg.png"
+      "path": "Final_Certificates/Achievement/10/bg.png"
     },
     {
       "id": "appreciation_1_bg",
       "name": "Golden Gratitude",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/1/bg.png"
+      "path": "Final_Certificates/Appreciation/1/bg.png"
     },
     {
       "id": "appreciation_2_bg",
       "name": "Executive Recognition",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/2/bg.png"
+      "path": "Final_Certificates/Appreciation/2/bg.png"
     },
     {
       "id": "appreciation_3_bg",
       "name": "Academic Distinction",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/3/bg.png"
+      "path": "Final_Certificates/Appreciation/3/bg.png"
     },
     {
       "id": "appreciation_4_bg",
       "name": "Prestige Honor",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/4/bg.png"
+      "path": "Final_Certificates/Appreciation/4/bg.png"
     },
     {
       "id": "appreciation_5_bg",
       "name": "Heraldic Seal",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/5/bg.png"
+      "path": "Final_Certificates/Appreciation/5/bg.png"
     },
     {
       "id": "appreciation_6_bg",
       "name": "Sovereign Tribute",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/6/bg.png"
+      "path": "Final_Certificates/Appreciation/6/bg.png"
     },
     {
       "id": "appreciation_7_bg",
       "name": "Vanguard Merit",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/7/bg.png"
+      "path": "Final_Certificates/Appreciation/7/bg.png"
     },
     {
       "id": "appreciation_8_bg",
       "name": "Imperial Classic",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/8/bg.png"
+      "path": "Final_Certificates/Appreciation/8/bg.png"
     },
     {
       "id": "appreciation_9_bg",
       "name": "Legacy of Valor",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/9/bg.png"
+      "path": "Final_Certificates/Appreciation/9/bg.png"
     },
     {
       "id": "appreciation_10_bg",
       "name": "Elysian Crest",
       "category": "Appreciation",
-      "path": "assets/Final_Certificates/Appreciation/10/bg.png"
+      "path": "Final_Certificates/Appreciation/10/bg.png"
     },
     {
       "id": "completion_1_bg",
       "name": "Scholastic Mastery",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/1/bg.png"
+      "path": "Final_Certificates/Completion/1/bg.png"
     },
     {
       "id": "completion_2_bg",
       "name": "Apex Graduate",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/2/bg.png"
+      "path": "Final_Certificates/Completion/2/bg.png"
     },
     {
       "id": "completion_3_bg",
       "name": "Summit Scholar",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/3/bg.png"
+      "path": "Final_Certificates/Completion/3/bg.png"
     },
     {
       "id": "completion_4_bg",
       "name": "Chartered Excellence",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/4/bg.png"
+      "path": "Final_Certificates/Completion/4/bg.png"
     },
     {
       "id": "completion_5_bg",
       "name": "Prime Diploma",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/5/bg.png"
+      "path": "Final_Certificates/Completion/5/bg.png"
     },
     {
       "id": "completion_6_bg",
       "name": "Regal Certification",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/6/bg.png"
+      "path": "Final_Certificates/Completion/6/bg.png"
     },
     {
       "id": "completion_7_bg",
       "name": "Signature Accomplishment",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/7/bg.png"
+      "path": "Final_Certificates/Completion/7/bg.png"
     },
     {
       "id": "completion_8_bg",
       "name": "Grand Laureate",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/8/bg.png"
+      "path": "Final_Certificates/Completion/8/bg.png"
     },
     {
       "id": "completion_9_bg",
       "name": "Mastery Distinction",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/9/bg.png"
+      "path": "Final_Certificates/Completion/9/bg.png"
     },
     {
       "id": "completion_10_bg",
       "name": "Crown Accreditation",
       "category": "Completion",
-      "path": "assets/Final_Certificates/Completion/10/bg.png"
+      "path": "Final_Certificates/Completion/10/bg.png"
     },
     {
       "id": "participation_1_bg",
       "name": "Honorary Participant",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/1/bg.png"
+      "path": "Final_Certificates/Participation/1/bg.png"
     },
     {
       "id": "participation_2_bg",
       "name": "Dynamic Contribution",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/2/bg.png"
+      "path": "Final_Certificates/Participation/2/bg.png"
     },
     {
       "id": "participation_3_bg",
       "name": "Pinnacle Delegate",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/3/bg.png"
+      "path": "Final_Certificates/Participation/3/bg.png"
     },
     {
       "id": "participation_4_bg",
       "name": "Summit Attendee",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/4/bg.png"
+      "path": "Final_Certificates/Participation/4/bg.png"
     },
     {
       "id": "participation_5_bg",
       "name": "Global Forum",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/5/bg.png"
+      "path": "Final_Certificates/Participation/5/bg.png"
     },
     {
       "id": "participation_6_bg",
       "name": "Vanguard Participant",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/6/bg.png"
+      "path": "Final_Certificates/Participation/6/bg.png"
     },
     {
       "id": "participation_7_bg",
       "name": "Distinguished Envoy",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/7/bg.png"
+      "path": "Final_Certificates/Participation/7/bg.png"
     },
     {
       "id": "participation_8_bg",
       "name": "Ambassador Certificate",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/8/bg.png"
+      "path": "Final_Certificates/Participation/8/bg.png"
     },
     {
       "id": "participation_9_bg",
       "name": "Excellence in Attendance",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/9/bg.png"
+      "path": "Final_Certificates/Participation/9/bg.png"
     },
     {
       "id": "participation_10_bg",
       "name": "Symposium Commendation",
       "category": "Participation",
-      "path": "assets/Final_Certificates/Participation/10/bg.png"
+      "path": "Final_Certificates/Participation/10/bg.png"
     }
   ]
 }

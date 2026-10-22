@@ -34,7 +34,6 @@ class SurveyFormState extends State<SurveyForm> {
         isInterNetConnected = true;
         print('=>>>> Internet Connected');
       });
-      loadPreLoadIntroFullNativeAds();
     }
   }
 
