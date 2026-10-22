@@ -186,6 +186,7 @@ class _HomepageState extends State<Homepage> {
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      cacheExtent: 800,
                       itemCount: categoryTemplates.length,
                       itemBuilder: (context, index) {
                         final item = categoryTemplates[index];

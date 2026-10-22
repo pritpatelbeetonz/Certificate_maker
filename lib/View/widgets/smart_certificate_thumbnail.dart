@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../Services/fetch_data_from_server_service.dart';
@@ -37,12 +36,10 @@ class SmartCertificateThumbnail extends StatelessWidget {
         imageUrl: fullUrl,
         fit: fit,
         memCacheWidth: memWidth,
-        fadeInDuration: const Duration(milliseconds: 200),
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: Duration.zero,
         placeholder: (context, url) => Container(
           color: const Color(0xFFE2E8F0),
-          child: const Center(
-            child: CupertinoActivityIndicator(radius: 10),
-          ),
         ),
         errorWidget: (context, url, error) {
           // Fallback to local asset if bundled

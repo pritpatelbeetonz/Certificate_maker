@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../for_ads/ads/ads_variable.dart';
 
@@ -65,8 +68,76 @@ class FetchDataFromServerServices {
       _downloadAndCacheJson("$remoteBase/backgrounds.json", 'backgrounds.json'),
     ]);
 
+    // Pre-cache initial visible thumbnails in background so HomePage shows them instantly
+    _precacheInitialThumbnailsInBackground();
+
     debugPrint("[FetchData] ✨ Remote data sync finished.");
     debugPrint("========================================================");
+  }
+
+  /// Extracts initial visible thumbnails (banners + first 3 of each category)
+  /// and downloads them into DefaultCacheManager in the background
+  void _precacheInitialThumbnailsInBackground() {
+    Future.microtask(() async {
+      try {
+        final List<String> urlsToPrecache = [];
+
+        // 1. Banner thumbnails
+        final bannerFile = await _getLocalFile('banner_certificates.json');
+        if (await bannerFile.exists()) {
+          final String raw = await bannerFile.readAsString();
+          if (raw.isNotEmpty) {
+            final bannerList = json.decode(raw);
+            if (bannerList is List) {
+              for (final b in bannerList) {
+                final String thumb = b['thumbnail'] ?? '';
+                if (thumb.isNotEmpty) {
+                  urlsToPrecache.add(resolveThumbnailUrl(thumb));
+                }
+              }
+            }
+          }
+        }
+
+        // 2. Index catalog thumbnails (first 3 of each category)
+        final indexFile = await _getLocalFile('index.json');
+        if (await indexFile.exists()) {
+          final String raw = await indexFile.readAsString();
+          if (raw.isNotEmpty) {
+            final data = json.decode(raw);
+            final layouts = data['layouts'] as List? ?? [];
+            final Map<String, int> categoryCount = {};
+            for (final item in layouts) {
+              final String cat = item['category'] ?? '';
+              final int count = categoryCount[cat] ?? 0;
+              if (count < 3) {
+                categoryCount[cat] = count + 1;
+                final String thumb = item['thumbnail'] ?? '';
+                if (thumb.isNotEmpty) {
+                  urlsToPrecache.add(resolveThumbnailUrl(thumb));
+                }
+              }
+            }
+          }
+        }
+
+        if (urlsToPrecache.isNotEmpty) {
+          debugPrint("[FetchData] 🚀 Pre-caching ${urlsToPrecache.length} initial thumbnails in background...");
+          for (final url in urlsToPrecache) {
+            if (url.startsWith('http')) {
+              try {
+                final provider = CachedNetworkImageProvider(url);
+                provider.resolve(const ImageConfiguration());
+              } catch (e) {
+                debugPrint("[FetchData] ⚠ Pre-cache error for $url: $e");
+              }
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint("[FetchData] ⚠ Background thumbnail pre-caching failed: $e");
+      }
+    });
   }
 
   /// Resolves any thumbnail string into either:
