@@ -49,28 +49,37 @@ class FetchDataFromServerServices {
     // Full remote root: https://domain.com/Sn_Ro_Pri_Certificate_Maker/Final_Certificates
     final String remoteBase = "$cleanServerUrl/$cleanBaseFolder/Final_Certificates";
 
-    debugPrint("[FetchData] 🌐 Initializing remote data sync from: $remoteBase");
+    debugPrint("========================================================");
+    debugPrint("[FetchData] 🌐 Initializing remote data sync...");
+    debugPrint("[FetchData] 📍 AdsVariable.serverUrl: '${AdsVariable.serverUrl}'");
+    debugPrint("[FetchData] 📍 AdsVariable.serverBaseFolderName: '${AdsVariable.serverBaseFolderName}'");
+    debugPrint("[FetchData] 🔗 Resolved Remote Base: $remoteBase");
+    debugPrint("========================================================");
 
     await _downloadAndCacheJson("$remoteBase/index.json", 'index.json');
     await _downloadAndCacheJson("$remoteBase/banner_certificates.json", 'banner_certificates.json');
     await _downloadAndCacheJson("$remoteBase/fonts.json", 'fonts.json');
     await _downloadAndCacheJson("$remoteBase/stickers.json", 'stickers.json');
     await _downloadAndCacheJson("$remoteBase/backgrounds.json", 'backgrounds.json');
+
+    debugPrint("[FetchData] ✨ Remote data sync finished.");
+    debugPrint("========================================================");
   }
 
   Future<void> _downloadAndCacheJson(String url, String localFileName) async {
     try {
-      debugPrint("[FetchData] ⬇ Fetching remote JSON: $url");
+      debugPrint("[FetchData] ⬇ Fetching remote JSON from: $url");
       final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 15));
       if (response.statusCode == 200 && response.body.isNotEmpty) {
         final file = await _getLocalFile(localFileName);
         await file.writeAsString(response.body);
-        debugPrint("[FetchData] ✅ Successfully cached $localFileName locally.");
+        debugPrint("[FetchData] ✅ Successfully downloaded and cached '$localFileName' (${response.body.length} bytes) to ${file.path}");
       } else {
-        debugPrint("[FetchData] ⚠ Server returned ${response.statusCode} for $localFileName (will use local/asset fallback)");
+        debugPrint("[FetchData] ⚠ Server returned HTTP ${response.statusCode} for '$localFileName' (body length: ${response.body.length}). Will use bundled asset fallback.");
       }
-    } catch (e) {
-      debugPrint("[FetchData] ❌ Error downloading $localFileName: $e (will use local/asset fallback)");
+    } catch (e, stack) {
+      debugPrint("[FetchData] ❌ Error downloading '$localFileName' from $url: $e");
+      debugPrint("[FetchData] Stack: $stack");
     }
   }
 
@@ -81,15 +90,17 @@ class FetchDataFromServerServices {
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          debugPrint("[FetchData] 📦 Loaded index.json from local cache.");
+          debugPrint("[FetchData] 📦 Loaded index.json from local disk cache (${content.length} chars) at: ${file.path}");
           return content;
         }
       }
     } catch (e) {
-      debugPrint("[FetchData] Error reading index.json cache: $e");
+      debugPrint("[FetchData] ⚠ Error reading index.json cache: $e");
     }
-    debugPrint("[FetchData] Falling back to bundled index.json asset.");
-    return await rootBundle.loadString(_indexAssetPath);
+    debugPrint("[FetchData] 📁 Falling back to bundled asset: $_indexAssetPath");
+    final assetContent = await rootBundle.loadString(_indexAssetPath);
+    debugPrint("[FetchData] 📦 Loaded index.json from asset (${assetContent.length} chars)");
+    return assetContent;
   }
 
   /// 2. Load banner_certificates.json
@@ -99,15 +110,17 @@ class FetchDataFromServerServices {
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          debugPrint("[FetchData] 📦 Loaded banner_certificates.json from local cache.");
+          debugPrint("[FetchData] 📦 Loaded banner_certificates.json from local disk cache (${content.length} chars) at: ${file.path}");
           return content;
         }
       }
     } catch (e) {
-      debugPrint("[FetchData] Error reading banner_certificates.json cache: $e");
+      debugPrint("[FetchData] ⚠ Error reading banner_certificates.json cache: $e");
     }
-    debugPrint("[FetchData] Falling back to bundled banner_certificates.json asset.");
-    return await rootBundle.loadString(_bannerAssetPath);
+    debugPrint("[FetchData] 📁 Falling back to bundled asset: $_bannerAssetPath");
+    final assetContent = await rootBundle.loadString(_bannerAssetPath);
+    debugPrint("[FetchData] 📦 Loaded banner_certificates.json from asset (${assetContent.length} chars)");
+    return assetContent;
   }
 
   /// 3. Load fonts.json
@@ -117,15 +130,17 @@ class FetchDataFromServerServices {
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          debugPrint("[FetchData] 📦 Loaded fonts.json from local cache.");
+          debugPrint("[FetchData] 📦 Loaded fonts.json from local disk cache (${content.length} chars) at: ${file.path}");
           return content;
         }
       }
     } catch (e) {
-      debugPrint("[FetchData] Error reading fonts.json cache: $e");
+      debugPrint("[FetchData] ⚠ Error reading fonts.json cache: $e");
     }
-    debugPrint("[FetchData] Falling back to bundled fonts.json asset.");
-    return await rootBundle.loadString(_fontsAssetPath);
+    debugPrint("[FetchData] 📁 Falling back to bundled asset: $_fontsAssetPath");
+    final assetContent = await rootBundle.loadString(_fontsAssetPath);
+    debugPrint("[FetchData] 📦 Loaded fonts.json from asset (${assetContent.length} chars)");
+    return assetContent;
   }
 
   /// 4. Load stickers.json
@@ -135,15 +150,17 @@ class FetchDataFromServerServices {
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          debugPrint("[FetchData] 📦 Loaded stickers.json from local cache.");
+          debugPrint("[FetchData] 📦 Loaded stickers.json from local disk cache (${content.length} chars) at: ${file.path}");
           return content;
         }
       }
     } catch (e) {
-      debugPrint("[FetchData] Error reading stickers.json cache: $e");
+      debugPrint("[FetchData] ⚠ Error reading stickers.json cache: $e");
     }
-    debugPrint("[FetchData] Falling back to bundled stickers.json asset.");
-    return await rootBundle.loadString(_stickersAssetPath);
+    debugPrint("[FetchData] 📁 Falling back to bundled asset: $_stickersAssetPath");
+    final assetContent = await rootBundle.loadString(_stickersAssetPath);
+    debugPrint("[FetchData] 📦 Loaded stickers.json from asset (${assetContent.length} chars)");
+    return assetContent;
   }
 
   /// 5. Load backgrounds.json
@@ -153,15 +170,17 @@ class FetchDataFromServerServices {
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          debugPrint("[FetchData] 📦 Loaded backgrounds.json from local cache.");
+          debugPrint("[FetchData] 📦 Loaded backgrounds.json from local disk cache (${content.length} chars) at: ${file.path}");
           return content;
         }
       }
     } catch (e) {
-      debugPrint("[FetchData] Error reading backgrounds.json cache: $e");
+      debugPrint("[FetchData] ⚠ Error reading backgrounds.json cache: $e");
     }
-    debugPrint("[FetchData] Falling back to bundled backgrounds.json asset.");
-    return await rootBundle.loadString(_backgroundsAssetPath);
+    debugPrint("[FetchData] 📁 Falling back to bundled asset: $_backgroundsAssetPath");
+    final assetContent = await rootBundle.loadString(_backgroundsAssetPath);
+    debugPrint("[FetchData] 📦 Loaded backgrounds.json from asset (${assetContent.length} chars)");
+    return assetContent;
   }
 
   /// 6. Load a specific template layout JSON (checks local disk cache first, else rootBundle)
@@ -172,12 +191,12 @@ class FetchDataFromServerServices {
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          debugPrint("[FetchData] 📦 Loaded layout $fileName from local cache.");
+          debugPrint("[FetchData] 📦 Loaded layout '$fileName' from local disk cache (${content.length} chars) at: ${file.path}");
           return content;
         }
       }
     } catch (e) {
-      debugPrint("[FetchData] Error reading layout cache: $e");
+      debugPrint("[FetchData] ⚠ Error reading layout cache for '$layoutPath': $e");
     }
 
     final String resolvedPath = (layoutPath.isNotEmpty &&
@@ -186,7 +205,9 @@ class FetchDataFromServerServices {
         ? 'assets/$layoutPath'
         : layoutPath;
 
-    debugPrint("[FetchData] Loading layout from asset: $resolvedPath");
-    return await rootBundle.loadString(resolvedPath);
+    debugPrint("[FetchData] 📁 Loading layout from asset: $resolvedPath");
+    final assetContent = await rootBundle.loadString(resolvedPath);
+    debugPrint("[FetchData] 📦 Loaded layout asset '$resolvedPath' (${assetContent.length} chars)");
+    return assetContent;
   }
 }
