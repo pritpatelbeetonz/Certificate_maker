@@ -6,6 +6,7 @@ import 'editCertificatePage.dart';
 import 'PremiumCreditView.dart';
 import '../for_ads/ads/ads_variable.dart';
 import '../Services/fetch_data_from_server_service.dart';
+import 'widgets/smart_certificate_thumbnail.dart';
 
 class Browsetemplets extends StatefulWidget {
   final String? initialCategory;
@@ -277,9 +278,6 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                               final item = _filteredTemplates[index];
                               final String displayName = item['name'] ?? '';
                               final String rawThumb = item['thumbnail'] ?? '';
-                              final String thumbnail = (rawThumb.isNotEmpty && !rawThumb.startsWith('assets/') && !rawThumb.startsWith('http'))
-                                  ? 'assets/$rawThumb'
-                                  : rawThumb;
                               final String rawLayout = item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json';
                               final String layoutPath = (rawLayout.isNotEmpty && !rawLayout.startsWith('assets/') && !rawLayout.startsWith('http'))
                                   ? 'assets/$rawLayout'
@@ -325,18 +323,10 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                                               borderRadius: BorderRadius.circular(10.r),
                                               child: AspectRatio(
                                                 aspectRatio: 1.4,
-                                                child: Image.asset(
-                                                  thumbnail,
+                                                child: SmartCertificateThumbnail(
+                                                  thumbnailPath: rawThumb,
                                                   fit: BoxFit.contain,
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return Container(
-                                                      color: const Color(0xFFE2E8F0),
-                                                      child: const Icon(
-                                                        Icons.image_not_supported_outlined,
-                                                        color: Color(0xFF94A3B8),
-                                                      ),
-                                                    );
-                                                  },
+                                                  width: 160.w,
                                                 ),
                                               ),
                                             ),

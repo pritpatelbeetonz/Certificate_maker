@@ -56,14 +56,51 @@ class FetchDataFromServerServices {
     debugPrint("[FetchData] 🔗 Resolved Remote Base: $remoteBase");
     debugPrint("========================================================");
 
-    await _downloadAndCacheJson("$remoteBase/index.json", 'index.json');
-    await _downloadAndCacheJson("$remoteBase/banner_certificates.json", 'banner_certificates.json');
-    await _downloadAndCacheJson("$remoteBase/fonts.json", 'fonts.json');
-    await _downloadAndCacheJson("$remoteBase/stickers.json", 'stickers.json');
-    await _downloadAndCacheJson("$remoteBase/backgrounds.json", 'backgrounds.json');
+    // Download in parallel for fast network sync on slow connections
+    await Future.wait([
+      _downloadAndCacheJson("$remoteBase/index.json", 'index.json'),
+      _downloadAndCacheJson("$remoteBase/banner_certificates.json", 'banner_certificates.json'),
+      _downloadAndCacheJson("$remoteBase/fonts.json", 'fonts.json'),
+      _downloadAndCacheJson("$remoteBase/stickers.json", 'stickers.json'),
+      _downloadAndCacheJson("$remoteBase/backgrounds.json", 'backgrounds.json'),
+    ]);
 
     debugPrint("[FetchData] ✨ Remote data sync finished.");
     debugPrint("========================================================");
+  }
+
+  /// Resolves any thumbnail string into either:
+  /// - A remote HTTP/HTTPS URL
+  /// - Or a clean asset path
+  static String resolveThumbnailUrl(String rawPath) {
+    if (rawPath.isEmpty) return '';
+    if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+      return rawPath;
+    }
+
+    String serverUrl = AdsVariable.serverUrl.trim();
+    if (serverUrl.isEmpty) {
+      serverUrl = _defaultServerUrl;
+    }
+
+    String baseFolder = AdsVariable.serverBaseFolderName.trim();
+    if (baseFolder.isEmpty) {
+      baseFolder = _defaultBaseFolder;
+    }
+
+    final String cleanServerUrl = serverUrl.endsWith('/')
+        ? serverUrl.substring(0, serverUrl.length - 1)
+        : serverUrl;
+    final String cleanBaseFolder = baseFolder.startsWith('/')
+        ? baseFolder.substring(1)
+        : baseFolder;
+
+    String cleanPath = rawPath.startsWith('/') ? rawPath.substring(1) : rawPath;
+    if (cleanPath.startsWith('assets/')) {
+      cleanPath = cleanPath.substring(7);
+    }
+
+    return "$cleanServerUrl/$cleanBaseFolder/$cleanPath";
   }
 
   Future<void> _downloadAndCacheJson(String url, String localFileName) async {

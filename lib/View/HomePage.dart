@@ -14,6 +14,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../Services/fetch_data_from_server_service.dart';
 import '../for_ads/utils/shared_prefrence_service.dart';
+import 'widgets/smart_certificate_thumbnail.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -189,9 +190,6 @@ class _HomepageState extends State<Homepage> {
                       itemBuilder: (context, index) {
                         final item = categoryTemplates[index];
                         final String rawThumb = item['thumbnail'] ?? '';
-                        final String thumbnail = (rawThumb.isNotEmpty && !rawThumb.startsWith('assets/') && !rawThumb.startsWith('http'))
-                            ? 'assets/$rawThumb'
-                            : rawThumb;
                         final String rawLayout = item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json';
                         final String layoutPath = (rawLayout.isNotEmpty && !rawLayout.startsWith('assets/') && !rawLayout.startsWith('http'))
                             ? 'assets/$rawLayout'
@@ -224,18 +222,11 @@ class _HomepageState extends State<Homepage> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(12.r),
-                                    child: Image.asset(
-                                      thumbnail,
+                                    child: SmartCertificateThumbnail(
+                                      thumbnailPath: rawThumb,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          color: const Color(0xFFE2E8F0),
-                                          child: const Icon(
-                                            Icons.image_not_supported_outlined,
-                                            color: Color(0xFF94A3B8),
-                                          ),
-                                        );
-                                      },
+                                      width: 175.w,
+                                      height: 120.h,
                                     ),
                                   ),
                                   if (item['premium'] == true && AdsVariable.isPurchase != true)
@@ -361,14 +352,13 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       backgroundColor: const Color(0xFFf8f9fa),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: CustomScrollView(
           controller: _scrollController,
           physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Header (Title & Settings Icon)
-              Padding(
+          slivers: [
+            // 1. Header (Title & Settings Icon)
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -436,10 +426,12 @@ class _HomepageState extends State<Homepage> {
                   ],
                 ),
               ),
+            ),
 
-              // 2. Auto-animating Focus-Enlarge Certificate Carousel Banner
-              if (_bannerCertificates.isNotEmpty)
-                SizedBox(
+            // 2. Auto-animating Focus-Enlarge Certificate Carousel Banner
+            if (_bannerCertificates.isNotEmpty)
+              SliverToBoxAdapter(
+                child: SizedBox(
                   height: 220.h,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
@@ -460,124 +452,123 @@ class _HomepageState extends State<Homepage> {
                         physics: const BouncingScrollPhysics(),
                         clipBehavior: Clip.none,
                         itemBuilder: (context, index) {
-                      final itemIndex = index % _bannerCertificates.length;
-                      final item = _bannerCertificates[itemIndex];
-                      final String rawThumb = item['thumbnail'] ?? '';
-                      final String thumbnail = (rawThumb.isNotEmpty && !rawThumb.startsWith('assets/') && !rawThumb.startsWith('http'))
-                          ? 'assets/$rawThumb'
-                          : rawThumb;
-                      final String rawLayout = item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json';
-                      final String layoutPath = (rawLayout.isNotEmpty && !rawLayout.startsWith('assets/') && !rawLayout.startsWith('http'))
-                          ? 'assets/$rawLayout'
-                          : rawLayout;
+                          final itemIndex = index % _bannerCertificates.length;
+                          final item = _bannerCertificates[itemIndex];
+                          final String rawThumb = item['thumbnail'] ?? '';
+                          final String rawLayout = item['layoutPath'] ?? 'assets/cert_jsons/certificate_01.json';
+                          final String layoutPath = (rawLayout.isNotEmpty && !rawLayout.startsWith('assets/') && !rawLayout.startsWith('http'))
+                              ? 'assets/$rawLayout'
+                              : rawLayout;
 
-                      return AnimatedBuilder(
-                        animation: _bannerPageController,
-                        builder: (context, child) {
-                          double page = _bannerInitialPage.toDouble();
-                          if (_bannerPageController.position.hasContentDimensions &&
-                              _bannerPageController.page != null) {
-                            page = _bannerPageController.page!;
-                          }
-                          final double pageOffset = (page - index).abs();
-                          final double scale = (1.0 - (pageOffset * 0.15)).clamp(0.85, 1.0);
-                          final double opacity = (1.0 - (pageOffset * 0.2)).clamp(0.75, 1.0);
+                          return AnimatedBuilder(
+                            animation: _bannerPageController,
+                            builder: (context, child) {
+                              double page = _bannerInitialPage.toDouble();
+                              if (_bannerPageController.position.hasContentDimensions &&
+                                  _bannerPageController.page != null) {
+                                page = _bannerPageController.page!;
+                              }
+                              final double pageOffset = (page - index).abs();
+                              final double scale = (1.0 - (pageOffset * 0.15)).clamp(0.85, 1.0);
+                              final double opacity = (1.0 - (pageOffset * 0.2)).clamp(0.75, 1.0);
 
-                          return Transform.scale(
-                            scale: scale,
-                            alignment: Alignment.center,
-                            child: Opacity(
-                              opacity: opacity,
-                              child: Container(
-                                margin: EdgeInsets.only(top: 6.h, bottom: 18.h, left: 4.w, right: 4.w),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF0F172A).withValues(alpha: 0.14),
-                                      blurRadius: 16.r,
-                                      spreadRadius: 1,
-                                      offset: Offset(0, 8.h),
+                              return Transform.scale(
+                                scale: scale,
+                                alignment: Alignment.center,
+                                child: Opacity(
+                                  opacity: opacity,
+                                  child: Container(
+                                    margin: EdgeInsets.only(top: 6.h, bottom: 18.h, left: 4.w, right: 4.w),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16.r),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF0F172A).withValues(alpha: 0.14),
+                                          blurRadius: 16.r,
+                                          spreadRadius: 1,
+                                          offset: Offset(0, 8.h),
+                                        ),
+                                      ],
                                     ),
+                                    child: child,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: GestureDetector(
+                              onTap: () {
+                                if (item['premium'] == true && AdsVariable.isPurchase != true) {
+                                  Get.to(() => PremiumCreditView(
+                                        onboarding: false,
+                                        onDone: () => Get.back(),
+                                      ));
+                                } else {
+                                  AdsVariable.onShowAds(context, onComplete: () {
+                                    Get.to(() => EditCertificatePage(
+                                          layoutPath: layoutPath,
+                                        ));
+                                  });
+                                }
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16.r),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    SmartCertificateThumbnail(
+                                      thumbnailPath: rawThumb,
+                                      fit: BoxFit.cover,
+                                      width: 280.w,
+                                      height: 220.h,
+                                    ),
+                                    if (item['premium'] == true && AdsVariable.isPurchase != true)
+                                      Positioned(
+                                        top: 10.h,
+                                        right: 10.w,
+                                        child: Container(
+                                          padding: EdgeInsets.all(5.r),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.55),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Image.asset(
+                                            'assets/Home Screen/premiumCrown.png',
+                                            width: 20.r,
+                                            height: 20.r,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
-                                child: child,
                               ),
                             ),
                           );
                         },
-                        child: GestureDetector(
-                          onTap: () {
-                            if (item['premium'] == true && AdsVariable.isPurchase != true) {
-                              Get.to(() => PremiumCreditView(
-                                    onboarding: false,
-                                    onDone: () => Get.back(),
-                                  ));
-                            } else {
-                              AdsVariable.onShowAds(context, onComplete: () {
-                                Get.to(() => EditCertificatePage(
-                                      layoutPath: layoutPath,
-                                    ));
-                              });
-                            }
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16.r),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                Image.asset(
-                                  thumbnail,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE2E8F0),
-                                        borderRadius: BorderRadius.circular(16.r),
-                                      ),
-                                      child: const Icon(
-                                        Icons.image_not_supported_outlined,
-                                        color: Color(0xFF94A3B8),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                if (item['premium'] == true && AdsVariable.isPurchase != true)
-                                  Positioned(
-                                    top: 10.h,
-                                    right: 10.w,
-                                    child: Container(
-                                      padding: EdgeInsets.all(5.r),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 0.55),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Image.asset(
-                                        'assets/Home Screen/premiumCrown.png',
-                                        width: 20.r,
-                                        height: 20.r,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
                 ),
               ),
+
+            SliverToBoxAdapter(
+              child: SizedBox(height: 12.h),
             ),
 
-              SizedBox(height: 12.h),
+            // 3. Category Horizontal Lists (Lazy-rendered only when scrolled into view)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final category = _dynamicCategories[index];
+                  return _buildCategorySection(category, category);
+                },
+                childCount: _dynamicCategories.length,
+              ),
+            ),
 
-              // 3. Category Horizontal Lists
-              ..._dynamicCategories.map((category) => _buildCategorySection(category, category)),
-
-              SizedBox(height: 24.h),
-            ],
-          ),
+            SliverToBoxAdapter(
+              child: SizedBox(height: 24.h),
+            ),
+          ],
         ),
       ),
     );
