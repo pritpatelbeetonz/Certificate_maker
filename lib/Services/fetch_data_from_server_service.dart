@@ -2,13 +2,19 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 import '../for_ads/ads/ads_variable.dart';
 
 class FetchDataFromServerServices {
-  static const String _templetsAssetPath = 'assets/Final_Data/index_templets.json';
-  static const String _layoutsAssetPath = 'assets/Final_Data/index_layouts.json';
-  static const String _stickersAssetPath = 'assets/Final_Data/index_stickers.json';
+  static const String _defaultServerUrl = "https://phpstack-1550637-6001716.cloudwaysapps.com";
+  static const String _defaultBaseFolder = "Sn_Ro_Pri_Certificate_Maker";
+
+  static const String _indexAssetPath = 'assets/Final_Certificates/index.json';
+  static const String _bannerAssetPath = 'assets/Final_Certificates/banner_certificates.json';
+  static const String _fontsAssetPath = 'assets/Final_Certificates/fonts.json';
+  static const String _stickersAssetPath = 'assets/Final_Certificates/stickers.json';
+  static const String _backgroundsAssetPath = 'assets/Final_Certificates/backgrounds.json';
 
   static Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
@@ -20,96 +26,167 @@ class FetchDataFromServerServices {
     return File('$path/$fileName');
   }
 
-  /// Downloads the three JSON files from the server if online, and saves them locally.
+  /// Downloads all catalog JSON files from server (Firebase Remote Config / fallback)
+  /// and saves them into the app's local document directory.
   Future<void> initCall() async {
-    final String serverUrl = AdsVariable.serverUrl;
-    final String baseFolder = AdsVariable.serverBaseFolderName;
-
-    if (serverUrl.isEmpty || baseFolder.isEmpty) {
-      print("[FetchData] Server URL or Base Folder is empty. Skipping remote download.");
-      return;
+    String serverUrl = AdsVariable.serverUrl.trim();
+    if (serverUrl.isEmpty) {
+      serverUrl = _defaultServerUrl;
     }
 
-    // Ensure serverUrl doesn't end with a slash
-    final String cleanServerUrl = serverUrl.endsWith('/') 
-        ? serverUrl.substring(0, serverUrl.length - 1) 
+    String baseFolder = AdsVariable.serverBaseFolderName.trim();
+    if (baseFolder.isEmpty) {
+      baseFolder = _defaultBaseFolder;
+    }
+
+    final String cleanServerUrl = serverUrl.endsWith('/')
+        ? serverUrl.substring(0, serverUrl.length - 1)
         : serverUrl;
+    final String cleanBaseFolder = baseFolder.startsWith('/')
+        ? baseFolder.substring(1)
+        : baseFolder;
 
-    // e.g. https://domain.com/basefolder/assets/Final_Data/index_templets.json
-    final String templetsUrl = "$cleanServerUrl/$baseFolder/assets/Final_Data/index_templets.json";
-    final String layoutsUrl = "$cleanServerUrl/$baseFolder/assets/Final_Data/index_layouts.json";
-    final String stickersUrl = "$cleanServerUrl/$baseFolder/assets/Final_Data/index_stickers.json";
+    // Full remote root: https://domain.com/Sn_Ro_Pri_Certificate_Maker/Final_Certificates
+    final String remoteBase = "$cleanServerUrl/$cleanBaseFolder/Final_Certificates";
 
-    await _downloadAndCacheJson(templetsUrl, 'index_templets.json');
-    await _downloadAndCacheJson(layoutsUrl, 'index_layouts.json');
-    await _downloadAndCacheJson(stickersUrl, 'index_stickers.json');
+    debugPrint("[FetchData] 🌐 Initializing remote data sync from: $remoteBase");
+
+    await _downloadAndCacheJson("$remoteBase/index.json", 'index.json');
+    await _downloadAndCacheJson("$remoteBase/banner_certificates.json", 'banner_certificates.json');
+    await _downloadAndCacheJson("$remoteBase/fonts.json", 'fonts.json');
+    await _downloadAndCacheJson("$remoteBase/stickers.json", 'stickers.json');
+    await _downloadAndCacheJson("$remoteBase/backgrounds.json", 'backgrounds.json');
   }
 
   Future<void> _downloadAndCacheJson(String url, String localFileName) async {
     try {
-      print("[FetchData] Fetching remote JSON from: $url");
+      debugPrint("[FetchData] ⬇ Fetching remote JSON: $url");
       final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 15));
       if (response.statusCode == 200 && response.body.isNotEmpty) {
         final file = await _getLocalFile(localFileName);
         await file.writeAsString(response.body);
-        print("[FetchData] Successfully cached $localFileName locally.");
+        debugPrint("[FetchData] ✅ Successfully cached $localFileName locally.");
       } else {
-        print("[FetchData] Failed to download $localFileName. Status code: ${response.statusCode}");
+        debugPrint("[FetchData] ⚠ Server returned ${response.statusCode} for $localFileName (will use local/asset fallback)");
       }
     } catch (e) {
-      print("[FetchData] Error downloading $localFileName: $e");
+      debugPrint("[FetchData] ❌ Error downloading $localFileName: $e (will use local/asset fallback)");
     }
   }
 
-  /// Loader methods that check local cache first, then fall back to assets
-  static Future<String> loadIndexTempletsJson() async {
+  /// 1. Load index.json (Categories & Templates Catalog)
+  static Future<String> loadIndexJson() async {
     try {
-      final file = await _getLocalFile('index_templets.json');
+      final file = await _getLocalFile('index.json');
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          print("[FetchData] Loaded index_templets.json from local cache.");
+          debugPrint("[FetchData] 📦 Loaded index.json from local cache.");
           return content;
         }
       }
     } catch (e) {
-      print("[FetchData] Error reading index_templets.json cache: $e");
+      debugPrint("[FetchData] Error reading index.json cache: $e");
     }
-    print("[FetchData] Falling back to bundled index_templets.json asset.");
-    return await rootBundle.loadString(_templetsAssetPath);
+    debugPrint("[FetchData] Falling back to bundled index.json asset.");
+    return await rootBundle.loadString(_indexAssetPath);
   }
 
-  static Future<String> loadIndexLayoutsJson() async {
+  /// 2. Load banner_certificates.json
+  static Future<String> loadBannerCertificatesJson() async {
     try {
-      final file = await _getLocalFile('index_layouts.json');
+      final file = await _getLocalFile('banner_certificates.json');
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          print("[FetchData] Loaded index_layouts.json from local cache.");
+          debugPrint("[FetchData] 📦 Loaded banner_certificates.json from local cache.");
           return content;
         }
       }
     } catch (e) {
-      print("[FetchData] Error reading index_layouts.json cache: $e");
+      debugPrint("[FetchData] Error reading banner_certificates.json cache: $e");
     }
-    print("[FetchData] Falling back to bundled index_layouts.json asset.");
-    return await rootBundle.loadString(_layoutsAssetPath);
+    debugPrint("[FetchData] Falling back to bundled banner_certificates.json asset.");
+    return await rootBundle.loadString(_bannerAssetPath);
   }
 
-  static Future<String> loadIndexStickersJson() async {
+  /// 3. Load fonts.json
+  static Future<String> loadFontsJson() async {
     try {
-      final file = await _getLocalFile('index_stickers.json');
+      final file = await _getLocalFile('fonts.json');
       if (await file.exists()) {
         final content = await file.readAsString();
         if (content.isNotEmpty) {
-          print("[FetchData] Loaded index_stickers.json from local cache.");
+          debugPrint("[FetchData] 📦 Loaded fonts.json from local cache.");
           return content;
         }
       }
     } catch (e) {
-      print("[FetchData] Error reading index_stickers.json cache: $e");
+      debugPrint("[FetchData] Error reading fonts.json cache: $e");
     }
-    print("[FetchData] Falling back to bundled index_stickers.json asset.");
+    debugPrint("[FetchData] Falling back to bundled fonts.json asset.");
+    return await rootBundle.loadString(_fontsAssetPath);
+  }
+
+  /// 4. Load stickers.json
+  static Future<String> loadStickersJson() async {
+    try {
+      final file = await _getLocalFile('stickers.json');
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        if (content.isNotEmpty) {
+          debugPrint("[FetchData] 📦 Loaded stickers.json from local cache.");
+          return content;
+        }
+      }
+    } catch (e) {
+      debugPrint("[FetchData] Error reading stickers.json cache: $e");
+    }
+    debugPrint("[FetchData] Falling back to bundled stickers.json asset.");
     return await rootBundle.loadString(_stickersAssetPath);
+  }
+
+  /// 5. Load backgrounds.json
+  static Future<String> loadBackgroundsJson() async {
+    try {
+      final file = await _getLocalFile('backgrounds.json');
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        if (content.isNotEmpty) {
+          debugPrint("[FetchData] 📦 Loaded backgrounds.json from local cache.");
+          return content;
+        }
+      }
+    } catch (e) {
+      debugPrint("[FetchData] Error reading backgrounds.json cache: $e");
+    }
+    debugPrint("[FetchData] Falling back to bundled backgrounds.json asset.");
+    return await rootBundle.loadString(_backgroundsAssetPath);
+  }
+
+  /// 6. Load a specific template layout JSON (checks local disk cache first, else rootBundle)
+  static Future<String> loadLayoutJson(String layoutPath) async {
+    try {
+      final String fileName = layoutPath.split('/').last;
+      final file = await _getLocalFile(fileName);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        if (content.isNotEmpty) {
+          debugPrint("[FetchData] 📦 Loaded layout $fileName from local cache.");
+          return content;
+        }
+      }
+    } catch (e) {
+      debugPrint("[FetchData] Error reading layout cache: $e");
+    }
+
+    final String resolvedPath = (layoutPath.isNotEmpty &&
+            !layoutPath.startsWith('assets/') &&
+            !layoutPath.startsWith('http'))
+        ? 'assets/$layoutPath'
+        : layoutPath;
+
+    debugPrint("[FetchData] Loading layout from asset: $resolvedPath");
+    return await rootBundle.loadString(resolvedPath);
   }
 }

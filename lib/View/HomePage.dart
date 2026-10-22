@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:certificate_maker/View/SavedProjectsPage.dart';
 import 'package:certificate_maker/View/SettingsPage.dart';
 import 'package:certificate_maker/View/browseTemplets.dart';
@@ -13,6 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../Services/fetch_data_from_server_service.dart';
 import '../for_ads/utils/shared_prefrence_service.dart';
 
 class Homepage extends StatefulWidget {
@@ -94,8 +94,8 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _loadBannerCertificates() async {
     try {
-      print("[BannerCarousel] 📂 Loading banner certificates from assets...");
-      final String response = await DefaultAssetBundle.of(context).loadString('assets/Final_Certificates/banner_certificates.json');
+      print("[BannerCarousel] 📂 Loading banner certificates...");
+      final String response = await FetchDataFromServerServices.loadBannerCertificatesJson();
       final data = json.decode(response);
       final List<dynamic> certs = data['banner_certificates'] ?? [];
       print("[BannerCarousel] 📂 Loaded ${certs.length} banner certificates");
@@ -112,7 +112,7 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _loadTemplates() async {
     try {
-      final String response = await DefaultAssetBundle.of(context).loadString('assets/Final_Certificates/index.json');
+      final String response = await FetchDataFromServerServices.loadIndexJson();
       final data = json.decode(response);
       final layouts = data['layouts'] ?? [];
       

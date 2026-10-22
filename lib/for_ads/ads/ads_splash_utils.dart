@@ -23,6 +23,7 @@ import 'ads_variable.dart';
 import 'app_open_ad.dart';
 import 'life_cycle.dart';
 import '../utils/shared_prefrence_service.dart';
+import '../../Services/fetch_data_from_server_service.dart';
 
 class AdsSplashUtils {
   late SharedPreferences prefs;
@@ -58,7 +59,7 @@ class AdsSplashUtils {
     AdsVariable.btnBgColorG2 = prefs.getString("buttonBgColorG2") ?? "#0091FF";
     AdsVariable.OpenAdInSplash = prefs.getBool("showOpenAdInSplash") ?? false;
     AdsVariable.serverUrl = prefs.getString("serverUrl") ?? "https://phpstack-1550637-6001716.cloudwaysapps.com";
-    AdsVariable.serverBaseFolderName = prefs.getString("serverBaseFolderName") ?? "Sn_Ro_Pri_Framz";
+    AdsVariable.serverBaseFolderName = prefs.getString("serverBaseFolderName") ?? "Sn_Ro_Pri_Certificate_Maker";
 
     log(
       "await AdsVariable.isInternetConnected() :- ${await AdsVariable.isInternetConnected()}",
@@ -136,7 +137,7 @@ class AdsSplashUtils {
         AdsVariable.supportContactEmail = mapValues1["supportContactEmail"]?.toString() ?? "qwertyui567@testing.com";
         AdsVariable.testPassword = mapValues1["testPassword"]?.toString() ?? "App*TesT@321";
         AdsVariable.serverUrl = mapValues1["serverUrl"]?.toString() ?? "https://phpstack-1550637-6001716.cloudwaysapps.com";
-        AdsVariable.serverBaseFolderName = mapValues1["serverBaseFolderName"]?.toString() ?? "Sn_Ro_Pri_Framz";
+        AdsVariable.serverBaseFolderName = mapValues1["serverBaseFolderName"]?.toString() ?? "Sn_Ro_Pri_Certificate_Maker";
 
         /// Store firebase remote config data into shared preferences :
 
@@ -150,7 +151,7 @@ class AdsSplashUtils {
         );
         prefs.setString(
           "serverBaseFolderName",
-          mapValues1["serverBaseFolderName"]?.toString() ?? "Sn_Ro_Pri_Framz",
+          mapValues1["serverBaseFolderName"]?.toString() ?? "Sn_Ro_Pri_Certificate_Maker",
         );
         prefs.setString(
           "buttonBgColorG1",
@@ -232,9 +233,8 @@ class AdsSplashUtils {
         // Fetch remote JSON configs from server
         try {
           debugPrint('=====Started the server data of the index.json==========');
-         // await FetchDataFromServerServices().initCall();
+          await FetchDataFromServerServices().initCall();
           debugPrint('✔✔✔✔✔✔✔✔=====completed the server data of the index.json==========');
-
         } catch (e) {
           debugPrint("[FetchData] Error during initCall: $e");
         }

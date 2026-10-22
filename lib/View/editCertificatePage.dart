@@ -20,6 +20,7 @@ import 'package:hive/hive.dart';
 import 'HomePage.dart';
 import 'previewCertificatePage.dart';
 import 'fullScreenViewerPage.dart';
+import '../Services/fetch_data_from_server_service.dart';
 
 import 'widgets/realtime_certificate_painter.dart';
 import 'widgets/text_controls_panel.dart';
@@ -132,7 +133,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   Future<void> _loadFonts() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/Final_Certificates/fonts.json');
+      final String jsonString = await FetchDataFromServerServices.loadFontsJson();
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       final List<dynamic> fontList = jsonMap['fonts'] ?? [];
 
@@ -159,7 +160,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   Future<void> _loadBackgrounds() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/Final_Certificates/backgrounds.json');
+      final String jsonString = await FetchDataFromServerServices.loadBackgroundsJson();
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       setState(() {
         _backgrounds = jsonMap['backgrounds'] ?? [];
@@ -171,7 +172,7 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
 
   Future<void> _loadStickers() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/Final_Certificates/stickers.json');
+      final String jsonString = await FetchDataFromServerServices.loadStickersJson();
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       setState(() {
         _stickers = jsonMap['stickers'] ?? [];
@@ -1068,12 +1069,12 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
           final docJson = Map<String, dynamic>.from(projectData['document'] as Map);
           doc = SceneDocument.fromJson(docJson);
         } else {
-          final String jsonString = await rootBundle.loadString(resolvedLayoutPath);
+          final String jsonString = await FetchDataFromServerServices.loadLayoutJson(resolvedLayoutPath);
           final Map<String, dynamic> jsonMap = json.decode(jsonString);
           doc = SceneDocument.fromJson(jsonMap);
         }
       } else {
-        final String jsonString = await rootBundle.loadString(resolvedLayoutPath);
+        final String jsonString = await FetchDataFromServerServices.loadLayoutJson(resolvedLayoutPath);
         final Map<String, dynamic> jsonMap = json.decode(jsonString);
         doc = SceneDocument.fromJson(jsonMap);
       }

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'editCertificatePage.dart';
 import 'PremiumCreditView.dart';
 import '../for_ads/ads/ads_variable.dart';
+import '../Services/fetch_data_from_server_service.dart';
 
 class Browsetemplets extends StatefulWidget {
   final String? initialCategory;
@@ -59,7 +60,7 @@ class _BrowsetempletsState extends State<Browsetemplets> {
 
   Future<void> _loadTemplates() async {
     try {
-      final String response = await DefaultAssetBundle.of(context).loadString('assets/Final_Certificates/index.json');
+      final String response = await FetchDataFromServerServices.loadIndexJson();
       final data = json.decode(response);
       final layouts = data['layouts'] ?? [];
       
