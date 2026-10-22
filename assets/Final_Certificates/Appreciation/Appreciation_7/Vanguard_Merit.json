@@ -1,0 +1,688 @@
+{
+  "metadata": {
+    "id": "Appreciation_7",
+    "name": "Vanguard Merit",
+    "category": "Appreciation"
+  },
+  "canvas": {
+    "virtualSize": {
+      "width": 463,
+      "height": 329
+    }
+  },
+  "theme": {
+    "background": {
+      "type": "color",
+      "color": 4294967295
+    }
+  },
+  "assets": {
+    "background": {
+      "type": "image",
+      "src": "Final_Certificates/Appreciation/Appreciation_7/bg.png"
+    },
+    "sticker": {
+      "type": "image",
+      "src": "Final_Certificates/Appreciation/Appreciation_7/sticker.png"
+    },
+    "LibreBodoni": {
+      "type": "font",
+      "src": "Final_Certificates/Fonts/LibreBodoni-VariableFont_wght.ttf"
+    },
+    "LibreBaskerville": {
+      "type": "font",
+      "src": "Final_Certificates/Fonts/LibreBaskerville-VariableFont_wght.ttf"
+    },
+    "GreatVibes": {
+      "type": "font",
+      "src": "Final_Certificates/Fonts/GreatVibes-Regular.ttf"
+    },
+    "Kanit": {
+      "type": "font",
+      "src": "Final_Certificates/Fonts/Kanit-Regular.ttf"
+    },
+    "Jomolhari": {
+      "type": "font",
+      "src": "Final_Certificates/Fonts/Jomolhari-Regular.ttf"
+    },
+    "Kadwa": {
+      "type": "font",
+      "src": "Final_Certificates/Fonts/Kadwa-Regular.ttf"
+    },
+    "kunstlerscript": {
+      "type": "font",
+      "src": "Final_Certificates/Fonts/kunstlerscript.ttf"
+    },
+    "Licorice": {
+      "type": "font",
+      "src": "Final_Certificates/Fonts/Licorice-Regular.ttf"
+    }
+  },
+  "scene": {
+    "layers": [
+      {
+        "id": "background",
+        "displayName": "Background",
+        "type": "frame",
+        "renderPass": "content",
+        "zIndex": 0,
+        "state": {
+          "visible": true,
+          "locked": true
+        },
+        "interaction": {
+          "selectable": false,
+          "movable": false,
+          "editable": false
+        },
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 463,
+          "height": 329
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "placeholder": {
+          "assetId": "background",
+          "mediaType": "image"
+        },
+        "style": {
+          "effects": {
+            "blendMode": "normal",
+            "filters": {}
+          }
+        }
+      },
+      {
+        "id": "certificate_title",
+        "displayName": "Certificate Title",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 60,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 50,
+          "y": 42,
+          "width": 363,
+          "height": 38
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "CERTIFICATE",
+          "fontFamily": "LibreBodoni",
+          "fontSize": 37,
+          "color": "#BB9961",
+          "align": "center",
+          "letterSpacing": 2.0,
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "subtitle_left_line",
+        "displayName": "Subtitle Left Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 61,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 100,
+          "y": 93,
+          "width": 55,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#BB9961",
+            "width": 1.2,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#BB9961"
+          }
+        }
+      },
+      {
+        "id": "certificate_subtitle",
+        "displayName": "Certificate Subtitle",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 62,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 175,
+          "y": 86,
+          "width": 113,
+          "height": 16
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "OF APPRECIATION",
+          "fontFamily": "LibreBaskerville",
+          "fontSize": 10.5,
+          "color": "#BB9961",
+          "align": "center",
+          "letterSpacing": 2.0,
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "subtitle_right_line",
+        "displayName": "Subtitle Right Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 63,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 305,
+          "y": 93,
+          "width": 55,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#BB9961",
+            "width": 1.2,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#BB9961"
+          }
+        }
+      },
+      {
+        "id": "recipient_name",
+        "displayName": "Recipient Name",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 64,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 50,
+          "y": 124,
+          "width": 363,
+          "height": 52
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "John Doe",
+          "fontFamily": "GreatVibes",
+          "fontSize": 44,
+          "color": "#433F53",
+          "align": "center",
+          "letterSpacing": 0.0,
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "recipient_separator_line",
+        "displayName": "Recipient Separator Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 65,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 122,
+          "y": 174,
+          "width": 220,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#E5E5E5",
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#E5E5E5"
+          }
+        }
+      },
+      {
+        "id": "project_title",
+        "displayName": "Project Title",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 66,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 60,
+          "y": 211,
+          "width": 343,
+          "height": 16
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "Media Branding For Health Organisation",
+          "fontFamily": "Kanit",
+          "fontSize": 9.5,
+          "color": "#BB9961",
+          "align": "center",
+          "letterSpacing": 0.5,
+          "fontWeight": "w600"
+        }
+      },
+      {
+        "id": "description_paragraph",
+        "displayName": "Description Paragraph",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 67,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 60,
+          "y": 232,
+          "width": 343,
+          "height": 22
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "This certificate is proudly presented in recognition of outstanding achievement, exceptional dedication, and\nremarkable performance demonstrated through consistent effort and commitment to excellence.",
+          "fontFamily": "Jomolhari",
+          "fontSize": 6.0,
+          "color": "#666666",
+          "align": "center",
+          "lineHeight": 1.35,
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "signature_value",
+        "displayName": "Signature",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 68,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 89,
+          "y": 263,
+          "width": 80,
+          "height": 35
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "Aura",
+          "fontFamily": "kunstlerscript",
+          "fontSize": 48,
+          "color": "#BB9961",
+          "align": "center",
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "signature_line",
+        "displayName": "Signature Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 69,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 89,
+          "y": 300,
+          "width": 80,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#E5E5E5",
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#E5E5E5"
+          }
+        }
+      },
+      {
+        "id": "signature_label",
+        "displayName": "Signature Label",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 70,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 89,
+          "y": 304,
+          "width": 80,
+          "height": 8
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "SIGNATURE",
+          "fontFamily": "Kadwa",
+          "fontSize": 5.5,
+          "color": "#5A5549",
+          "align": "center",
+          "letterSpacing": 1.2,
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "red_seal_sticker",
+        "displayName": "Red Seal Ribbon Sticker",
+        "type": "sticker",
+        "renderPass": "sticker",
+        "zIndex": 71,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 211,
+          "y": 260,
+          "width": 41,
+          "height": 48
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "placeholder": {
+          "assetId": "sticker",
+          "mediaType": "image"
+        },
+        "style": {
+          "effects": {
+            "blendMode": "normal",
+            "filters": {}
+          }
+        }
+      },
+      {
+        "id": "date_value",
+        "displayName": "Date Value",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 72,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 297,
+          "y": 286,
+          "width": 80,
+          "height": 13
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "03/08/2026",
+          "fontFamily": "Licorice",
+          "fontSize": 10,
+          "color": "#BB9961",
+          "align": "center",
+          "fontWeight": "w400"
+        }
+      },
+      {
+        "id": "date_line",
+        "displayName": "Date Line",
+        "type": "shape",
+        "renderPass": "content",
+        "zIndex": 73,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 297,
+          "y": 300,
+          "width": 80,
+          "height": 1
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "shapeType": "line",
+        "style": {
+          "stroke": {
+            "color": "#E5E5E5",
+            "width": 1.0,
+            "alignment": "center"
+          },
+          "fill": {
+            "type": "solid",
+            "color": "#E5E5E5"
+          }
+        }
+      },
+      {
+        "id": "date_label",
+        "displayName": "Date Label",
+        "type": "text",
+        "renderPass": "text",
+        "zIndex": 74,
+        "state": {
+          "visible": true,
+          "locked": false
+        },
+        "interaction": {
+          "selectable": true,
+          "movable": true,
+          "editable": true
+        },
+        "bounds": {
+          "x": 297,
+          "y": 304,
+          "width": 80,
+          "height": 8
+        },
+        "transform": {
+          "rotation": 0,
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        "content": {
+          "text": "DATE",
+          "fontFamily": "Kadwa",
+          "fontSize": 5.5,
+          "color": "#5A5549",
+          "align": "center",
+          "letterSpacing": 1.2,
+          "fontWeight": "w400"
+        }
+      }
+    ]
+  }
+}

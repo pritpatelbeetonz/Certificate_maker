@@ -1,29 +1,97 @@
+import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:in_app_review/in_app_review.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../for_ads/ads/ads_variable.dart';
+import '../../for_ads/utils/app_constants.dart';
 import 'PremiumCreditView.dart';
 import 'privacy_policy_screen.dart';
+import 'terms_and_condition_screen.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  void _shareApp(BuildContext context) {
-    Clipboard.setData(const ClipboardData(
-        text: 'Check out this awesome Certificate Maker App! https://apps.apple.com/app/id64748B'));
-    Fluttertoast.showToast(msg: "App sharing link copied to clipboard!");
+  Future<void> rateUs(BuildContext context) async {
+    try {
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      final String packageName = packageInfo.packageName;
+      if (Platform.isIOS) {
+        final String url = 'https://apps.apple.com/app/id$iosAppId';
+        if (await canLaunchUrl(Uri.parse(url))) {
+          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        } else {
+          throw 'Could not launch App Store.';
+        }
+      } else {
+        final String url = 'market://details?id=$packageName';
+        if (await canLaunchUrl(Uri.parse(url))) {
+          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        } else {
+          final String webUrl =
+              'https://play.google.com/store/apps/details?id=$packageName';
+          if (await canLaunchUrl(Uri.parse(webUrl))) {
+            await launchUrl(Uri.parse(webUrl),
+                mode: LaunchMode.externalApplication);
+          } else {
+            throw 'Could not launch Play Store.';
+          }
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Fluttertoast.showToast(msg: 'Error: $e', toastLength: Toast.LENGTH_SHORT, gravity: ToastGravity.BOTTOM);
+      }
+    }
   }
 
-  void _rateUs() async {
-    final InAppReview inAppReview = InAppReview.instance;
-    if (await inAppReview.isAvailable()) {
-      inAppReview.requestReview();
+  Future<void> shareApp(BuildContext context) async {
+    try {
+      final RenderBox? box = context.findRenderObject() as RenderBox?;
+      final Rect? sharePositionOrigin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+      final packageInfo = await PackageInfo.fromPlatform();
+      final packageName = packageInfo.packageName;
+
+      if (Platform.isIOS) {
+        final url = 'https://apps.apple.com/app/id$iosAppId';
+        await Share.share(url, sharePositionOrigin: sharePositionOrigin);
+      } else {
+        final url =
+            'https://play.google.com/store/apps/details?id=$packageName';
+        await Share.share(url, sharePositionOrigin: sharePositionOrigin);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Fluttertoast.showToast(msg: 'Error: $e', toastLength: Toast.LENGTH_SHORT, gravity: ToastGravity.BOTTOM);
+      }
+    }
+  }
+
+  Future<void> moreAppOnTap() async {
+    if (Platform.isIOS) {
+      const String appStoreURL =
+          'https://apps.apple.com/us/developer/nidhi-rola/id1791680431';
+      if (await canLaunchUrl(Uri.parse(appStoreURL))) {
+        log("========== LAUNCH URL ==============");
+        await launchUrl(Uri.parse(appStoreURL));
+      } else {
+        log("Could not launch $appStoreURL");
+        throw 'Could not launch $appStoreURL';
+      }
     } else {
-      Fluttertoast.showToast(msg: "Rating is not available right now.");
+      const String storeURL =
+          'https://play.google.com/store/apps/developer?id=Pahal+Tech';
+      if (await canLaunchUrl(Uri.parse(storeURL))) {
+        await launchUrl(Uri.parse(storeURL));
+      } else {
+        throw 'Could not launch $storeURL';
+      }
     }
   }
 
@@ -204,26 +272,17 @@ class SettingsPage extends StatelessWidget {
                   _buildNewSettingsItem(
                     iconPath: 'assets/Settings/rate.png',
                     title: 'Rate App',
-                    onTap: _rateUs,
+                    onTap: () => rateUs(context),
                   ),
                   _buildNewSettingsItem(
                     iconPath: 'assets/Settings/share_app.png',
                     title: 'Share App',
-                    onTap: () => _shareApp(context),
+                    onTap: () => shareApp(context),
                   ),
                   _buildNewSettingsItem(
                     iconPath: 'assets/Settings/moreApps.png',
                     title: 'More Apps',
-                    onTap: () {
-                      Fluttertoast.showToast(msg: "Discover more apps coming soon!");
-                    },
-                  ),
-                  _buildNewSettingsItem(
-                    iconPath: 'assets/Settings/requestfeature.png',
-                    title: 'Request a Feature',
-                    onTap: () {
-                      Fluttertoast.showToast(msg: "Feature request support is coming soon!");
-                    },
+                    onTap: moreAppOnTap,
                   ),
                 ],
               ),
@@ -249,6 +308,13 @@ class SettingsPage extends StatelessWidget {
                     title: 'Privacy Policy',
                     onTap: () {
                       Get.to(() => const PrivacyPolicyView());
+                    },
+                  ),
+                  _buildNewSettingsItem(
+                    iconPath: 'assets/Settings/privacyPolicy.png',
+                    title: 'Terms of Use',
+                    onTap: () {
+                      Get.to(() => const TermsAndConditionView());
                     },
                   ),
                   _buildNewSettingsItem(

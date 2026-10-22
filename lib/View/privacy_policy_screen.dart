@@ -83,14 +83,17 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
               child: GestureDetector(
                 onTap: () => Get.back(),
                 child: Container(
+                  width: 35.w,
+                  height: 35.w,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: Colors.white.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Image.asset(
-                    'assets/Browse Categories/back_button.png',
-                    width: 35.w,
-                    height: 35.h,
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 18,
                   ),
                 ),
               ),

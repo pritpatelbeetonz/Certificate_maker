@@ -4,97 +4,97 @@
       "id": "Achievement_2",
       "name": "Elegant Gold",
       "category": "Achievement",
-      "thumbnail": "Final_Certificates/Achievement/2/thumbnail.png",
+      "thumbnail": "Final_Certificates/Achievement/Achievement_2/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Achievement/2/Elegant_Gold.json"
+      "layoutPath": "Final_Certificates/Achievement/Achievement_2/Elegant_Gold.json"
     },
     {
       "id": "Achievement_7",
       "name": "Emerald Elegance",
       "category": "Achievement",
-      "thumbnail": "Final_Certificates/Achievement/7/thumbnail.png",
+      "thumbnail": "Final_Certificates/Achievement/Achievement_7/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Achievement/7/Emerald_Elegance.json"
+      "layoutPath": "Final_Certificates/Achievement/Achievement_7/Emerald_Elegance.json"
     },
     {
       "id": "Achievement_10",
       "name": "Geometric Apex",
       "category": "Achievement",
-      "thumbnail": "Final_Certificates/Achievement/10/thumbnail.png",
+      "thumbnail": "Final_Certificates/Achievement/Achievement_10/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Achievement/10/Geometric_Apex.json"
+      "layoutPath": "Final_Certificates/Achievement/Achievement_10/Geometric_Apex.json"
     },
     {
       "id": "Appreciation_1",
       "name": "Golden Gratitude",
       "category": "Appreciation",
-      "thumbnail": "Final_Certificates/Appreciation/1/thumbnail.png",
+      "thumbnail": "Final_Certificates/Appreciation/Appreciation_1/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Appreciation/1/Golden_Gratitude.json"
+      "layoutPath": "Final_Certificates/Appreciation/Appreciation_1/Golden_Gratitude.json"
     },
     {
       "id": "Appreciation_2",
       "name": "Executive Recognition",
       "category": "Appreciation",
-      "thumbnail": "Final_Certificates/Appreciation/2/thumbnail.png",
+      "thumbnail": "Final_Certificates/Appreciation/Appreciation_2/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Appreciation/2/Executive_Recognition.json"
+      "layoutPath": "Final_Certificates/Appreciation/Appreciation_2/Executive_Recognition.json"
     },
     {
       "id": "Appreciation_5",
       "name": "Heraldic Seal",
       "category": "Appreciation",
-      "thumbnail": "Final_Certificates/Appreciation/5/thumbnail.png",
+      "thumbnail": "Final_Certificates/Appreciation/Appreciation_5/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Appreciation/5/Heraldic_Seal.json"
+      "layoutPath": "Final_Certificates/Appreciation/Appreciation_5/Heraldic_Seal.json"
     },
     {
       "id": "Completion_1",
       "name": "Scholastic Mastery",
       "category": "Completion",
-      "thumbnail": "Final_Certificates/Completion/1/thumbnail.png",
+      "thumbnail": "Final_Certificates/Completion/Completion_1/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Completion/1/Scholastic_Mastery.json"
+      "layoutPath": "Final_Certificates/Completion/Completion_1/Scholastic_Mastery.json"
     },
     {
       "id": "Completion_2",
       "name": "Apex Graduate",
       "category": "Completion",
-      "thumbnail": "Final_Certificates/Completion/2/thumbnail.png",
+      "thumbnail": "Final_Certificates/Completion/Completion_2/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Completion/2/Apex_Graduate.json"
+      "layoutPath": "Final_Certificates/Completion/Completion_2/Apex_Graduate.json"
     },
     {
       "id": "Completion_5",
       "name": "Prime Diploma",
       "category": "Completion",
-      "thumbnail": "Final_Certificates/Completion/5/thumbnail.png",
+      "thumbnail": "Final_Certificates/Completion/Completion_5/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Completion/5/Prime_Diploma.json"
+      "layoutPath": "Final_Certificates/Completion/Completion_5/Prime_Diploma.json"
     },
     {
       "id": "Participation_1",
       "name": "Honorary Participant",
       "category": "Participation",
-      "thumbnail": "Final_Certificates/Participation/1/thumbnail.png",
+      "thumbnail": "Final_Certificates/Participation/Participation_1/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Participation/1/Honorary_Participant.json"
+      "layoutPath": "Final_Certificates/Participation/Participation_1/Honorary_Participant.json"
     },
     {
       "id": "Participation_3",
       "name": "Pinnacle Delegate",
       "category": "Participation",
-      "thumbnail": "Final_Certificates/Participation/3/thumbnail.png",
+      "thumbnail": "Final_Certificates/Participation/Participation_3/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Participation/3/Pinnacle_Delegate.json"
+      "layoutPath": "Final_Certificates/Participation/Participation_3/Pinnacle_Delegate.json"
     },
     {
       "id": "Participation_8",
       "name": "Ambassador Certificate",
       "category": "Participation",
-      "thumbnail": "Final_Certificates/Participation/8/thumbnail.png",
+      "thumbnail": "Final_Certificates/Participation/Participation_8/thumbnail.png",
       "premium": true,
-      "layoutPath": "Final_Certificates/Participation/8/Ambassador_Certificate.json"
+      "layoutPath": "Final_Certificates/Participation/Participation_8/Ambassador_Certificate.json"
     }
   ]
 }
