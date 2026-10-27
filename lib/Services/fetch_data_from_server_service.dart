@@ -5,8 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import '../for_ads/ads/ads_variable.dart';
 
@@ -61,7 +60,7 @@ class FetchDataFromServerServices {
     debugPrint("========================================================");
 
     // Download in parallel for fast network sync on slow connections
-    await Future.wait([
+    final changed = await Future.wait([
       _downloadAndCacheJson("$remoteBase/index.json", 'index.json'),
       _downloadAndCacheJson("$remoteBase/banner_certificates.json", 'banner_certificates.json'),
       _downloadAndCacheJson("$remoteBase/fonts.json", 'fonts.json'),
@@ -69,38 +68,71 @@ class FetchDataFromServerServices {
       _downloadAndCacheJson("$remoteBase/backgrounds.json", 'backgrounds.json'),
     ]);
 
-    // Pre-cache initial visible thumbnails in background so HomePage shows them instantly
-    _precacheInitialThumbnailsInBackground();
+    // Cache banner + first category thumbnails in the background (splash doesn't wait;
+    // first-time users are still in onboarding while this runs).
+    _precacheInitialThumbnailsInBackground(catalogChanged: changed[0] || changed[1]);
 
     debugPrint("[FetchData] ✨ Remote data sync finished.");
     debugPrint("========================================================");
   }
 
-  /// Extracts initial visible thumbnails (banners + first 3 of each category)
-  /// and downloads them into DefaultCacheManager in the background
-  void _precacheInitialThumbnailsInBackground() {
+  /// Thumbnail URLs of every banner in banner_certificates.json.
+  static Future<List<String>> _bannerThumbnailUrls() async {
+    final List<String> urls = [];
+    try {
+      final data = json.decode(await loadBannerCertificatesJson());
+      // The file is {"banner_certificates": [...]}; also accept a bare list.
+      final List banners = data is Map ? (data['banner_certificates'] as List? ?? []) : (data is List ? data : []);
+      for (final b in banners) {
+        final String thumb = b['thumbnail'] ?? '';
+        if (thumb.isNotEmpty) {
+          urls.add(resolveThumbnailUrl(thumb));
+        }
+      }
+    } catch (e) {
+      debugPrint("[FetchData] ⚠ Could not read banner thumbnails: $e");
+    }
+    return urls;
+  }
+
+  /// Downloads remote images into the shared disk cache used by CachedNetworkImage.
+  /// Images already on disk are skipped, even if their cache entry has expired.
+  /// Returns true when every image is now cached.
+  static Future<bool> _downloadToDiskCache(List<String> urls) async {
+    final remoteUrls = urls.where((url) => url.startsWith('http')).toSet();
+    if (remoteUrls.isEmpty) return true;
+    final cacheManager = DefaultCacheManager();
+    int downloaded = 0;
+    final results = await Future.wait(remoteUrls.map((url) async {
+      try {
+        if (await cacheManager.getFileFromCache(url) != null) return true;
+        await cacheManager.downloadFile(url);
+        downloaded++;
+        return true;
+      } catch (e) {
+        debugPrint("[FetchData] ⚠ Pre-cache error for $url: $e");
+        return false;
+      }
+    }));
+    debugPrint("[FetchData] 🚀 Thumbnails: ${remoteUrls.length} needed, $downloaded downloaded, rest already cached.");
+    return results.every((ok) => ok);
+  }
+
+  /// Caches banner thumbnails, then the first 3 thumbnails of each category, in the
+  /// background. Skipped entirely when the catalog JSON hasn't changed since the last
+  /// run that cached everything (tracked by a marker file).
+  void _precacheInitialThumbnailsInBackground({required bool catalogChanged}) {
     Future.microtask(() async {
       try {
-        final List<String> urlsToPrecache = [];
-
-        // 1. Banner thumbnails
-        final bannerFile = await _getLocalFile('banner_certificates.json');
-        if (await bannerFile.exists()) {
-          final String raw = await bannerFile.readAsString();
-          if (raw.isNotEmpty) {
-            final bannerList = json.decode(raw);
-            if (bannerList is List) {
-              for (final b in bannerList) {
-                final String thumb = b['thumbnail'] ?? '';
-                if (thumb.isNotEmpty) {
-                  urlsToPrecache.add(resolveThumbnailUrl(thumb));
-                }
-              }
-            }
-          }
+        final marker = await _getLocalFile('thumbnails_precached.flag');
+        if (catalogChanged) {
+          if (await marker.exists()) await marker.delete();
+        } else if (await marker.exists()) {
+          debugPrint("[FetchData] ✅ Catalog unchanged and thumbnails already cached. Skipping.");
+          return;
         }
 
-        // 2. Index catalog thumbnails (first 3 of each category)
+        final List<String> urlsToPrecache = [...await _bannerThumbnailUrls()];
         final indexFile = await _getLocalFile('index.json');
         if (await indexFile.exists()) {
           final String raw = await indexFile.readAsString();
@@ -121,19 +153,9 @@ class FetchDataFromServerServices {
             }
           }
         }
-
-        if (urlsToPrecache.isNotEmpty) {
-          debugPrint("[FetchData] 🚀 Pre-caching ${urlsToPrecache.length} initial thumbnails in background...");
-          for (final url in urlsToPrecache) {
-            if (url.startsWith('http')) {
-              try {
-                final provider = CachedNetworkImageProvider(url);
-                provider.resolve(const ImageConfiguration());
-              } catch (e) {
-                debugPrint("[FetchData] ⚠ Pre-cache error for $url: $e");
-              }
-            }
-          }
+        // Banners come first in the list, so they start downloading first.
+        if (await _downloadToDiskCache(urlsToPrecache)) {
+          await marker.writeAsString(DateTime.now().toIso8601String());
         }
       } catch (e) {
         debugPrint("[FetchData] ⚠ Background thumbnail pre-caching failed: $e");
@@ -175,14 +197,20 @@ class FetchDataFromServerServices {
     return "$cleanServerUrl/$cleanBaseFolder/$cleanPath";
   }
 
-  Future<void> _downloadAndCacheJson(String url, String localFileName) async {
+  /// Returns true only when the server's JSON differs from the copy already on disk.
+  Future<bool> _downloadAndCacheJson(String url, String localFileName) async {
     try {
       debugPrint("[FetchData] ⬇ Fetching remote JSON from: $url");
       final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 15));
       if (response.statusCode == 200 && response.body.isNotEmpty) {
         final file = await _getLocalFile(localFileName);
+        if (await file.exists() && await file.readAsString() == response.body) {
+          debugPrint("[FetchData] ✅ '$localFileName' unchanged since last sync");
+          return false;
+        }
         await file.writeAsString(response.body);
         debugPrint("[FetchData] ✅ Successfully downloaded and cached '$localFileName' (${response.body.length} bytes) to ${file.path}");
+        return true;
       } else {
         debugPrint("[FetchData] ⚠ Server returned HTTP ${response.statusCode} for '$localFileName' (body length: ${response.body.length}). Will use bundled asset fallback.");
       }
@@ -190,6 +218,7 @@ class FetchDataFromServerServices {
       debugPrint("[FetchData] ❌ Error downloading '$localFileName' from $url: $e");
       debugPrint("[FetchData] Stack: $stack");
     }
+    return false;
   }
 
   /// 1. Load index.json (Categories & Templates Catalog)

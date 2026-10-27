@@ -24,6 +24,26 @@ class SmartCertificateThumbnail extends StatelessWidget {
     this.errorWidget,
   });
 
+  /// Decodes [thumbnailPath] into the in-memory image cache under the same key this
+  /// widget uses for the given [width], so it paints on its first frame with no placeholder.
+  static Future<void> precache(BuildContext context, String thumbnailPath, {double? width}) async {
+    if (thumbnailPath.isEmpty) return;
+
+    final double dpr = MediaQuery.maybeOf(context)?.devicePixelRatio ?? 2.0;
+    final int? memWidth = width != null ? (width * dpr).round() : null;
+
+    final String fullUrl = FetchDataFromServerServices.resolveThumbnailUrl(thumbnailPath);
+    final ImageProvider baseProvider = (fullUrl.startsWith('http://') || fullUrl.startsWith('https://'))
+        ? CachedNetworkImageProvider(fullUrl)
+        : AssetImage(thumbnailPath.startsWith('assets/') ? thumbnailPath : 'assets/$thumbnailPath');
+
+    await precacheImage(
+      ResizeImage.resizeIfNeeded(memWidth, null, baseProvider),
+      context,
+      onError: (error, stack) => debugPrint("[Thumbnail] ⚠ Precache failed for $fullUrl: $error"),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (thumbnailPath.isEmpty) {

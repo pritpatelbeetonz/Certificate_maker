@@ -32,6 +32,7 @@ class _HomepageState extends State<Homepage> {
 
   // Banner Carousel State
   List<dynamic> _bannerCertificates = [];
+  bool _isLoadingBanners = true;
   late final PageController _bannerPageController;
   Timer? _bannerTimer;
   static const int _bannerInitialPage = 1000;
@@ -100,14 +101,30 @@ class _HomepageState extends State<Homepage> {
       final data = json.decode(response);
       final List<dynamic> certs = data['banner_certificates'] ?? [];
       print("[BannerCarousel] 📂 Loaded ${certs.length} banner certificates");
+      if (!mounted) return;
+
+      // Decode every banner image before the carousel appears, so no placeholder
+      // shows while it animates. Capped so a slow network can't hold up the page.
+      try {
+        await Future.wait(certs.map((item) => SmartCertificateThumbnail.precache(
+              context,
+              item['thumbnail'] ?? '',
+              width: 280.w,
+            ))).timeout(const Duration(seconds: 3));
+      } catch (_) {
+        print("[BannerCarousel] ⏱ Showing banners before all images were decoded");
+      }
+
       if (mounted) {
         setState(() {
           _bannerCertificates = certs;
+          _isLoadingBanners = false;
         });
         _startBannerAutoScroll();
       }
     } catch (e) {
       print("[BannerCarousel] ❌ Error loading banner certificates: $e");
+      if (mounted) setState(() => _isLoadingBanners = false);
     }
   }
 
@@ -432,6 +449,9 @@ class _HomepageState extends State<Homepage> {
             ),
 
             // 2. Auto-animating Focus-Enlarge Certificate Carousel Banner
+            // Keep the carousel's space while banner images decode so the page doesn't jump.
+            if (_isLoadingBanners)
+              SliverToBoxAdapter(child: SizedBox(height: 220.w)),
             if (_bannerCertificates.isNotEmpty)
               SliverToBoxAdapter(
                 child: SizedBox(
