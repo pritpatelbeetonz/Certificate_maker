@@ -21,7 +21,7 @@ class FetchDataFromServerServices {
   static const String _backgroundsAssetPath = 'assets/Final_Certificates/backgrounds.json';
 
   static Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await getApplicationSupportDirectory();
     return directory.path;
   }
 

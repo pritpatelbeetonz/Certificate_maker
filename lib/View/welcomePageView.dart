@@ -151,10 +151,7 @@ class WelPageviewState extends State<WelPageview> {
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (ad) {
         debugPrint("[IntroAppOpen] 📺 App Open Ad showed full screen");
-        AdRevenueAnalyticsService.trackCompulsoryShow(
-          eventName: 'Show_AppOpen_Intro',
-          adUnitId: ad.adUnitId,
-        );
+        AdRevenueAnalyticsService.trackCompulsoryShow(eventName: 'Show_AppOpen_Intro', adUnitId: ad.adUnitId);
       },
       onAdDismissedFullScreenContent: (ad) {
         debugPrint("[IntroAppOpen] 👋 App Open Ad dismissed -> Navigating to Premium");
@@ -209,11 +206,7 @@ class WelPageviewState extends State<WelPageview> {
   }
 
   Widget bottomnavigation(int dataLength, int currentIndex) {
-    final List<String> titles = [
-      "Beautiful Templates",
-      "Sign with Ease",
-      "Style Your Certificate",
-    ];
+    final List<String> titles = ["Beautiful Templates", "Sign with Ease", "Style Your Certificate"];
 
     final List<String> Subtitles = [
       "Start with a professionally designed certificate.",
@@ -227,6 +220,7 @@ class WelPageviewState extends State<WelPageview> {
       canPop: false,
       child: SafeArea(
         top: false,
+        bottom: false,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Container(
@@ -237,30 +231,20 @@ class WelPageviewState extends State<WelPageview> {
                 Text(
                   titles[dotIdx],
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 28.sp,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(color: Colors.black, fontSize: 28.sp, fontFamily: 'Inter', fontWeight: FontWeight.w700),
                 ),
 
-               const SizedBox(height: 5),
+                const SizedBox(height: 5),
                 //Spacer(),
 
                 Text(
                   Subtitles[dotIdx],
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.8),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: TextStyle(color: Colors.black.withValues(alpha: 0.8), fontSize: 14.sp, fontWeight: FontWeight.w400),
                 ),
 
                 // const SizedBox(height: 15),
                 Spacer(),
-
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -271,9 +255,7 @@ class WelPageviewState extends State<WelPageview> {
                       width: isActive ? 24.w : 8.w,
                       height: 8.h,
                       decoration: BoxDecoration(
-                        color: isActive
-                            ? Color(0xFF4200AD)
-                            : Color(0x1010104D).withValues(alpha: 0.3),
+                        color: isActive ? Color(0xFF4200AD) : Color(0x1010104D).withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                     );
@@ -283,34 +265,25 @@ class WelPageviewState extends State<WelPageview> {
                 //const SizedBox(height: 15),
                 Spacer(),
 
-
                 //dots
-                GestureDetector(
-                  onTap: () {
-                    if (currentIndex == dataLength - 1) {
-                      _showIntroAppOpenAndProceed();
-                    } else {
-                      pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.ease,
-                      );
-                    }
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: 358.w,
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.r),
-                      color: Color(0xFF4200AD)
-                    ),
-                    child: Text(
-                      currentIndex == dataLength - 1 ? "Get Started" : 'Next',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: Colors.white,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
+                Padding(
+                  padding: EdgeInsets.only(bottom: 15.h),
+                  child: GestureDetector(
+                    onTap: () {
+                      if (currentIndex == dataLength - 1) {
+                        _showIntroAppOpenAndProceed();
+                      } else {
+                        pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
+                      }
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 358.w,
+                      height: 48.h,
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.r), color: Color(0xFF4200AD)),
+                      child: Text(
+                        currentIndex == dataLength - 1 ? "Get Started" : 'Next',
+                        style: TextStyle(fontSize: 14.sp, color: Colors.white, fontFamily: 'Inter', fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
@@ -331,6 +304,7 @@ class WelPageviewState extends State<WelPageview> {
         backgroundColor: Colors.white,
         body: SafeArea(
           top: false,
+          bottom: false,
           child: Stack(
             children: [
               PageView(
@@ -342,21 +316,13 @@ class WelPageviewState extends State<WelPageview> {
                   // Show review only once when Welcome2 is reached.
                   if (!_hasRequestedReview && index == 1) {
                     _hasRequestedReview = true;
-                    AdsVariable.showRateUsDialogInIntro ?
-                    checkAndShowInAppReview('onboarding_rate_us'):null;
+                    AdsVariable.showRateUsDialogInIntro ? checkAndShowInAppReview('onboarding_rate_us') : null;
                   }
                 },
-                children: const [
-                  Welcome1(),
-                  Welcome2(),
-                  Welcome3(),
-                ],
+                children: const [Welcome1(), Welcome2(), Welcome3()],
               ),
 
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: bottomnavigation(dataLength, currentIndex),
-              ),
+              Align(alignment: Alignment.bottomCenter, child: bottomnavigation(dataLength, currentIndex)),
             ],
           ),
         ),

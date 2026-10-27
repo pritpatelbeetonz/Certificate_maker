@@ -33,15 +33,15 @@ class AdsSplashUtils {
     prefs = await SharedPreferences.getInstance();
 
     /// Ad unit IDs (supporting both pr_ and tr_ prefixes)
-    AdsVariable.appOpenAdsIOS = prefs.getString("pr_appOpenAd") ?? prefs.getString("tr_appOpenAd") ?? "11";
-    AdsVariable.interSplashIOS = prefs.getString("pr_splashInterstitialAd") ?? prefs.getString("tr_splashInterstitialAd") ?? "11";
-    AdsVariable.bigNativeSurveyAdIOS1 = prefs.getString("pr_surveyBigNative1") ?? prefs.getString("tr_surveyBigNative1") ?? "11";
-    AdsVariable.bigNativeSurveyAdIOS2 = prefs.getString("pr_surveyBigNative2") ?? prefs.getString("tr_surveyBigNative2") ?? "11";
-    AdsVariable.fullNativeIntroAdIOS = prefs.getString("pr_introFullNative") ?? prefs.getString("tr_introFullNative") ?? "11";
-    AdsVariable.smallThirdIntroNativeIntroAdIOS = prefs.getString("pr_smallThirdIntroNative") ?? prefs.getString("tr_smallThirdIntroNative") ?? "11";
-    AdsVariable.interPreLoadIOS = prefs.getString("pr_preInterstitialAd") ?? prefs.getString("tr_preInterstitialAd") ?? "11";
-    AdsVariable.click = prefs.getString("click") ?? "2";
-    AdsVariable.supportContactEmail = prefs.getString("supportContactEmail") ?? "qwertyui567@testing.com";
+    AdsVariable.appOpenAdsIOS = prefs.get("pr_appOpenAd")?.toString() ?? prefs.get("tr_appOpenAd")?.toString() ?? "11";
+    AdsVariable.interSplashIOS = prefs.get("pr_splashInterstitialAd")?.toString() ?? prefs.get("tr_splashInterstitialAd")?.toString() ?? "11";
+    AdsVariable.bigNativeSurveyAdIOS1 = prefs.get("pr_surveyBigNative1")?.toString() ?? prefs.get("tr_surveyBigNative1")?.toString() ?? "11";
+    AdsVariable.bigNativeSurveyAdIOS2 = prefs.get("pr_surveyBigNative2")?.toString() ?? prefs.get("tr_surveyBigNative2")?.toString() ?? "11";
+    AdsVariable.fullNativeIntroAdIOS = prefs.get("pr_introFullNative")?.toString() ?? prefs.get("tr_introFullNative")?.toString() ?? "11";
+    AdsVariable.smallThirdIntroNativeIntroAdIOS = prefs.get("pr_smallThirdIntroNative")?.toString() ?? prefs.get("tr_smallThirdIntroNative")?.toString() ?? "11";
+    AdsVariable.interPreLoadIOS = prefs.get("pr_preInterstitialAd")?.toString() ?? prefs.get("tr_preInterstitialAd")?.toString() ?? "11";
+    AdsVariable.click = prefs.get("click")?.toString() ?? "2";
+    AdsVariable.supportContactEmail = prefs.get("supportContactEmail")?.toString() ?? "qwertyui567@testing.com";
 
     // Ad Revenue Analytics switches from SharedPreferences
     AdsVariable.sendRevenueToAnalytics = prefs.getBool("sendRevenueToAnalytics") ?? true;
@@ -54,30 +54,24 @@ class AdsSplashUtils {
     AdsVariable.sendRevenueIntroFullNative = prefs.getBool("send_revenue_intro_full_native") ?? false;
     AdsVariable.sendRevenueIntroSmallNative = prefs.getBool("send_revenue_intro_small_native") ?? false;
 
-    AdsVariable.nativeBGColor = prefs.getString("nativeBGColor") ?? "#141414";
-    AdsVariable.headerTextColor =
-        prefs.getString("headlineTxtColor") ?? "000000";
-    AdsVariable.bodyTextColor = prefs.getString("bodyTxtColor") ?? "#000000";
-    AdsVariable.btnTextColor = prefs.getString("buttonTxtColor") ?? "#FFFFFF";
-    AdsVariable.btnBgColorG1 = prefs.getString("buttonBgColorG1") ?? "#0091FF";
-    AdsVariable.btnBgColorG2 = prefs.getString("buttonBgColorG2") ?? "#0091FF";
+    AdsVariable.nativeBGColor = prefs.get("nativeBGColor")?.toString() ?? "#141414";
+    AdsVariable.headerTextColor = prefs.get("headlineTxtColor")?.toString() ?? "000000";
+    AdsVariable.bodyTextColor = prefs.get("bodyTxtColor")?.toString() ?? "#000000";
+    AdsVariable.btnTextColor = prefs.get("buttonTxtColor")?.toString() ?? "#FFFFFF";
+    AdsVariable.btnBgColorG1 = prefs.get("buttonBgColorG1")?.toString() ?? "#0091FF";
+    AdsVariable.btnBgColorG2 = prefs.get("buttonBgColorG2")?.toString() ?? "#0091FF";
     AdsVariable.OpenAdInSplash = prefs.getBool("showOpenAdInSplash") ?? false;
-    AdsVariable.serverUrl = prefs.getString("serverUrl") ?? "https://phpstack-1550637-6001716.cloudwaysapps.com";
-    AdsVariable.serverBaseFolderName = prefs.getString("serverBaseFolderName") ?? "Sn_Ro_Pri_Certificate_Maker";
+    AdsVariable.serverUrl = prefs.get("serverUrl")?.toString() ?? "https://phpstack-1550637-6001716.cloudwaysapps.com";
+    AdsVariable.serverBaseFolderName = prefs.get("serverBaseFolderName")?.toString() ?? "Sn_Ro_Pri_Certificate_Maker";
 
-    log(
-      "await AdsVariable.isInternetConnected() :- ${await AdsVariable.isInternetConnected()}",
-    );
+    log("await AdsVariable.isInternetConnected() :- ${await AdsVariable.isInternetConnected()}");
 
     if (await AdsVariable.isInternetConnected()) {
       try {
         final remoteConfig = FirebaseRemoteConfig.instance;
 
         await remoteConfig.setConfigSettings(
-          RemoteConfigSettings(
-            fetchTimeout: const Duration(minutes: 1),
-            minimumFetchInterval: kDebugMode ? Duration.zero : const Duration(minutes: 5),
-          ),
+          RemoteConfigSettings(fetchTimeout: const Duration(minutes: 1), minimumFetchInterval: kDebugMode ? Duration.zero : const Duration(minutes: 5)),
         );
 
         await remoteConfig.fetchAndActivate();
@@ -85,29 +79,25 @@ class AdsSplashUtils {
         Map<String, dynamic> mapValues1 = {};
 
         if (Platform.isAndroid) {
-          log(
-            "Map is ${remoteConfig.getValue("certi_maker_v1").asString()}",
-          );
-          mapValues1 = jsonDecode(
-            remoteConfig.getValue("certi_maker_v1").asString(),
-          );
-          print(mapValues1);
+          log("Map is ${remoteConfig.getValue("certi_maker_v1").asString()}");
+          mapValues1 = jsonDecode(remoteConfig.getValue("certi_maker_v1").asString());
+          if (kDebugMode) {
+            print(mapValues1);
+          }
         } else {
-          log(
-            "Map is ${remoteConfig.getValue("certi_maker_v1").asString()}",
-          );
-          mapValues1 = jsonDecode(
-            remoteConfig.getValue("certi_maker_v1").asString(),
-          );
-          print(mapValues1);
+          log("Map is ${remoteConfig.getValue("certi_maker_prit_v1").asString()}");
+          mapValues1 = jsonDecode(remoteConfig.getValue("certi_maker_prit_v1").asString());
+          if (kDebugMode) {
+            print(mapValues1);
+          }
         }
 
         /// IOS Id setup from Firebase Remote Config
         /// Facebook id setup
         AdsVariable.reviewAfterExports = int.tryParse(mapValues1['reviewAfterExports']?.toString() ?? '') ?? AdsVariable.reviewAfterExports;
-        AdsVariable.showSurveyScreen =mapValues1['showSurveyScreen'] ?? AdsVariable.showSurveyScreen;
-        AdsVariable.showRateUsDialogInIntro =mapValues1['showRateUsDialogInIntro'] ?? AdsVariable.showRateUsDialogInIntro;
-        AdsVariable.isUseA1ArtForNsfwCheck =mapValues1['isUseA1ArtForNsfwCheck'] ?? AdsVariable.isUseA1ArtForNsfwCheck;
+        AdsVariable.showSurveyScreen = mapValues1['showSurveyScreen'] ?? AdsVariable.showSurveyScreen;
+        AdsVariable.showRateUsDialogInIntro = mapValues1['showRateUsDialogInIntro'] ?? AdsVariable.showRateUsDialogInIntro;
+        AdsVariable.isUseA1ArtForNsfwCheck = mapValues1['isUseA1ArtForNsfwCheck'] ?? AdsVariable.isUseA1ArtForNsfwCheck;
         AdsVariable.facebookId = mapValues1["fb_appid"]?.toString() ?? "11";
         AdsVariable.facebookToken = mapValues1["fb_token"]?.toString() ?? "11";
         AdsVariable.freeUserTempletAllowed = int.tryParse(mapValues1['freeUserTempletAllowed']?.toString() ?? '') ?? AdsVariable.freeUserTempletAllowed;
@@ -142,11 +132,8 @@ class AdsSplashUtils {
         AdsVariable.sendRevenueIntroFullNative = mapValues1["send_revenue_intro_full_native"] ?? AdsVariable.sendRevenueIntroFullNative;
         AdsVariable.sendRevenueIntroSmallNative = mapValues1["send_revenue_intro_small_native"] ?? AdsVariable.sendRevenueIntroSmallNative;
 
-        AdsVariable.GeminiApi =
-            mapValues1["GeminiApi"]?.toString() ??
-            "AIzaSyBwvjMinbU8O03eAx2kjrJebZpbP05L8vE";
-        AdsVariable.PixabayApi =
-            mapValues1["PixabayApi"]?.toString() ?? "51208507-8139305412efdf67d2bf56718";
+        AdsVariable.GeminiApi = mapValues1["GeminiApi"]?.toString() ?? "AIzaSyBwvjMinbU8O03eAx2kjrJebZpbP05L8vE";
+        AdsVariable.PixabayApi = mapValues1["PixabayApi"]?.toString() ?? "51208507-8139305412efdf67d2bf56718";
 
         AdsVariable.testEmail = mapValues1["testEmail"]?.toString() ?? "qwertyui567@testing.com";
         AdsVariable.supportContactEmail = mapValues1["supportContactEmail"]?.toString() ?? "qwertyui567@testing.com";
@@ -156,34 +143,13 @@ class AdsSplashUtils {
 
         /// Store firebase remote config data into shared preferences :
 
-         prefs.setString(
-          "nativeBGColor",
-          mapValues1["nativeBGColor"]?.toString() ?? "141414",
-        );
-        prefs.setString(
-          "serverUrl",
-          mapValues1["serverUrl"]?.toString() ?? "https://phpstack-1550637-6001716.cloudwaysapps.com",
-        );
-        prefs.setString(
-          "serverBaseFolderName",
-          mapValues1["serverBaseFolderName"]?.toString() ?? "Sn_Ro_Pri_Certificate_Maker",
-        );
-        prefs.setString(
-          "buttonBgColorG1",
-          mapValues1["buttonBgColorG1"]?.toString() ?? "0091FF",
-        );
-        prefs.setString(
-          "buttonBgColorG2",
-          mapValues1["buttonBgColorG2"]?.toString() ?? "0091FF",
-        );
-        prefs.setString(
-          "buttonTxtColor",
-          mapValues1["buttonTxtColor"]?.toString() ?? "FFFFFF",
-        );
-        prefs.setString(
-          "headlineTxtColor",
-          mapValues1["headlineTxtColor"]?.toString() ?? "FFFFFF",
-        );
+        prefs.setString("nativeBGColor", mapValues1["nativeBGColor"]?.toString() ?? "141414");
+        prefs.setString("serverUrl", mapValues1["serverUrl"]?.toString() ?? "https://phpstack-1550637-6001716.cloudwaysapps.com");
+        prefs.setString("serverBaseFolderName", mapValues1["serverBaseFolderName"]?.toString() ?? "Sn_Ro_Pri_Certificate_Maker");
+        prefs.setString("buttonBgColorG1", mapValues1["buttonBgColorG1"]?.toString() ?? "0091FF");
+        prefs.setString("buttonBgColorG2", mapValues1["buttonBgColorG2"]?.toString() ?? "0091FF");
+        prefs.setString("buttonTxtColor", mapValues1["buttonTxtColor"]?.toString() ?? "FFFFFF");
+        prefs.setString("headlineTxtColor", mapValues1["headlineTxtColor"]?.toString() ?? "FFFFFF");
         prefs.setString("bodyTxtColor", mapValues1["bodyTxtColor"]?.toString() ?? "FFFFFF");
 
         prefs.setString("fb_appid", mapValues1["fb_appid"]?.toString() ?? "11");
@@ -192,41 +158,20 @@ class AdsSplashUtils {
         prefs.setString("pr_appOpenAd", AdsVariable.appOpenAdsIOS);
         prefs.setString("tr_appOpenAd", AdsVariable.appOpenAdsIOS);
         prefs.setString("pr_splashInterstitialAd", AdsVariable.interSplashIOS);
-        prefs.setString(
-          "tr_splashInterstitialAd",
-          AdsVariable.interSplashIOS,
-        );
+        prefs.setString("tr_splashInterstitialAd", AdsVariable.interSplashIOS);
         prefs.setString("pr_preInterstitialAd", AdsVariable.interPreLoadIOS);
-        prefs.setString(
-          "tr_preInterstitialAd",
-          AdsVariable.interPreLoadIOS,
-        );
+        prefs.setString("tr_preInterstitialAd", AdsVariable.interPreLoadIOS);
         prefs.setString("pr_surveyBigNative1", AdsVariable.bigNativeSurveyAdIOS1);
-        prefs.setString(
-          "tr_surveyBigNative1",
-          AdsVariable.bigNativeSurveyAdIOS1,
-        );
+        prefs.setString("tr_surveyBigNative1", AdsVariable.bigNativeSurveyAdIOS1);
         prefs.setString("pr_surveyBigNative2", AdsVariable.bigNativeSurveyAdIOS2);
-        prefs.setString(
-          "tr_surveyBigNative2",
-          AdsVariable.bigNativeSurveyAdIOS2,
-        );
+        prefs.setString("tr_surveyBigNative2", AdsVariable.bigNativeSurveyAdIOS2);
         prefs.setString("pr_introFullNative", AdsVariable.fullNativeIntroAdIOS);
-        prefs.setString(
-          "tr_introFullNative",
-          AdsVariable.fullNativeIntroAdIOS,
-        );
+        prefs.setString("tr_introFullNative", AdsVariable.fullNativeIntroAdIOS);
         prefs.setString("pr_smallThirdIntroNative", AdsVariable.smallThirdIntroNativeIntroAdIOS);
-        prefs.setString(
-          "tr_smallThirdIntroNative",
-          AdsVariable.smallThirdIntroNativeIntroAdIOS,
-        );
+        prefs.setString("tr_smallThirdIntroNative", AdsVariable.smallThirdIntroNativeIntroAdIOS);
         prefs.setString("click", mapValues1["click"]?.toString() ?? "2");
         prefs.setString("supportContactEmail", mapValues1["supportContactEmail"]?.toString() ?? "qwertyui567@testing.com");
-        prefs.setBool(
-          "showOpenAdInSplash",
-          mapValues1["showOpenAdInSplash"] ?? false,
-        );
+        prefs.setBool("showOpenAdInSplash", mapValues1["showOpenAdInSplash"] ?? false);
 
         // Persist revenue analytics switches
         prefs.setBool("sendRevenueToAnalytics", AdsVariable.sendRevenueToAnalytics);
@@ -249,8 +194,8 @@ class AdsSplashUtils {
           await fetchPurchase();
         }
 
-        if(kDebugMode){
-         // AdsVariable.isPurchase =true;
+        if (kDebugMode) {
+          // AdsVariable.isPurchase =true;
         }
 
         // Removed the debug mode override of AdsVariable.isPurchase = false;
@@ -291,7 +236,7 @@ class AdsSplashUtils {
         // so loading these ads would waste network calls and memory.
         if (SharedPrefService.getIsFirstTime()) {
           debugPrint('🆕 [AdsSplash] First launch detected → loading survey native ads.');
-          if(AdsVariable.showSurveyScreen){
+          if (AdsVariable.showSurveyScreen) {
             debugPrint("======Show surveryScreen is true======");
             loadPreLoadLanguageNativeAds1();
             loadPreLoadLanguageNativeAds2();
@@ -308,19 +253,15 @@ class AdsSplashUtils {
 
           if (AdsVariable.OpenAdInSplash == true) {
             debugPrint('[SplashAd] 📱 Condition matched: OpenAdInSplash is TRUE -> Calling loadAndShowOpenAd()');
-            AdsLoadUtil().loadAndShowOpenAd(
-              navigateScreen,
-              AdsVariable.appOpenAdsIOS,
-            );
+            AdsLoadUtil().loadAndShowOpenAd(navigateScreen, AdsVariable.appOpenAdsIOS);
           } else {
             debugPrint('[SplashAd] 🎬 Condition matched: OpenAdInSplash is FALSE/null -> Calling Interstitial loadInterSplash()');
             if (AdsVariable.interSplashIOS == "11" || AdsVariable.interSplashIOS.isEmpty) {
-              debugPrint('[SplashAd] ⚠️ WARNING: Splash interstitial ad ID is "${AdsVariable.interSplashIOS}". If this is "11", AdMob will fail to load real ads (fallback dummy ID).');
+              debugPrint(
+                '[SplashAd] ⚠️ WARNING: Splash interstitial ad ID is "${AdsVariable.interSplashIOS}". If this is "11", AdMob will fail to load real ads (fallback dummy ID).',
+              );
             }
-            AdsLoadUtil().loadInterSplash(
-              navigateScreen,
-              AdsVariable.interSplashIOS,
-            );
+            AdsLoadUtil().loadInterSplash(navigateScreen, AdsVariable.interSplashIOS);
           }
         });
       } on PlatformException catch (exception) {
@@ -340,16 +281,11 @@ class AdsSplashUtils {
 
   Future<void> loadAppOpenAd() async {
     showLog("Load from BG...");
-    AppOpenAdManager appOpenAdManager = AppOpenAdManager()
-      ..loadAd(AdsVariable.appOpenAdsIOS);
+    AppOpenAdManager appOpenAdManager = AppOpenAdManager()..loadAd(AdsVariable.appOpenAdsIOS);
     await appOpenAdManager.loadAd(AdsVariable.appOpenAdsIOS);
     appOpenAdManager.showAdIfAvailable(AdsVariable.appOpenAdsIOS);
-    appLifecycleReactor = AppLifecycleReactor(
-      appOpenAdManager: appOpenAdManager,
-    );
-    AppLifecycleReactor(
-      appOpenAdManager: appOpenAdManager,
-    ).listenToAppStateChanges();
+    appLifecycleReactor = AppLifecycleReactor(appOpenAdManager: appOpenAdManager);
+    AppLifecycleReactor(appOpenAdManager: appOpenAdManager).listenToAppStateChanges();
   }
 
   final storage = FlutterSecureStorage();
@@ -358,20 +294,26 @@ class AdsSplashUtils {
     try {
       final isTester = prefs.getBool('is_tester_premium') ?? false;
       final customerInfo = await Purchases.getCustomerInfo();
-      if (isTester || (customerInfo.entitlements.all[entitlementKey] != null &&
-          customerInfo.entitlements.all[entitlementKey]!.isActive == true)) {
+      if (isTester || (customerInfo.entitlements.all[entitlementKey] != null && customerInfo.entitlements.all[entitlementKey]!.isActive == true)) {
         AdsVariable.isPurchase = true;
         AdsVariable.resetAdIds();
+        await prefs.setBool('is_premium_active', true);
       } else {
         print("print falls");
         AdsVariable.isPurchase = false;
+        await prefs.setBool('is_premium_active', false);
       }
       if (AdsVariable.isPurchase) {
         showLog("Purchase ----->${AdsVariable.isPurchase}");
-        AdsVariable.resetAdIds;
+        AdsVariable.resetAdIds();
       }
     } catch (e) {
       showLog("PURCHASE_ERROR >> ${e.toString()}");
+      // Fallback to local cache if offline or error
+      if (prefs.getBool('is_premium_active') == true || prefs.getBool('is_tester_premium') == true) {
+        AdsVariable.isPurchase = true;
+        AdsVariable.resetAdIds();
+      }
     }
   }
 }
@@ -381,10 +323,7 @@ void premiumInit() {
     StoreConfig(store: Store.appStore, apiKey: appleApiKey);
   } else if (Platform.isAndroid) {
     const useAmazon = bool.fromEnvironment("amazon");
-    StoreConfig(
-      store: useAmazon ? Store.amazon : Store.playStore,
-      apiKey: useAmazon ? amazonApiKey : googleApiKey,
-    );
+    StoreConfig(store: useAmazon ? Store.amazon : Store.playStore, apiKey: useAmazon ? amazonApiKey : googleApiKey);
   }
 }
 
@@ -422,31 +361,17 @@ Future<void> setupFbAdsId() async {
 
 Future<void> loadPreLoadLanguageNativeAds1() async {
   showLog("Call Method loadPreLoadLanguageNativeAds1");
-  AdsVariable.nativeBigAdSurvey1 = await AdsLoadUtil().loadSurveyBigNative1(
-    AdsVariable.bigNativeSurveyAdIOS1,
-    true,
-  );
-  showLog(
-    "AdsVariable.bigNativeSurveyAdIOS1 --->${AdsVariable.bigNativeSurveyAdIOS1}",
-  );
-  showLog(
-    "AdsVariable.nativeBigAdSurvey1 ----===>${AdsVariable.nativeBigAdSurvey1?.adUnitId ?? ''}",
-  );
+  AdsVariable.nativeBigAdSurvey1 = await AdsLoadUtil().loadSurveyBigNative1(AdsVariable.bigNativeSurveyAdIOS1, true);
+  showLog("AdsVariable.bigNativeSurveyAdIOS1 --->${AdsVariable.bigNativeSurveyAdIOS1}");
+  showLog("AdsVariable.nativeBigAdSurvey1 ----===>${AdsVariable.nativeBigAdSurvey1?.adUnitId ?? ''}");
   // showToast("Big Native 1 load");
 }
 
 Future<void> loadPreLoadLanguageNativeAds2() async {
   showLog("Call Method loadPreLoadLanguageNativeAds2");
-  AdsVariable.nativeBigAdSurvey2 = await AdsLoadUtil().loadSurveyBigNative2(
-    AdsVariable.bigNativeSurveyAdIOS2,
-    true,
-  );
-  showLog(
-    "AdsVariable.bigNativeSurveyAdIOS2 --->${AdsVariable.bigNativeSurveyAdIOS2}",
-  );
-  showLog(
-    "AdsVariable.nativeBigAdSurvey2 ----===>${AdsVariable.nativeBigAdSurvey2?.adUnitId ?? ''}",
-  );
+  AdsVariable.nativeBigAdSurvey2 = await AdsLoadUtil().loadSurveyBigNative2(AdsVariable.bigNativeSurveyAdIOS2, true);
+  showLog("AdsVariable.bigNativeSurveyAdIOS2 --->${AdsVariable.bigNativeSurveyAdIOS2}");
+  showLog("AdsVariable.nativeBigAdSurvey2 ----===>${AdsVariable.nativeBigAdSurvey2?.adUnitId ?? ''}");
   // showToast("Big Native 2 load");
 }
 
@@ -456,32 +381,17 @@ void showToast(String msg) {
 
 void loadPreLoadIntroFullNativeAds() async {
   showLog("Call Method loadPreLoadIntroFullNativeAds ");
-  AdsVariable.fullNativeAdIntro = await AdsLoadUtil().loadIntroFullNative(
-    AdsVariable.fullNativeIntroAdIOS,
-    false,
-  );
-  showLog(
-    "AdsVariable.fullNativeIntroAdIOS --->${AdsVariable.fullNativeIntroAdIOS}",
-  );
-  showLog(
-    "AdsVariable.fullNativeAdIntro ----===>${AdsVariable.fullNativeAdIntro?.adUnitId ?? ''}",
-  );
+  AdsVariable.fullNativeAdIntro = await AdsLoadUtil().loadIntroFullNative(AdsVariable.fullNativeIntroAdIOS, false);
+  showLog("AdsVariable.fullNativeIntroAdIOS --->${AdsVariable.fullNativeIntroAdIOS}");
+  showLog("AdsVariable.fullNativeAdIntro ----===>${AdsVariable.fullNativeAdIntro?.adUnitId ?? ''}");
   // showToast("Full Native load");
 }
 
 void loadSmallThirdIntroNativeAds() async {
   showLog("Call Method loadPreLoadIntroFullNativeAds ");
-  AdsVariable.smallThirdNativeAdIntro = await AdsLoadUtil()
-      .loadSmallThirdIntroNative(
-        AdsVariable.smallThirdIntroNativeIntroAdIOS,
-        true,
-      );
-  showLog(
-    "AdsVariable.fullNativeIntroAdIOS --->${AdsVariable.smallThirdIntroNativeIntroAdIOS}",
-  );
-  showLog(
-    "AdsVariable.fullNativeAdIntro ----===>${AdsVariable.smallThirdNativeAdIntro?.adUnitId ?? ''}",
-  );
+  AdsVariable.smallThirdNativeAdIntro = await AdsLoadUtil().loadSmallThirdIntroNative(AdsVariable.smallThirdIntroNativeIntroAdIOS, true);
+  showLog("AdsVariable.fullNativeIntroAdIOS --->${AdsVariable.smallThirdIntroNativeIntroAdIOS}");
+  showLog("AdsVariable.fullNativeAdIntro ----===>${AdsVariable.smallThirdNativeAdIntro?.adUnitId ?? ''}");
 }
 
 /// GDPR Implementation methods : initializeGDPR, changePrivacyPreferences, loadConsentForm, initializeMobileAds
@@ -555,9 +465,7 @@ Future<bool> changePrivacyPreferences() async {
   return completer.future;
 }
 
-void showPrivacyOptionsForm(
-  OnConsentFormDismissedListener onConsentFormDismissedListener,
-) {
+void showPrivacyOptionsForm(OnConsentFormDismissedListener onConsentFormDismissedListener) {
   ConsentForm.showPrivacyOptionsForm(onConsentFormDismissedListener);
 }
 
@@ -594,9 +502,7 @@ Future<void> initializeMobileAds() async {
 }
 
 Future<bool> isPrivacyOptionsStatus() async {
-  return await ConsentInformation.instance
-          .getPrivacyOptionsRequirementStatus() ==
-      PrivacyOptionsRequirementStatus.required;
+  return await ConsentInformation.instance.getPrivacyOptionsRequirementStatus() == PrivacyOptionsRequirementStatus.required;
 }
 
 Future<void> checkAndShowInAppReview(String key) async {

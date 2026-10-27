@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Mulish-Regular.ttf">
+            <string>Mulish-Regular</string>
+        </array>
+        <array key="Mulish-SemiBold.ttf">
+            <string>Mulish-SemiBold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="1ZV-cN-KM8" customClass="GADNativeAdView">
+            <rect key="frame" x="0.0" y="0.0" width="357" height="329"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Els-zP-Xcp">
+                    <rect key="frame" x="24" y="2" width="56" height="56"/>
+                    <constraints>
+                        <constraint firstAttribute="width" secondItem="Els-zP-Xcp" secondAttribute="height" multiplier="1:1" id="Ixi-At-hya"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="8"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </imageView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ad" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Js0-Q2-6iY">
+                    <rect key="frame" x="2" y="2" width="20" height="14"/>
+                    <color key="backgroundColor" red="0.40000000000000002" green="0.1215686275" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="20" id="zXN-ot-6NG"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" name="Mulish-SemiBold" family="Mulish" pointSize="12"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Headline" textAlignment="justified" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="dih-0g-3FF">
+                    <rect key="frame" x="85" y="4" width="72" height="19"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="19" id="qIV-FH-wlP"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                    <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="--" textAlignment="justified" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VrP-7H-J3G">
+                    <rect key="frame" x="85" y="24.999999999999996" width="262" height="15.333333333333332"/>
+                    <fontDescription key="fontDescription" name="Mulish-Regular" family="Mulish" pointSize="13"/>
+                    <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="N0q-6S-iBs" customClass="GADMediaView">
+                    <rect key="frame" x="0.0" y="60" width="357" height="202"/>
+                </view>
+                <button opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="f8G-EP-tc7">
+                    <rect key="frame" x="9" y="264" width="339" height="60"/>
+                    <color key="backgroundColor" red="0.40000000000000002" green="0.1215686275" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="60" id="Eh5-2f-7H6"/>
+                        <constraint firstAttribute="height" constant="60" id="JZM-sD-sC1"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="boldSystem" pointSize="24"/>
+                    <state key="normal">
+                        <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </state>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="8"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </button>
+            </subviews>
+            <color key="backgroundColor" red="0.98039215690000003" green="0.97254901959999995" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="Js0-Q2-6iY" firstAttribute="top" secondItem="N0q-6S-iBs" secondAttribute="bottom" constant="5" id="2If-LH-T2X"/>
+                <constraint firstItem="dih-0g-3FF" firstAttribute="top" secondItem="Els-zP-Xcp" secondAttribute="top" constant="2" id="2J9-o3-T66"/>
+                <constraint firstItem="N0q-6S-iBs" firstAttribute="centerX" secondItem="1ZV-cN-KM8" secondAttribute="centerX" id="CpJ-0H-y9V"/>
+                <constraint firstItem="VrP-7H-J3G" firstAttribute="top" secondItem="dih-0g-3FF" secondAttribute="bottom" constant="2" id="F5E-xw-73y"/>
+                <constraint firstItem="Els-zP-Xcp" firstAttribute="height" secondItem="1ZV-cN-KM8" secondAttribute="height" multiplier="0.17" id="Pk6-NC-GzM"/>
+                <constraint firstItem="f8G-EP-tc7" firstAttribute="top" secondItem="1ZV-cN-KM8" secondAttribute="top" constant="5" id="USd-BZ-L4j"/>
+                <constraint firstItem="f8G-EP-tc7" firstAttribute="centerX" secondItem="1ZV-cN-KM8" secondAttribute="centerX" id="ViZ-gr-OOF"/>
+                <constraint firstItem="Els-zP-Xcp" firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="VrP-7H-J3G" secondAttribute="bottom" constant="1" id="dRT-3H-avL"/>
+                <constraint firstItem="Els-zP-Xcp" firstAttribute="leading" secondItem="Js0-Q2-6iY" secondAttribute="trailing" constant="2" id="h1u-TY-S4r"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="dih-0g-3FF" secondAttribute="trailing" constant="10" id="jcu-HO-rm9"/>
+                <constraint firstItem="f8G-EP-tc7" firstAttribute="width" secondItem="1ZV-cN-KM8" secondAttribute="width" multiplier="0.95" id="ma8-aT-naO"/>
+                <constraint firstItem="VrP-7H-J3G" firstAttribute="leading" secondItem="dih-0g-3FF" secondAttribute="leading" id="pn6-xa-ETq"/>
+                <constraint firstAttribute="bottom" secondItem="Els-zP-Xcp" secondAttribute="bottom" constant="5" id="t4F-cK-QCS"/>
+                <constraint firstItem="dih-0g-3FF" firstAttribute="leading" secondItem="Els-zP-Xcp" secondAttribute="trailing" constant="5" id="tRH-by-fSh"/>
+                <constraint firstItem="N0q-6S-iBs" firstAttribute="top" secondItem="f8G-EP-tc7" secondAttribute="bottom" constant="5" id="ubi-mk-hH2"/>
+                <constraint firstItem="N0q-6S-iBs" firstAttribute="width" secondItem="1ZV-cN-KM8" secondAttribute="width" id="unF-Nr-3Vp"/>
+                <constraint firstAttribute="trailing" secondItem="VrP-7H-J3G" secondAttribute="trailing" constant="10" id="utW-Rn-JjX"/>
+                <constraint firstItem="Els-zP-Xcp" firstAttribute="top" secondItem="N0q-6S-iBs" secondAttribute="bottom" constant="5" id="wNb-WB-iJn"/>
+                <constraint firstItem="Js0-Q2-6iY" firstAttribute="leading" secondItem="1ZV-cN-KM8" secondAttribute="leading" constant="2" id="wzw-i9-bLU"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="bodyView" destination="VrP-7H-J3G" id="hlh-Sw-jKZ"/>
+                <outlet property="callToActionView" destination="f8G-EP-tc7" id="BGr-id-1vr"/>
+                <outlet property="headlineView" destination="dih-0g-3FF" id="A1p-IW-PbZ"/>
+                <outlet property="iconView" destination="Els-zP-Xcp" id="ZUp-48-lXB"/>
+                <outlet property="mediaView" destination="N0q-6S-iBs" id="asD-rv-af1"/>
+            </connections>
+            <point key="canvasLocation" x="180.91603053435114" y="-238.38028169014086"/>
+        </view>
+    </objects>
+</document>

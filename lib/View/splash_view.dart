@@ -91,13 +91,12 @@ class SplashScreenState extends State<SplashScreen> {
   void navigatingToNextActivity() async {
     bool isFirstLaunch = SharedPrefService.getIsFirstTime();
     if (isFirstLaunch) {
-      AdsVariable.showSurveyScreen ?
-      Get.off(SurveyForm()) : Get.off(WelPageview()); //SurveyForm()
+      AdsVariable.showSurveyScreen ? Get.off(SurveyForm()) : Get.off(WelPageview()); //SurveyForm()
     } else {
       if (AdsVariable.isPurchase) {
         Get.offAll(() => Homepage());
       } else {
-        Get.offAll(()=>PremiumCreditView(onboarding: true, onDone: (){}));
+        Get.offAll(() => PremiumCreditView(onboarding: true, onDone: () {}));
       }
     }
   }
@@ -111,22 +110,15 @@ class SplashScreenState extends State<SplashScreen> {
         print(offerings);
       }
 
-      GlobalVariables.availablePackages = {
-        for (var package in offerings.current?.availablePackages ?? [])
-          package.identifier: package,
-      };
+      GlobalVariables.availablePackages = {for (var package in offerings.current?.availablePackages ?? []) package.identifier: package};
       print(GlobalVariables.availablePackages);
       void printLongString(String text) {
-        final pattern = RegExp(
-          '.{1,800}',
-        ); // Splits the string every 800 characters
+        final pattern = RegExp('.{1,800}'); // Splits the string every 800 characters
         pattern.allMatches(text).forEach((match) => print(match.group(0)));
       }
 
       // Usage
-      printLongString(
-        "availablePackages ********** ${GlobalVariables.availablePackages}",
-      );
+      printLongString("availablePackages ********** ${GlobalVariables.availablePackages}");
 
       // print(
       //     "availablePackages ********** ${GlobalVariables.availablePackages}");
@@ -149,35 +141,22 @@ class SplashScreenState extends State<SplashScreen> {
         backgroundColor: Colors.black,
         body: SafeArea(
           top: false,
+          bottom: false,
           child: Stack(
             children: [
-              Image.asset(
-                "assets/Splash Screen/Splash Screen.png",
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              ),
+              Image.asset("assets/Splash Screen/Splash Screen.png", fit: BoxFit.cover, width: double.infinity, height: double.infinity),
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      "assets/Splash Screen/ic.png",
-                      width: 100.w,
-                      height: 100.w,
-                    ),
-                    SizedBox(height: 14.h,),
+                    Image.asset("assets/Splash Screen/ic.png", width: 100.w, height: 100.w),
+                    SizedBox(height: 14.h),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           "Certificate Maker",
-                          style: TextStyle(
-                            fontSize: 30.sp,
-                            color: Colors.black,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: TextStyle(fontSize: 30.sp, color: Colors.black, fontFamily: 'Inter', fontWeight: FontWeight.w700),
                         ),
                         // SizedBox(height: 4.h),
                         // Text(
@@ -191,7 +170,7 @@ class SplashScreenState extends State<SplashScreen> {
                         // ),
                         // SizedBox(height: 5.h),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),

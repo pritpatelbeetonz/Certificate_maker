@@ -14,6 +14,7 @@ import 'HomePage.dart';
 import '../Services/fetch_data_from_server_service.dart';
 import 'fullScreenViewerPage.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
 import '../for_ads/ads/ads_variable.dart';
 
 class PreviewCertificatePage extends StatefulWidget {
@@ -292,45 +293,7 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
 
       if (mounted) {
         Navigator.of(context).pop(); // pop loader
-        
-        Get.snackbar(
-          '✓ PDF saved successfully',
-          'Location: ${file.path}',
-          duration: const Duration(seconds: 8),
-          mainButton: TextButton(
-            onPressed: () async {
-              try {
-                final result = await OpenFilex.open(file.path);
-                if (result.type != ResultType.done) {
-                  Get.snackbar(
-                    'Error',
-                    'Could not open PDF file: ${result.message}',
-                    backgroundColor: Colors.redAccent,
-                    colorText: Colors.white,
-                  );
-                }
-              } catch (e) {
-                Get.snackbar(
-                  'Error',
-                  'No compatible PDF viewer found: $e',
-                  backgroundColor: Colors.redAccent,
-                  colorText: Colors.white,
-                );
-              }
-            },
-            child: const Text(
-              'VIEW',
-              style: TextStyle(
-                color: Colors.yellowAccent,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          backgroundColor: const Color(0xFF1E293B),
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16),
-        );
+        _showExportSuccessModal(file);
       }
     } catch (e) {
       if (mounted) {
@@ -343,6 +306,175 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
         );
       }
     }
+  }
+
+  void _showExportSuccessModal(File file) {
+    final String fileName = file.path.split('/').last;
+    final String locationHint = Platform.isIOS
+        ? 'Tap "Share / Save" to store in Files, iCloud, or send'
+        : 'Saved to Downloads folder';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext ctx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF10B981),
+                  size: 36,
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'PDF Saved Successfully!',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                fileName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF4C00C6),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                locationHint,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () async {
+                        try {
+                          final result = await OpenFilex.open(file.path);
+                          if (result.type != ResultType.done) {
+                            Get.snackbar(
+                              'Error',
+                              'Could not open PDF file: ${result.message}',
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                            );
+                          }
+                        } catch (e) {
+                          Get.snackbar(
+                            'Error',
+                            'No compatible PDF viewer found: $e',
+                            backgroundColor: Colors.redAccent,
+                            colorText: Colors.white,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.visibility_outlined, color: Color(0xFF0F172A), size: 20),
+                      label: const Text(
+                        'View PDF',
+                        style: TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4C00C6),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final RenderBox? box = ctx.findRenderObject() as RenderBox?;
+                        final Rect? origin = box != null
+                            ? box.localToGlobal(Offset.zero) & box.size
+                            : null;
+                        await Share.shareXFiles(
+                          [XFile(file.path)],
+                          text: fileName,
+                          sharePositionOrigin: origin,
+                        );
+                      },
+                      icon: const Icon(Icons.ios_share, color: Colors.white, size: 20),
+                      label: const Text(
+                        'Share / Save',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _saveProject(String name) async {
@@ -665,6 +797,10 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
               GestureDetector(
                 child: const Icon(Icons.fullscreen, color: Color(0xFF0F172A)),
                 onTap: () async {
+                  await SystemChrome.setPreferredOrientations([
+                    DeviceOrientation.landscapeLeft,
+                    DeviceOrientation.landscapeRight,
+                  ]);
                   await Get.to(() => FullScreenViewerPage(
                         document: widget.document,
                         imagePool: widget.imagePool,

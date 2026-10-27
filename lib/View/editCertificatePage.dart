@@ -411,6 +411,10 @@ class _EditCertificatePageState extends State<EditCertificatePage> {
                       //tooltip: 'Preview Landscape',
                       onTap: () async {
                         if (_document == null) return;
+                        await SystemChrome.setPreferredOrientations([
+                          DeviceOrientation.landscapeLeft,
+                          DeviceOrientation.landscapeRight,
+                        ]);
                         await Get.to(
                           () => FullScreenViewerPage(
                             document: _document!,

@@ -9,8 +9,7 @@ import '../../for_ads/utils/firebase_analysis.dart';
 enum UsageLocation { home, office, onTheGo, publicSpaces }
 
 class SurveyForm extends StatefulWidget {
-
-  const SurveyForm({super.key,});
+  const SurveyForm({super.key});
 
   @override
   State<SurveyForm> createState() => SurveyFormState();
@@ -47,25 +46,22 @@ class SurveyFormState extends State<SurveyForm> {
       child: Scaffold(
         backgroundColor: Color(0xFFf8f9fa),
         bottomNavigationBar: SafeArea(
+          bottom: false,
           child: (AdsVariable.isPurchase == false)
               ? isInterNetConnected
                     ? selectedIndex == -1
-                        ? SurveyBigNativeAds1(
-                            showNativeAd: AdsVariable.nativeBigAdSurvey1,
-                            isBigNative: true,
-                            isNativeAdLoaded:
-                                AdsLoadUtil.isBigNativeSurveyAdLoaded1,
-                            isNativeAdFailedToLoad:
-                                AdsLoadUtil.isNativeAdFailedToLoadBigSurvey1,
-                          )
-                        : SurveyBigNativeAds2(
-                            showNativeAd: AdsVariable.nativeBigAdSurvey2,
-                            isBigNative: true,
-                            isNativeAdLoaded:
-                                AdsLoadUtil.isBigNativeSurveyAdLoaded2,
-                            isNativeAdFailedToLoad:
-                                AdsLoadUtil.isNativeAdFailedToLoadBigSurvey2,
-                          )
+                          ? SurveyBigNativeAds1(
+                              showNativeAd: AdsVariable.nativeBigAdSurvey1,
+                              isBigNative: true,
+                              isNativeAdLoaded: AdsLoadUtil.isBigNativeSurveyAdLoaded1,
+                              isNativeAdFailedToLoad: AdsLoadUtil.isNativeAdFailedToLoadBigSurvey1,
+                            )
+                          : SurveyBigNativeAds2(
+                              showNativeAd: AdsVariable.nativeBigAdSurvey2,
+                              isBigNative: true,
+                              isNativeAdLoaded: AdsLoadUtil.isBigNativeSurveyAdLoaded2,
+                              isNativeAdFailedToLoad: AdsLoadUtil.isNativeAdFailedToLoadBigSurvey2,
+                            )
                     : const SizedBox()
               : const SizedBox(),
         ),
@@ -76,7 +72,8 @@ class SurveyFormState extends State<SurveyForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 10.h,),
+                  SizedBox(height: 10.h),
+
                   /// Title
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
@@ -85,53 +82,34 @@ class SurveyFormState extends State<SurveyForm> {
                         //SizedBox(height: 10.h,),
                         Text(
                           "How do you usually create\n certificates ?",
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Inter',
-                            color: Colors.black,
-                          ),
+                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: 'Inter', color: Colors.black),
                         ),
-                          Spacer(),
-                          Visibility(
-                            visible:selectedIndex != -1,
-                            replacement: SizedBox(height: 36.h,),
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        WelPageview(),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                width: 68.w,
-                                height: 36.h,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                 color: Color(0xFF4200AD),
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                                child: Text(
-                                  "Done",
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: 'Inter',
-                                    color: Colors.white,
-                                  ),
-                                ),
+                        Spacer(),
+                        Visibility(
+                          visible: selectedIndex != -1,
+                          replacement: SizedBox(height: 36.h),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => WelPageview()));
+                            },
+                            child: Container(
+                              width: 68.w,
+                              height: 36.h,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(color: Color(0xFF4200AD), borderRadius: BorderRadius.circular(8.r)),
+                              child: Text(
+                                "Done",
+                                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, fontFamily: 'Inter', color: Colors.white),
                               ),
                             ),
                           ),
+                        ),
                       ],
                     ),
                   ),
-  
+
                   SizedBox(height: 10.h),
-  
+
                   Column(
                     children: [
                       /// OPTIONS
@@ -147,7 +125,7 @@ class SurveyFormState extends State<SurveyForm> {
                         image: "assets/Survay/Frame 1.png",
                         subtitle: "Start with a ready-made design",
                       ),
-                     SizedBox(height: 10.h),
+                      SizedBox(height: 10.h),
                       SurveyOption(
                         title: "Edit Manually",
                         index: 1,
@@ -187,8 +165,7 @@ class SurveyFormState extends State<SurveyForm> {
                         subtitle: "Combine templates with your ideas",
                       ),
                     ],
-                  )
-  
+                  ),
                 ],
               ),
             ),
@@ -214,7 +191,7 @@ class SurveyOption extends StatelessWidget {
     required this.selectedIndex,
     required this.onTap,
     required this.image,
-    required this.subtitle
+    required this.subtitle,
   });
 
   @override
@@ -226,8 +203,8 @@ class SurveyOption extends StatelessWidget {
         //height: 85.h,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white:Colors.white,
-         // border: isSelected ? Border.all(color: Color(0xFFffc31f)):Border.all(color: Colors.transparent),
+          color: isSelected ? Colors.white : Colors.white,
+          // border: isSelected ? Border.all(color: Color(0xFFffc31f)):Border.all(color: Colors.transparent),
           borderRadius: BorderRadius.circular(20.r),
         ),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
@@ -237,13 +214,12 @@ class SurveyOption extends StatelessWidget {
             ///image
             Container(
               padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(9999.r),
-                  color: Color(0xFFEFF6FF),
-                ),
-                child: Image.asset(image,width: 24.w,height: 24.w,)),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(9999.r), color: Color(0xFFEFF6FF)),
+              child: Image.asset(image, width: 24.w, height: 24.w),
+            ),
 
             SizedBox(width: 14.w),
+
             /// TEXT
             Expanded(
               child: Column(
@@ -252,14 +228,9 @@ class SurveyOption extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter',
-                      color: isSelected ? Colors.black : Colors.black,
-                    ),
+                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, fontFamily: 'Inter', color: isSelected ? Colors.black : Colors.black),
                   ),
-                  SizedBox(height: 4.h,),
+                  SizedBox(height: 4.h),
                   Text(
                     subtitle,
                     style: TextStyle(
@@ -268,20 +239,15 @@ class SurveyOption extends StatelessWidget {
                       fontFamily: 'Inter',
                       color: isSelected ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.3),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
+
             /// RADIO
             Padding(
               padding: EdgeInsetsGeometry.only(right: 10.w),
-              child: Image.asset(
-                isSelected
-                    ? "assets/Survay/Frame 5.png"
-                    : "assets/Survay/Border.png",
-                height: 24.w,
-                width: 24.w,
-              ),
+              child: Image.asset(isSelected ? "assets/Survay/Frame 5.png" : "assets/Survay/Border.png", height: 24.w, width: 24.w),
             ),
           ],
         ),

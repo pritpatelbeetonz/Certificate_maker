@@ -1,5 +1,6 @@
-
+import 'dart:io';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 class FirebaseAnalyticsService {
 
@@ -79,6 +80,38 @@ class FirebaseAnalyticsService {
       await logEvent(eventName: 'user_sign_out');
     } catch (e) {
       print("Error logging sign-out: $e");
+    }
+  }
+
+  /// Logs standard GA4 purchase event on iOS only for verified StoreKit 2 purchases
+  /// matching all parameters provided by the automatic in_app_purchase event.
+  static Future<void> logIosPurchase({
+    required Package package,
+    required String planName,
+  }) async {
+    if (!Platform.isIOS) return;
+
+    try {
+      final double price = package.storeProduct.price;
+      final String currency = package.storeProduct.currencyCode;
+      final String productId = package.storeProduct.identifier;
+
+      await _analytics.logPurchase(
+        currency: currency,
+        value: price,
+        items: [
+          AnalyticsEventItem(
+            itemId: productId,
+            itemName: planName,
+            itemCategory: 'Subscription',
+            price: price,
+            quantity: 1,
+          ),
+        ],
+      );
+      print("Logged iOS purchase event successfully: $planName ($productId) -> $currency $price");
+    } catch (e) {
+      print("Error logging iOS purchase event: $e");
     }
   }
 }

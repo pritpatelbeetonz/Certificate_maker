@@ -25,8 +25,7 @@ class PremiumCreditView extends StatefulWidget {
   final bool onboarding;
   final Function onDone;
 
-  const PremiumCreditView({key, required this.onboarding, required this.onDone})
-    : super(key: key);
+  const PremiumCreditView({key, required this.onboarding, required this.onDone}) : super(key: key);
 
   @override
   State<PremiumCreditView> createState() => _PremiumCreditViewState();
@@ -51,22 +50,16 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
   @override
   void initState() {
     if (widget.onboarding) {
-      FirebaseAnalyticsService.logEvent(
-        eventName: 'PREMIUM_SCREEN_FROM_INTRO_SCREEN',
-      );
+      FirebaseAnalyticsService.logEvent(eventName: 'PREMIUM_SCREEN_FROM_INTRO_SCREEN');
     } else {
-      FirebaseAnalyticsService.logEvent(
-        eventName: 'PREMIUM_SCREEN_FROM_OTHER_PAGES',
-      );
+      FirebaseAnalyticsService.logEvent(eventName: 'PREMIUM_SCREEN_FROM_OTHER_PAGES');
     }
 
     isInternetConnected();
     PackageData();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      _appLifecycleReactor = AppLifecycleReactor(
-        appOpenAdManager: appOpenAdManager,
-      );
+      _appLifecycleReactor = AppLifecycleReactor(appOpenAdManager: appOpenAdManager);
       _appLifecycleReactor.listenToAppStateChanges(shouldShow: false);
     });
 
@@ -81,12 +74,11 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
         backgroundColor: Colors.white,
         body: SafeArea(
           top: false,
+          bottom: false,
           child: Stack(
             children: [
               // 1. Collage background at top half
-              Positioned.fill(
-                child: Image.asset("assets/Premium/bg.png", fit: BoxFit.cover),
-              ),
+              Positioned.fill(child: Image.asset("assets/Premium/bg.png", fit: BoxFit.cover)),
 
               // 2. Scrollable Body Contents
               Positioned.fill(
@@ -94,22 +86,14 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                   physics: const ClampingScrollPhysics(),
                   child: Column(
                     children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).padding.top + 280                       .h,
-                      ),
+                      SizedBox(height: MediaQuery.of(context).padding.top + 280.h),
                       // Title
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 24.w),
                         child: Text(
                           'Create Without Limits',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 26.sp,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Inter',
-                            letterSpacing: -0.5,
-                          ),
+                          style: TextStyle(fontSize: 26.sp, color: Colors.black, fontWeight: FontWeight.w600, fontFamily: 'Inter', letterSpacing: -0.5),
                         ),
                       ),
                       SizedBox(height: 8.h),
@@ -120,12 +104,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                         child: Text(
                           "Unlock premium editing and templates.",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black.withValues(alpha: 0.7),
-                            fontFamily: 'Inter',
-                          ),
+                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w400, color: Colors.black.withValues(alpha: 0.7), fontFamily: 'Inter'),
                         ),
                       ),
                       SizedBox(height: 28.h),
@@ -143,18 +122,14 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                     padding: EdgeInsets.all(10.w),
                                     width: 40.w,
                                     height: 40.w,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                        9999.r,
-                                      ),
-                                      color: Color(
-                                        0xFF4200AD,
-                                      ).withValues(alpha: 0.1),
-                                    ),
+                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(9999.r), color: Color(0xFF4200AD).withValues(alpha: 0.1)),
                                     child: Image.asset("assets/Premium/2.png"),
                                   ),
-                                  SizedBox(height: 8.h,),
-                                  Text("Custom\nBranding",style: TextStyle(fontWeight:FontWeight.w600,fontSize: 12.sp),),
+                                  SizedBox(height: 8.h),
+                                  Text(
+                                    "Custom\nBranding",
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp),
+                                  ),
                                 ],
                               ),
                               Column(
@@ -163,18 +138,14 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                     padding: EdgeInsets.all(10.w),
                                     width: 40.w,
                                     height: 40.w,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                        9999.r,
-                                      ),
-                                      color: Color(
-                                        0xFF4200AD,
-                                      ).withValues(alpha: 0.1),
-                                    ),
+                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(9999.r), color: Color(0xFF4200AD).withValues(alpha: 0.1)),
                                     child: Image.asset("assets/Premium/3.png"),
                                   ),
-                                  SizedBox(height: 8.h,),
-                                  Text("Premium\nTempletss",style: TextStyle(fontWeight:FontWeight.w600,fontSize: 12.sp),),
+                                  SizedBox(height: 8.h),
+                                  Text(
+                                    "Premium\nTempletss",
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp),
+                                  ),
                                 ],
                               ),
                               Column(
@@ -183,20 +154,16 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                     padding: EdgeInsets.all(10.w),
                                     width: 40.w,
                                     height: 40.w,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                        9999.r,
-                                      ),
-                                      color: Color(
-                                        0xFF4200AD,
-                                      ).withValues(alpha: 0.1),
-                                    ),
+                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(9999.r), color: Color(0xFF4200AD).withValues(alpha: 0.1)),
                                     child: Image.asset("assets/Premium/4.png"),
                                   ),
-                                  SizedBox(height: 8.h,),
-                                  Text("Ad-Free\nExperience",style: TextStyle(fontWeight:FontWeight.w600,fontSize: 12.sp),),
+                                  SizedBox(height: 8.h),
+                                  Text(
+                                    "Ad-Free\nExperience",
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp),
+                                  ),
                                 ],
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -223,7 +190,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                               ),
 
                               SizedBox(width: 12.w),
-                              // Monthly Plan
+                              // Weekly Plan
                               Expanded(
                                 child: _planCard(
                                   index: 1,
@@ -231,7 +198,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                   price: price1,
                                   subtitle: "Cancel Anytime",
                                   hasRibbon: false,
-                                  packgaedata: PackageType.monthly,
+                                  packgaedata: PackageType.weekly,
                                 ),
                               ),
                             ],
@@ -254,40 +221,23 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                     contentPadding: EdgeInsets.zero,
                                     content: Center(
                                       child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 20.h,
-                                          horizontal: 30.w,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF141416),
-                                          borderRadius: BorderRadius.circular(
-                                            16.r,
-                                          ),
-                                        ),
+                                        padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 30.w),
+                                        decoration: BoxDecoration(color: const Color(0xFF141416), borderRadius: BorderRadius.circular(16.r)),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             SizedBox(
                                               width: 24.w,
                                               height: 24.w,
-                                              child:
-                                                  const CircularProgressIndicator(
-                                                    strokeWidth: 3,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                          Color
-                                                        >(Color(0xFF6F5BFF)),
-                                                  ),
+                                              child: const CircularProgressIndicator(
+                                                strokeWidth: 3,
+                                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6F5BFF)),
+                                              ),
                                             ),
                                             SizedBox(width: 16.w),
                                             Text(
                                               "Loading...",
-                                              style: TextStyle(
-                                                fontSize: 16.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.white,
-                                                fontFamily: 'Inter',
-                                              ),
+                                              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: 'Inter'),
                                             ),
                                           ],
                                         ),
@@ -306,24 +256,11 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16.r),
                                 color: const Color(0xFF4200AD),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFF6F5BFF,
-                                    ).withOpacity(0.6),
-                                    blurRadius: 24,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
+                                boxShadow: [BoxShadow(color: const Color(0xFF6F5BFF).withOpacity(0.6), blurRadius: 24, spreadRadius: 2)],
                               ),
                               child: Text(
                                 "Upgrade to Premium",
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  fontFamily: 'Inter',
-                                ),
+                                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white, fontFamily: 'Inter'),
                               ),
                             ),
                           ),
@@ -337,38 +274,22 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF101012),
                               borderRadius: BorderRadius.circular(24.r),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.08),
-                                width: 1.0,
-                              ),
+                              border: Border.all(color: Colors.white.withOpacity(0.08), width: 1.0),
                             ),
                             child: Column(
                               children: [
-                                const Icon(
-                                  Icons.wifi_off_rounded,
-                                  color: Colors.white54,
-                                  size: 40,
-                                ),
+                                const Icon(Icons.wifi_off_rounded, color: Colors.white54, size: 40),
                                 SizedBox(height: 12.h),
                                 Text(
                                   "Plans are unavailable offline",
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'Inter',
-                                  ),
+                                  style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
                                 ),
                                 SizedBox(height: 6.h),
                                 Text(
                                   "Please connect to the internet to purchase premium subscriptions.",
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 13.sp,
-                                    fontFamily: 'Inter',
-                                  ),
+                                  style: TextStyle(color: Colors.white54, fontSize: 13.sp, fontFamily: 'Inter'),
                                 ),
                                 SizedBox(height: 20.h),
                                 GestureDetector(
@@ -380,18 +301,10 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                     height: 40.h,
                                     width: 120.w,
                                     alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF4200AD),
-                                      borderRadius: BorderRadius.circular(20.r),
-                                    ),
+                                    decoration: BoxDecoration(color: const Color(0xFF4200AD), borderRadius: BorderRadius.circular(20.r)),
                                     child: Text(
                                       "Try Again",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600,
-                                        fontFamily: 'Inter',
-                                      ),
+                                      style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
                                     ),
                                   ),
                                 ),
@@ -400,25 +313,25 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                           ),
                         ),
                       ],
-                      SizedBox(height: 5.h),
-                      GestureDetector(
-                        onTap: () {
-                          _showTesterLoginDialog(context);
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.h),
-                          child: Text(
-                            "I am Tester",
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF4200AD),
-                              fontFamily: 'Inter',
-                              //decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ),
+                      //SizedBox(height: 5.h),
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     _showTesterLoginDialog(context);
+                      //   },
+                      //   child: Padding(
+                      //     padding: EdgeInsets.symmetric(vertical: 8.h),
+                      //     child: Text(
+                      //       "I am Tester",
+                      //       style: TextStyle(
+                      //         fontSize: 14.sp,
+                      //         fontWeight: FontWeight.w500,
+                      //         color: const Color(0xFF4200AD),
+                      //         fontFamily: 'Inter',
+                      //         //decoration: TextDecoration.underline,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       SizedBox(height: 5.h),
 
                       // 6. Terms & Privacy policy footer
@@ -427,23 +340,12 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                         child: RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.black,
-                              height: 1.5,
-                              fontFamily: 'Inter',
-                            ),
+                            style: TextStyle(fontSize: 12.sp, color: Colors.black, height: 1.5, fontFamily: 'Inter'),
                             children: [
-                              const TextSpan(
-                                text: 'by continue, you accept our ',
-                              ),
+                              const TextSpan(text: 'by continue, you accept our '),
                               TextSpan(
                                 text: 'terms of use',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  decoration: TextDecoration.underline,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline, fontWeight: FontWeight.w600),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
                                     // Open terms
@@ -453,21 +355,14 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                               const TextSpan(text: ' & '),
                               TextSpan(
                                 text: 'privacy policy',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  decoration: TextDecoration.underline,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline, fontWeight: FontWeight.w600),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
                                     // Open privacy policy view
                                     Get.to(() => const PrivacyPolicyView());
                                   },
                               ),
-                              const TextSpan(
-                                text:
-                                    '\nsubscription auto renew, cancel anytime.',
-                              ),
+                              const TextSpan(text: '\nsubscription auto renew, cancel anytime.'),
                             ],
                           ),
                         ),
@@ -497,42 +392,33 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                       child: Container(
                         width: 36.w,
                         height: 36.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black.withValues(alpha: 0.4),
-                        ),
-                        child: const Icon(
-                          Icons.close_rounded,
-                          color: Colors.white,
-                          size: 20,
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black.withValues(alpha: 0.4)),
+                        child: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        try {
+                          CustomerInfo restoredInfo = await Purchases.restorePurchases();
+                          if (restoredInfo.entitlements.all[entitlementKey]?.isActive == true) {
+                            Fluttertoast.showToast(msg: "Purchases Restored Successfully!");
+                            await initPlatformState();
+                          } else {
+                            Fluttertoast.showToast(msg: "No active purchases found.");
+                          }
+                        } catch (e) {
+                          Fluttertoast.showToast(msg: "Failed to restore: $e");
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                        decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(16.r)),
+                        child: Text(
+                          "Restore",
+                          style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
                         ),
                       ),
                     ),
-                    // GestureDetector(
-                    //   onTap: () async {
-                    //     try {
-                    //       CustomerInfo restoredInfo = await Purchases.restorePurchases();
-                    //       if (restoredInfo.entitlements.all[entitlementKey]?.isActive == true) {
-                    //         Fluttertoast.showToast(msg: "Purchases Restored Successfully!");
-                    //         initPlatformState();
-                    //       } else {
-                    //         Fluttertoast.showToast(msg: "No active purchases found.");
-                    //       }
-                    //     } catch (e) {
-                    //       Fluttertoast.showToast(msg: "Failed to restore: $e");
-                    //     }
-                    //   },
-                    //   child: Text(
-                    //     "Restore",
-                    //     style: TextStyle(
-                    //       color: Colors.white,
-                    //       fontSize: 15.sp,
-                    //       fontWeight: FontWeight.w600,
-                    //       decoration: TextDecoration.underline,
-                    //       fontFamily: 'Inter',
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
@@ -544,11 +430,9 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
   }
 
   Future<void> fetchData() async {
-    if ((GlobalVariables.availablePackages?.entries ?? []).length >= 2) {
-      selectedPackage = (GlobalVariables.availablePackages?.entries ?? [])
-          .where((test) => test.value.packageType == PackageType.annual)
-          .first
-          .value;
+    final packages = GlobalVariables.availablePackages?.values.toList() ?? [];
+    if (packages.isNotEmpty) {
+      selectedPackage = _firstWhereOrNull(packages, (test) => test.packageType == PackageType.annual) ?? packages.first;
     }
   }
 
@@ -556,10 +440,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
     Offerings? offerings;
     try {
       offerings = await Purchases.getOfferings();
-      GlobalVariables.availablePackages = {
-        for (var package in offerings.current?.availablePackages ?? [])
-          package.identifier: package,
-      };
+      GlobalVariables.availablePackages = {for (var package in offerings.current?.availablePackages ?? []) package.identifier: package};
 
       if (mounted) {
         setState(() {
@@ -583,12 +464,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
       setState(() {
         _hasInternet = false;
       });
-      Fluttertoast.showToast(
-        msg: "No Internet Connection Found",
-        toastLength: Toast.LENGTH_LONG,
-        backgroundColor: Colors.white,
-        textColor: Colors.black,
-      );
+      Fluttertoast.showToast(msg: "No Internet Connection Found", toastLength: Toast.LENGTH_LONG, backgroundColor: Colors.white, textColor: Colors.black);
     } else {
       setState(() {
         _hasInternet = true;
@@ -599,37 +475,43 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
   void _getPremiumVersion() async {
     if (selectedPackage == null) {
       Navigator.pop(context);
-      Fluttertoast.showToast(
-        msg: "Store is currently unavailable. Try again later.",
-      );
+      Fluttertoast.showToast(msg: "Store is currently unavailable. Try again later.");
       return;
     }
 
+    bool purchaseSucceeded = false;
     try {
-      final purchaseResult = await Purchases.purchase(
-        PurchaseParams.package(selectedPackage!),
-      );
+      final purchaseResult = await Purchases.purchase(PurchaseParams.package(selectedPackage!));
       final customerInfo = purchaseResult.customerInfo;
 
-      appData.entitlementIsActive =
-          customerInfo.entitlements.all[entitlementKey]!.isActive;
-      initPlatformState();
+      appData.entitlementIsActive = customerInfo.entitlements.all[entitlementKey]?.isActive ?? false;
+      purchaseSucceeded = appData.entitlementIsActive;
     } on PlatformException catch (e) {
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
       if (kDebugMode) {
         print('Purchase Error: $errorCode');
       }
     } finally {
-      Navigator.pop(context);
+      // 1. Always dismiss the loading dialog first
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
+
+    // 2. Perform navigation & state updates cleanly after dialog is dismissed
+    if (purchaseSucceeded) {
+      await initPlatformState();
     }
   }
 
   Future<void> initPlatformState() async {
     final customerInfo = await Purchases.getCustomerInfo();
-    if (customerInfo.entitlements.all[entitlementKey] != null &&
-        customerInfo.entitlements.all[entitlementKey]!.isActive == true) {
+    if (customerInfo.entitlements.all[entitlementKey] != null && customerInfo.entitlements.all[entitlementKey]!.isActive == true) {
       AdsVariable.resetAdIds();
       AdsVariable.isPurchase = true;
+      await SharedPrefService.sharedPreferences.setBool('is_premium_active', true);
+
+      final String planName = (selectedPlan == 0) ? 'Annual' : 'Weekly';
 
       if (selectedPlan == 0) {
         FirebaseAnalyticsService.logEvent(eventName: 'YEAR_PLAN_PURCHASE');
@@ -637,11 +519,12 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
         FirebaseAnalyticsService.logEvent(eventName: 'MONTH_PLAN_PURCHASE');
       }
 
-      Fluttertoast.showToast(
-        msg: 'Successfully upgraded to Premium!',
-        backgroundColor: const Color(0xFF6F5BFF),
-        textColor: Colors.white,
-      );
+      // iOS-only standard GA4 purchase event with full parameters
+      if (selectedPackage != null) {
+        FirebaseAnalyticsService.logIosPurchase(package: selectedPackage!, planName: planName);
+      }
+
+      Fluttertoast.showToast(msg: 'Successfully upgraded to Premium!', backgroundColor: const Color(0xFF6F5BFF), textColor: Colors.white);
 
       if (widget.onboarding) {
         Get.offAll(() => Homepage());
@@ -655,10 +538,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
     }
   }
 
-  Package? _firstWhereOrNull(
-    Iterable<Package> list,
-    bool Function(Package) test,
-  ) {
+  Package? _firstWhereOrNull(Iterable<Package> list, bool Function(Package) test) {
     for (final element in list) {
       if (test(element)) return element;
     }
@@ -668,19 +548,10 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
   void getprice() {
     if (GlobalVariables.availablePackages != null) {
       final monthlyPkg =
-          _firstWhereOrNull(
-            GlobalVariables.availablePackages!.values,
-            (test) => test.packageType == PackageType.monthly,
-          ) ??
-          _firstWhereOrNull(
-            GlobalVariables.availablePackages!.values,
-            (test) => test.packageType == PackageType.weekly,
-          );
+          _firstWhereOrNull(GlobalVariables.availablePackages!.values, (test) => test.packageType == PackageType.monthly) ??
+          _firstWhereOrNull(GlobalVariables.availablePackages!.values, (test) => test.packageType == PackageType.weekly);
 
-      final annualPkg = _firstWhereOrNull(
-        GlobalVariables.availablePackages!.values,
-        (test) => test.packageType == PackageType.annual,
-      );
+      final annualPkg = _firstWhereOrNull(GlobalVariables.availablePackages!.values, (test) => test.packageType == PackageType.annual);
 
       if (monthlyPkg != null) {
         price1 = monthlyPkg.storeProduct.priceString;
@@ -699,8 +570,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
         final double yearlyVal = annualPkg.storeProduct.price;
         if (monthlyVal > 0) {
           double fullYearCost = monthlyVal * 12;
-          double discountVal =
-              ((fullYearCost - yearlyVal) / fullYearCost) * 100;
+          double discountVal = ((fullYearCost - yearlyVal) / fullYearCost) * 100;
           discount = discountVal.round();
         }
       }
@@ -724,12 +594,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
           Expanded(
             child: Text(
               subtitle,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Inter',
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
             ),
           ),
         ],
@@ -755,9 +620,10 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
           selectedPlan = index;
           final packages = GlobalVariables.availablePackages;
           if (packages != null) {
-            final match = packages.values
-                .where((test) => test.packageType == packgaedata)
-                .toList();
+            var match = packages.values.where((test) => test.packageType == packgaedata).toList();
+            if (match.isEmpty && packgaedata == PackageType.weekly) {
+              match = packages.values.where((test) => test.packageType == PackageType.monthly).toList();
+            }
             if (match.isNotEmpty) {
               selectedPackage = match.first;
             }
@@ -769,21 +635,8 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: selected
-                ? const Color(0xFF4200AD)
-                : Color(0xFFE5E5E7),
-            width: selected ? 2.w : 2.w,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF2265FB).withOpacity(0.6),
-                    blurRadius: 15,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : null,
+          border: Border.all(color: selected ? const Color(0xFF4200AD) : Color(0xFFE5E5E7), width: selected ? 2.w : 2.w),
+          boxShadow: selected ? [BoxShadow(color: const Color(0xFF2265FB).withOpacity(0.6), blurRadius: 15, spreadRadius: 1)] : null,
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14.r),
@@ -798,37 +651,19 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                   children: [
                     Text(
                       title,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                        fontFamily: 'Inter',
-                      ),
+                      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500, color: Colors.black, fontFamily: 'Inter'),
                     ),
                     Spacer(),
                     RichText(
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: price.replaceAll(
-                              RegExp(r'/(year|month|week)'),
-                              '',
-                            ),
-                            style: TextStyle(
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                              fontFamily: 'Inter',
-                            ),
+                            text: price.replaceAll(RegExp(r'/(year|month|week)'), ''),
+                            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: Colors.black, fontFamily: 'Inter'),
                           ),
                           TextSpan(
                             text: index == 0 ? '/year' : '/week',
-                            style: TextStyle(
-                              color: Colors.black45,
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: 'Inter',
-                            ),
+                            style: TextStyle(color: Colors.black45, fontSize: 13.sp, fontWeight: FontWeight.w400, fontFamily: 'Inter'),
                           ),
                         ],
                       ),
@@ -837,11 +672,9 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        fontSize: 16 .sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: selected
-                            ? const Color(0xFF4200AD)
-                            : Colors.black38,
+                        color: selected ? const Color(0xFF4200AD) : Colors.black38,
                         fontFamily: 'Inter',
                       ),
                     ),
@@ -859,20 +692,12 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                     height: 23.h,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4.r),
-                     gradient: LinearGradient(colors: [
-                       Color(0xFF2265FB),
-                       Color(0xFF8E86BE),
-                     ]),
+                      gradient: LinearGradient(colors: [Color(0xFF2265FB), Color(0xFF8E86BE)]),
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       ribbonText,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        fontFamily: 'Inter',
-                      ),
+                      style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Inter'),
                     ),
                   ),
                 ),
@@ -883,32 +708,22 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                   right: 0.w,
                   top: 0.h,
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(4.r),
-                      ),
+                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(4.r)),
                     ),
                     child: Text(
                       badgeText,
-                      style: TextStyle(
-                        fontSize: 9.sp,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        fontFamily: 'Inter',
-                      ),
+                      style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Inter'),
                     ),
                   ),
                 ),
               Positioned(
                 right: 10.w,
-                top: 10 .h,
-                child: selected ? Image.asset("assets/Premium/check mark.png",width: 23.w,height: 23.w,):SizedBox.shrink(),
-              )
+                top: 10.h,
+                child: selected ? Image.asset("assets/Premium/check mark.png", width: 23.w, height: 23.w) : SizedBox.shrink(),
+              ),
             ],
           ),
         ),
@@ -933,19 +748,11 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
               backgroundColor: const Color(0xFF101012),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24.r),
-                side: BorderSide(
-                  color: Colors.white.withOpacity(0.08),
-                  width: 1.0,
-                ),
+                side: BorderSide(color: Colors.white.withOpacity(0.08), width: 1.0),
               ),
               title: Text(
                 'Tester Login',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                ),
+                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: 'Inter'),
               ),
               content: Form(
                 key: formKey,
@@ -958,14 +765,8 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                       decoration: InputDecoration(
                         labelText: 'Email',
                         labelStyle: const TextStyle(color: Colors.white54),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.white.withOpacity(0.2),
-                          ),
-                        ),
-                        focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFF6F5BFF)),
-                        ),
+                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.2))),
+                        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6F5BFF))),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -982,22 +783,11 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                       decoration: InputDecoration(
                         labelText: 'Password',
                         labelStyle: const TextStyle(color: Colors.white54),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.white.withOpacity(0.2),
-                          ),
-                        ),
-                        focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFF6F5BFF)),
-                        ),
+                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.2))),
+                        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6F5BFF))),
                         suffixIcon: IconButton(
                           splashRadius: 20,
-                          icon: Icon(
-                            obscurePassword
-                                ? Icons.visibility_off_rounded
-                                : Icons.visibility_rounded,
-                            color: Colors.white54,
-                          ),
+                          icon: Icon(obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: Colors.white54),
                           onPressed: () {
                             setState(() {
                               obscurePassword = !obscurePassword;
@@ -1015,28 +805,19 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                   ],
                 ),
               ),
-              actionsPadding: EdgeInsets.only(
-                bottom: 16.h,
-                right: 16.w,
-                left: 16.w,
-              ),
+              actionsPadding: EdgeInsets.only(bottom: 16.h, right: 16.w, left: 16.w),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text(
                     'Cancel',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontFamily: 'Inter',
-                    ),
+                    style: TextStyle(color: Colors.white54, fontFamily: 'Inter'),
                   ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6F5BFF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                   ),
                   onPressed: () async {
                     if (formKey.currentState?.validate() ?? false) {
@@ -1059,10 +840,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                           AdsVariable.resetAdIds();
                           AdsVariable.isPurchase = true;
 
-                          await SharedPrefService.sharedPreferences.setBool(
-                            'is_tester_premium',
-                            true,
-                          );
+                          await SharedPrefService.sharedPreferences.setBool('is_tester_premium', true);
 
                           Fluttertoast.showToast(
                             msg: 'Tester premium successfully activated!',
@@ -1078,28 +856,16 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                             widget.onDone();
                           }
                         } else {
-                          Fluttertoast.showToast(
-                            msg: 'Incorrect email or password.',
-                            backgroundColor: Colors.redAccent,
-                            textColor: Colors.white,
-                          );
+                          Fluttertoast.showToast(msg: 'Incorrect email or password.', backgroundColor: Colors.redAccent, textColor: Colors.white);
                         }
                       } catch (e) {
-                        Fluttertoast.showToast(
-                          msg: 'Error verifying credentials: $e',
-                          backgroundColor: Colors.redAccent,
-                          textColor: Colors.white,
-                        );
+                        Fluttertoast.showToast(msg: 'Error verifying credentials: $e', backgroundColor: Colors.redAccent, textColor: Colors.white);
                       }
                     }
                   },
                   child: const Text(
                     'Login',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter',
-                    ),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
                   ),
                 ),
               ],

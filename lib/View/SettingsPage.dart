@@ -12,6 +12,7 @@ import 'PremiumCreditView.dart';
 import 'contact_support_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_and_condition_screen.dart';
+import '../for_ads/ads/ads_variable.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -32,11 +33,9 @@ class SettingsPage extends StatelessWidget {
         if (await canLaunchUrl(Uri.parse(url))) {
           await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
         } else {
-          final String webUrl =
-              'https://play.google.com/store/apps/details?id=$packageName';
+          final String webUrl = 'https://play.google.com/store/apps/details?id=$packageName';
           if (await canLaunchUrl(Uri.parse(webUrl))) {
-            await launchUrl(Uri.parse(webUrl),
-                mode: LaunchMode.externalApplication);
+            await launchUrl(Uri.parse(webUrl), mode: LaunchMode.externalApplication);
           } else {
             throw 'Could not launch Play Store.';
           }
@@ -52,9 +51,7 @@ class SettingsPage extends StatelessWidget {
   Future<void> shareApp(BuildContext context) async {
     try {
       final RenderBox? box = context.findRenderObject() as RenderBox?;
-      final Rect? sharePositionOrigin = box != null
-          ? box.localToGlobal(Offset.zero) & box.size
-          : null;
+      final Rect? sharePositionOrigin = box != null ? box.localToGlobal(Offset.zero) & box.size : null;
       final packageInfo = await PackageInfo.fromPlatform();
       final packageName = packageInfo.packageName;
 
@@ -62,8 +59,7 @@ class SettingsPage extends StatelessWidget {
         final url = 'https://apps.apple.com/app/id$iosAppId';
         await Share.share(url, sharePositionOrigin: sharePositionOrigin);
       } else {
-        final url =
-            'https://play.google.com/store/apps/details?id=$packageName';
+        final url = 'https://play.google.com/store/apps/details?id=$packageName';
         await Share.share(url, sharePositionOrigin: sharePositionOrigin);
       }
     } catch (e) {
@@ -75,8 +71,7 @@ class SettingsPage extends StatelessWidget {
 
   Future<void> moreAppOnTap() async {
     if (Platform.isIOS) {
-      const String appStoreURL =
-          'https://apps.apple.com/us/developer/nidhi-rola/id1791680431';
+      const String appStoreURL = 'https://apps.apple.com/us/developer/nidhi-rola/id1791680431';
       if (await canLaunchUrl(Uri.parse(appStoreURL))) {
         log("========== LAUNCH URL ==============");
         await launchUrl(Uri.parse(appStoreURL));
@@ -85,8 +80,7 @@ class SettingsPage extends StatelessWidget {
         throw 'Could not launch $appStoreURL';
       }
     } else {
-      const String storeURL =
-          'https://play.google.com/store/apps/developer?id=Pahal+Tech';
+      const String storeURL = 'https://play.google.com/store/apps/developer?id=Pahal+Tech';
       if (await canLaunchUrl(Uri.parse(storeURL))) {
         await launchUrl(Uri.parse(storeURL));
       } else {
@@ -95,28 +89,17 @@ class SettingsPage extends StatelessWidget {
     }
   }
 
-
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: EdgeInsets.only(left: 4.w, top: 16.h, bottom: 8.h),
       child: Text(
         title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 12.sp,
-          fontWeight: FontWeight.bold,
-          color: const Color(0xFF94A3B8),
-          letterSpacing: 0.8,
-        ),
+        style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold, color: const Color(0xFF94A3B8), letterSpacing: 0.8),
       ),
     );
   }
 
-  Widget _buildNewSettingsItem({
-    required String iconPath,
-    required String title,
-    required VoidCallback onTap,
-    BorderRadius? borderRadius,
-  }) {
+  Widget _buildNewSettingsItem({required String iconPath, required String title, required VoidCallback onTap, BorderRadius? borderRadius}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -128,28 +111,15 @@ class SettingsPage extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           child: Row(
             children: [
-              Image.asset(
-                iconPath,
-                width: 24.w,
-                height: 24.w,
-                fit: BoxFit.contain,
-              ),
+              Image.asset(iconPath, width: 24.w, height: 24.w, fit: BoxFit.contain),
               SizedBox(width: 14.w),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF0F172A),
-                    fontFamily: 'Inter',
-                  ),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF0F172A), fontFamily: 'Inter'),
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Color(0xFFCBD5E1),
-              ),
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFFCBD5E1)),
             ],
           ),
         ),
@@ -171,12 +141,7 @@ class SettingsPage extends StatelessWidget {
         titleSpacing: 0,
         title: Text(
           'Settings',
-          style: TextStyle(
-            color: const Color(0xFF0F172A),
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Inter',
-          ),
+          style: TextStyle(color: const Color(0xFF0F172A), fontSize: 18.sp, fontWeight: FontWeight.bold, fontFamily: 'Inter'),
         ),
       ),
       body: SingleChildScrollView(
@@ -186,90 +151,65 @@ class SettingsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Premium Banner
-            Container(
-              height: 140.h,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16.r),
-                image: const DecorationImage(
-                  image: AssetImage('assets/Settings/banner.png'),
-                  fit: BoxFit.cover,
+            if (!AdsVariable.isPurchase) ...{
+              Container(
+                height: 140.h,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16.r),
+                  image: const DecorationImage(image: AssetImage('assets/Settings/banner.png'), fit: BoxFit.cover),
                 ),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Unlock Premium',
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                      fontFamily: 'Inter',
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Unlock Premium',
+                      style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A), fontFamily: 'Inter'),
                     ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Enjoy unlimited access and premium tools.',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF64748B),
-                      fontFamily: 'Inter',
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Enjoy unlimited access and premium tools.',
+                      style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B), fontFamily: 'Inter'),
                     ),
-                  ),
-                  const Spacer(),
-                  Material(
-                    color: const Color(0xFF4200AD),
-                    borderRadius: BorderRadius.circular(20.r),
-                    child: InkWell(
+                    const Spacer(),
+                    Material(
+                      color: const Color(0xFF4200AD),
                       borderRadius: BorderRadius.circular(20.r),
-                      splashColor: Colors.white.withOpacity(0.2),
-                      highlightColor: Colors.white.withOpacity(0.1),
-                      onTap: () {
-                        Get.to(() => PremiumCreditView(onboarding: false, onDone: () {}));
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Go Premium',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Inter',
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20.r),
+                        splashColor: Colors.white.withOpacity(0.2),
+                        highlightColor: Colors.white.withOpacity(0.1),
+                        onTap: () {
+                          Get.to(() => PremiumCreditView(onboarding: false, onDone: () {}));
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Go Premium',
+                                style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.bold, fontFamily: 'Inter'),
                               ),
-                            ),
-                            SizedBox(width: 6.w),
-                            Icon(
-                              Icons.arrow_forward,
-                              color: Colors.white,
-                              size: 14.w,
-                            ),
-                          ],
+                              SizedBox(width: 6.w),
+                              Icon(Icons.arrow_forward, color: Colors.white, size: 14.w),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            
+            },
+
             _buildSectionHeader('General'),
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16.r),
@@ -282,11 +222,7 @@ class SettingsPage extends StatelessWidget {
                       onTap: () => rateUs(context),
                     ),
                     Divider(height: 1, thickness: 1, color: const Color(0xFFF1F5F9), indent: 54.w),
-                    _buildNewSettingsItem(
-                      iconPath: 'assets/Settings/share_app.png',
-                      title: 'Share App',
-                      onTap: () => shareApp(context),
-                    ),
+                    _buildNewSettingsItem(iconPath: 'assets/Settings/share_app.png', title: 'Share App', onTap: () => shareApp(context)),
                     Divider(height: 1, thickness: 1, color: const Color(0xFFF1F5F9), indent: 54.w),
                     _buildNewSettingsItem(
                       iconPath: 'assets/Settings/moreApps.png',
@@ -304,13 +240,7 @@ class SettingsPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16.r),

@@ -1,7 +1,6 @@
 import 'dart:io';
-
-import 'package:certificate_maker/View/HomePage.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,8 +19,7 @@ import 'for_ads/utils/store_config.dart';
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
 
@@ -34,20 +32,16 @@ void main() async {
   await SharedPrefService.init();
   await MobileAds.instance.initialize();
   await Firebase.initializeApp();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   if (Platform.isIOS || Platform.isMacOS) {
-    print("object");
+    if (kDebugMode) {
+      print("object");
+    }
     StoreConfig(store: Store.appStore, apiKey: appleApiKey);
   } else if (Platform.isAndroid) {
     // Run the app passing --dart-define=AMAZON=true
     const useAmazon = bool.fromEnvironment("amazon");
-    StoreConfig(
-      store: useAmazon ? Store.amazon : Store.playStore,
-      apiKey: useAmazon ? amazonApiKey : googleApiKey,
-    );
+    StoreConfig(store: useAmazon ? Store.amazon : Store.playStore, apiKey: useAmazon ? amazonApiKey : googleApiKey);
   }
   await configureSDK();
   runApp(const MyApp());
@@ -64,8 +58,7 @@ Future<void> configureSDK() async {
       configuration = PurchasesConfiguration(StoreConfig.instance.apiKey);
     }
 
-    configuration.entitlementVerificationMode =
-        EntitlementVerificationMode.informational;
+    configuration.entitlementVerificationMode = EntitlementVerificationMode.informational;
     await Purchases.configure(configuration);
 
     // ✅ ADD THIS — register renewal listener immediately after configure
@@ -77,15 +70,25 @@ Future<void> configureSDK() async {
     if (offerings.current != null) {
       ('✅ Offering found: ${offerings.current!.identifier}');
       for (final pkg in offerings.current!.availablePackages) {
-        print('👉 Package: ${pkg.identifier}');
-        print('👉 Product: ${pkg.storeProduct.identifier}');
+        if (kDebugMode) {
+          print('👉 Package: ${pkg.identifier}');
+        }
+        if (kDebugMode) {
+          print('👉 Product: ${pkg.storeProduct.identifier}');
+        }
       }
     } else {
-      print('⚠️ No current offering found');
+      if (kDebugMode) {
+        print('⚠️ No current offering found');
+      }
     }
   } catch (e, st) {
-    print('❌ Error configuring SDK or fetching offerings: $e');
-    print(st);
+    if (kDebugMode) {
+      print('❌ Error configuring SDK or fetching offerings: $e');
+    }
+    if (kDebugMode) {
+      print(st);
+    }
   }
 }
 
@@ -101,9 +104,7 @@ class MyApp extends StatelessWidget {
       child: GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        ),
+        theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
         home: const SplashScreen(),
       ),
     );
