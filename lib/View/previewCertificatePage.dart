@@ -16,6 +16,7 @@ import 'fullScreenViewerPage.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 import '../for_ads/ads/ads_variable.dart';
+import '../for_ads/ads/ads_splash_utils.dart';
 
 class PreviewCertificatePage extends StatefulWidget {
   final SceneDocument document;
@@ -70,6 +71,11 @@ class _PreviewCertificatePageState extends State<PreviewCertificatePage> {
       setState(() {
         _renderedImagePath = path;
         _isRendering = false;
+      });
+
+      // Ask for a review once the user can see their finished certificate (once per install).
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) checkAndShowInAppReview('preview_screen_review');
       });
     } catch (e) {
       debugPrint("Error rendering certificate: $e");
