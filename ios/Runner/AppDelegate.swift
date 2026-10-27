@@ -12,6 +12,7 @@ var btnTextColor: String = "#FFFFFF"
 var headerTextColor: String = "#000000"
 var bodyTextColor: String = "#000000"
 var nativeBGColor: String = "#141414"
+var isMetaSDKInitialized = false
 
 @UIApplicationMain
 
@@ -76,13 +77,24 @@ var nativeBGColor: String = "#141414"
                 bodyTextColor = (myresult?["bodyTextColor"] as? String) ?? "#000000"
                 nativeBGColor = (myresult?["nativeBGColor"] as? String) ?? "#141414"
 
-                if let v1 = value1, !v1.isEmpty {
-                    Settings.appID = v1
+                // Meta SDK: auto-init is off (FacebookAutoInitEnabled = false in Info.plist).
+                // Initialize only once, with the App ID and client token from Remote Config.
+                if let appID = value1?.trimmingCharacters(in: .whitespaces),
+                   let clientToken = value2?.trimmingCharacters(in: .whitespaces),
+                   !appID.isEmpty, !clientToken.isEmpty, appID != "11", clientToken != "11",
+                   !isMetaSDKInitialized {
+                    Settings.appID = appID
+                    Settings.clientToken = clientToken
+                    Settings.isAutoLogAppEventsEnabled = true
+                    ApplicationDelegate.initializeSDK(nil)
+                    // The app is already active, so log this launch now; later launches
+                    // and foregrounds are logged by the SDK's automatic events.
+                    AppEvents.activateApp()
+                    isMetaSDKInitialized = true
+                    print("[MetaSDK] Initialized with App ID from Remote Config")
+                } else if !isMetaSDKInitialized {
+                    print("[MetaSDK] Not initialized: missing App ID or client token in Remote Config")
                 }
-                if let v2 = value2, !v2.isEmpty {
-                    Settings.clientToken = v2
-                }
-                Settings.isAutoLogAppEventsEnabled = true
             })
 
             let notificationChannel = FlutterMethodChannel(name: "notificationChannel",
