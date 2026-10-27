@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../utils/ad_revenue_analytics_service.dart';
 import 'ads_variable.dart';
 
 
@@ -69,6 +70,15 @@ class AppOpenAdManager {
     //   print('Maximum cache duration exceeded. Loading another ad.');
     //   return;
     // }
+    AdsVariable.appOpenAd!.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+      AdRevenueAnalyticsService.trackAdImpression(
+        ad: ad,
+        valueMicros: valueMicros,
+        precision: precision,
+        currencyCode: currencyCode,
+        placement: 'resume_app_open',
+      );
+    };
     AdsVariable.appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (ad) {
         AdsVariable.isShowingAd = true;

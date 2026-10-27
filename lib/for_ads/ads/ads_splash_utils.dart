@@ -45,14 +45,7 @@ class AdsSplashUtils {
 
     // Ad Revenue Analytics switches from SharedPreferences
     AdsVariable.sendRevenueToAnalytics = prefs.getBool("sendRevenueToAnalytics") ?? true;
-    AdsVariable.sendRevenueAppOpenSplash = prefs.getBool("send_revenue_app_open_splash") ?? true;
-    AdsVariable.sendRevenueAppOpenIntro = prefs.getBool("send_revenue_app_open_intro") ?? true;
-    AdsVariable.sendRevenueInterSplash = prefs.getBool("send_revenue_inter_splash") ?? true;
-    AdsVariable.sendRevenueInterMain = prefs.getBool("send_revenue_inter_main") ?? true;
-    AdsVariable.sendRevenueSurveyNative1 = prefs.getBool("send_revenue_survey_native_1") ?? true;
-    AdsVariable.sendRevenueSurveyNative2 = prefs.getBool("send_revenue_survey_native_2") ?? true;
-    AdsVariable.sendRevenueIntroFullNative = prefs.getBool("send_revenue_intro_full_native") ?? false;
-    AdsVariable.sendRevenueIntroSmallNative = prefs.getBool("send_revenue_intro_small_native") ?? false;
+    AdsVariable.adImpressionEventAllowed = prefs.getStringList("adImpressionEventAllowed") ?? [];
 
     AdsVariable.nativeBGColor = prefs.get("nativeBGColor")?.toString() ?? "#141414";
     AdsVariable.headerTextColor = prefs.get("headlineTxtColor")?.toString() ?? "000000";
@@ -121,16 +114,13 @@ class AdsSplashUtils {
         AdsVariable.click = mapValues1["click"]?.toString() ?? "2";
         AdsVariable.OpenAdInSplash = mapValues1["showOpenAdInSplash"] ?? false;
 
-        // Parse ad revenue switches from Remote Config
+        // Parse ad revenue settings from Remote Config
         AdsVariable.sendRevenueToAnalytics = mapValues1["sendRevenueToAnalytics"] ?? AdsVariable.sendRevenueToAnalytics;
-        AdsVariable.sendRevenueAppOpenSplash = mapValues1["send_revenue_app_open_splash"] ?? AdsVariable.sendRevenueAppOpenSplash;
-        AdsVariable.sendRevenueAppOpenIntro = mapValues1["send_revenue_app_open_intro"] ?? AdsVariable.sendRevenueAppOpenIntro;
-        AdsVariable.sendRevenueInterSplash = mapValues1["send_revenue_inter_splash"] ?? AdsVariable.sendRevenueInterSplash;
-        AdsVariable.sendRevenueInterMain = mapValues1["send_revenue_inter_main"] ?? AdsVariable.sendRevenueInterMain;
-        AdsVariable.sendRevenueSurveyNative1 = mapValues1["send_revenue_survey_native_1"] ?? AdsVariable.sendRevenueSurveyNative1;
-        AdsVariable.sendRevenueSurveyNative2 = mapValues1["send_revenue_survey_native_2"] ?? AdsVariable.sendRevenueSurveyNative2;
-        AdsVariable.sendRevenueIntroFullNative = mapValues1["send_revenue_intro_full_native"] ?? AdsVariable.sendRevenueIntroFullNative;
-        AdsVariable.sendRevenueIntroSmallNative = mapValues1["send_revenue_intro_small_native"] ?? AdsVariable.sendRevenueIntroSmallNative;
+        // Only ads whose unit ID is in this list send ad_impression. Missing key keeps the saved list.
+        final allowedAdIds = mapValues1["adImpressionEventAllowed"];
+        if (allowedAdIds is List) {
+          AdsVariable.adImpressionEventAllowed = allowedAdIds.map((id) => id.toString().trim()).where((id) => id.isNotEmpty).toList();
+        }
 
         AdsVariable.GeminiApi = mapValues1["GeminiApi"]?.toString() ?? "AIzaSyBwvjMinbU8O03eAx2kjrJebZpbP05L8vE";
         AdsVariable.PixabayApi = mapValues1["PixabayApi"]?.toString() ?? "51208507-8139305412efdf67d2bf56718";
@@ -173,16 +163,9 @@ class AdsSplashUtils {
         prefs.setString("supportContactEmail", mapValues1["supportContactEmail"]?.toString() ?? "qwertyui567@testing.com");
         prefs.setBool("showOpenAdInSplash", mapValues1["showOpenAdInSplash"] ?? false);
 
-        // Persist revenue analytics switches
+        // Persist ad revenue settings
         prefs.setBool("sendRevenueToAnalytics", AdsVariable.sendRevenueToAnalytics);
-        prefs.setBool("send_revenue_app_open_splash", AdsVariable.sendRevenueAppOpenSplash);
-        prefs.setBool("send_revenue_app_open_intro", AdsVariable.sendRevenueAppOpenIntro);
-        prefs.setBool("send_revenue_inter_splash", AdsVariable.sendRevenueInterSplash);
-        prefs.setBool("send_revenue_inter_main", AdsVariable.sendRevenueInterMain);
-        prefs.setBool("send_revenue_survey_native_1", AdsVariable.sendRevenueSurveyNative1);
-        prefs.setBool("send_revenue_survey_native_2", AdsVariable.sendRevenueSurveyNative2);
-        prefs.setBool("send_revenue_intro_full_native", AdsVariable.sendRevenueIntroFullNative);
-        prefs.setBool("send_revenue_intro_small_native", AdsVariable.sendRevenueIntroSmallNative);
+        prefs.setStringList("adImpressionEventAllowed", AdsVariable.adImpressionEventAllowed);
 
         /// Check available purchases
         debugPrint('=======hi prit =======');
