@@ -85,7 +85,6 @@ class AdsVariable {
   static String PixabayApi="51208507-8139305412efdf67d2bf56718";
 
 
-  static bool showRateUsDialogInIntro = false;
   static bool showSurveyScreen = false;
   static int reviewAfterExports = 0;
 

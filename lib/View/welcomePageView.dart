@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:certificate_maker/View/HomePage.dart';
-import 'package:certificate_maker/for_ads/ads/ads_splash_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,7 +11,6 @@ import '../../for_ads/utils/app_constants.dart';
 import '../../for_ads/utils/firebase_analysis.dart';
 import '../../for_ads/utils/ad_revenue_analytics_service.dart';
 import '../../for_ads/widgets/loading_screen.dart';
-import 'PremiumCreditView.dart';
 import 'RatingScreen.dart';
 import 'welcome1.dart';
 import 'welcome2.dart';
@@ -28,7 +26,6 @@ class WelPageviewState extends State<WelPageview> {
   final PageController pageController = PageController(initialPage: 0);
   int currentIndex = 0;
   bool isInterNetConnected = false;
-  bool _hasRequestedReview = false;
 
   // Intro AppOpen Ad state
   AppOpenAd? _introAppOpenAd;
@@ -80,7 +77,7 @@ class WelPageviewState extends State<WelPageview> {
   void _showIntroAppOpenAndProceed() {
     // If premium, proceed immediately
     if (AdsVariable.isPurchase || AdsVariable.appOpenAdsIOS == "11") {
-      _navigateToPremium();
+      _navigateAfterIntro();
       return;
     }
 
@@ -101,7 +98,7 @@ class WelPageviewState extends State<WelPageview> {
       hasTimedOut = true;
       debugPrint("[IntroAppOpen] ⏱️ Timeout reached (4s) -> Hiding loader and proceeding");
       loadingScreen.hide();
-      _navigateToPremium();
+      _navigateAfterIntro();
     });
 
     AppOpenAd.load(
@@ -122,8 +119,8 @@ class WelPageviewState extends State<WelPageview> {
           if (hasTimedOut) return;
           timeoutTimer.cancel();
           loadingScreen.hide();
-          debugPrint("[IntroAppOpen] ❌ On-the-spot App Open Ad failed: ${error.message} -> Proceeding to Premium");
-          _navigateToPremium();
+          debugPrint("[IntroAppOpen] ❌ On-the-spot App Open Ad failed: ${error.message} -> Proceeding to Home");
+          _navigateAfterIntro();
         },
       ),
     );
@@ -145,36 +142,27 @@ class WelPageviewState extends State<WelPageview> {
         debugPrint("[IntroAppOpen] 📺 App Open Ad showed full screen");
       },
       onAdDismissedFullScreenContent: (ad) {
-        debugPrint("[IntroAppOpen] 👋 App Open Ad dismissed -> Navigating to Premium");
+        debugPrint("[IntroAppOpen] 👋 App Open Ad dismissed -> Navigating to Home");
         _isShowingIntroAd = false;
         ad.dispose();
         _introAppOpenAd = null;
-        _navigateToPremium();
+        _navigateAfterIntro();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
-        debugPrint("[IntroAppOpen] ❌ App Open Ad failed to show: $error -> Navigating to Premium");
+        debugPrint("[IntroAppOpen] ❌ App Open Ad failed to show: $error -> Navigating to Home");
         _isShowingIntroAd = false;
         ad.dispose();
         _introAppOpenAd = null;
-        _navigateToPremium();
+        _navigateAfterIntro();
       },
     );
     ad.show();
   }
 
-  void _navigateToPremium() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PremiumCreditView(
-          onboarding: true,
-          onDone: () {
-            Get.offAll(() => Homepage());
-          },
-        ),
-      ),
-      (route) => false,
-    );
+  /// First launch: after the intro (and its app-open ad) go straight to Home, without
+  /// the premium screen. Later launches show the premium screen from the splash instead.
+  void _navigateAfterIntro() {
+    Get.offAll(() => Homepage());
   }
 
   Future<void> checkInterNetConnectivity() async {
@@ -304,11 +292,6 @@ class WelPageviewState extends State<WelPageview> {
                   setState(() {
                     currentIndex = index;
                   });
-                  // Show review only once when Welcome2 is reached.
-                  if (!_hasRequestedReview && index == 1) {
-                    _hasRequestedReview = true;
-                    AdsVariable.showRateUsDialogInIntro ? checkAndShowInAppReview('onboarding_rate_us') : null;
-                  }
                 },
                 children: const [Welcome1(), Welcome2(), Welcome3()],
               ),

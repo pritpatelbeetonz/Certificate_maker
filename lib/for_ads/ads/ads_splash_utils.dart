@@ -89,7 +89,6 @@ class AdsSplashUtils {
         /// Facebook id setup
         AdsVariable.reviewAfterExports = int.tryParse(mapValues1['reviewAfterExports']?.toString() ?? '') ?? AdsVariable.reviewAfterExports;
         AdsVariable.showSurveyScreen = mapValues1['showSurveyScreen'] ?? AdsVariable.showSurveyScreen;
-        AdsVariable.showRateUsDialogInIntro = mapValues1['showRateUsDialogInIntro'] ?? AdsVariable.showRateUsDialogInIntro;
         AdsVariable.isUseA1ArtForNsfwCheck = mapValues1['isUseA1ArtForNsfwCheck'] ?? AdsVariable.isUseA1ArtForNsfwCheck;
         AdsVariable.facebookId = mapValues1["fb_appid"]?.toString() ?? "11";
         AdsVariable.facebookToken = mapValues1["fb_token"]?.toString() ?? "11";
