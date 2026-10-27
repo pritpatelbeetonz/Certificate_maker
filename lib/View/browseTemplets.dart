@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'editCertificatePage.dart';
 import 'PremiumCreditView.dart';
 import '../for_ads/ads/ads_variable.dart';
+import '../for_ads/utils/firebase_analysis.dart';
 import '../Services/fetch_data_from_server_service.dart';
 import 'widgets/smart_certificate_thumbnail.dart';
 
@@ -215,7 +216,10 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                     return Padding(
                       padding: EdgeInsets.only(right: 8.w),
                       child: GestureDetector(
-                        onTap: () => _onCategorySelected(catName),
+                        onTap: () {
+                          FirebaseAnalyticsService.logCategorySelected(category: catName, source: 'browse_chip');
+                          _onCategorySelected(catName);
+                        },
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 16.w),
                           decoration: BoxDecoration(
@@ -286,6 +290,11 @@ class _BrowsetempletsState extends State<Browsetemplets> {
 
                               return GestureDetector(
                                 onTap: () async {
+                                  FirebaseAnalyticsService.logTemplateSelected(
+                                    template: item,
+                                    source: 'browse',
+                                    userIsPremium: AdsVariable.isPurchase,
+                                  );
                                   if (item['premium'] == true && AdsVariable.isPurchase != true) {
                                     final bool? purchased = await Get.to(() => PremiumCreditView(
                                           onboarding: false,

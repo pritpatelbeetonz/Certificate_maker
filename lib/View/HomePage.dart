@@ -7,6 +7,7 @@ import 'package:certificate_maker/View/editCertificatePage.dart';
 import 'package:certificate_maker/View/PremiumCreditView.dart';
 import 'package:certificate_maker/for_ads/ads/ads_variable.dart';
 import 'package:certificate_maker/for_ads/utils/app_constants.dart';
+import 'package:certificate_maker/for_ads/utils/firebase_analysis.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -179,6 +180,7 @@ class _HomepageState extends State<Homepage> {
               ),
               GestureDetector(
                 onTap: () {
+                  FirebaseAnalyticsService.logCategorySelected(category: categoryName, source: 'home_see_all');
                   Get.to(() => Browsetemplets(initialCategory: categoryName));
                 },
                 child: Text(
@@ -216,6 +218,11 @@ class _HomepageState extends State<Homepage> {
                           padding: EdgeInsets.only(right: 12.w),
                           child: GestureDetector(
                             onTap: () async {
+                              FirebaseAnalyticsService.logTemplateSelected(
+                                template: item,
+                                source: 'home_category',
+                                userIsPremium: AdsVariable.isPurchase,
+                              );
                               if (item['premium'] == true && AdsVariable.isPurchase != true) {
                                 final bool? purchased = await Get.to(() => PremiumCreditView(
                                       onboarding: false,
@@ -520,6 +527,11 @@ class _HomepageState extends State<Homepage> {
                             },
                             child: GestureDetector(
                               onTap: () async {
+                                FirebaseAnalyticsService.logTemplateSelected(
+                                  template: item,
+                                  source: 'home_banner',
+                                  userIsPremium: AdsVariable.isPurchase,
+                                );
                                 if (item['premium'] == true && AdsVariable.isPurchase != true) {
                                   final bool? purchased = await Get.to(() => PremiumCreditView(
                                         onboarding: false,

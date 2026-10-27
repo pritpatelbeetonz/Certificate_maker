@@ -23,6 +23,47 @@ class FirebaseAnalyticsService {
     }
   }
 
+  /// User tapped a certificate template.
+  /// [source]: home_banner | home_category | browse
+  static Future<void> logTemplateSelected({
+    required Map<dynamic, dynamic> template,
+    required String source,
+    required bool userIsPremium,
+  }) {
+    final String layoutPath = template['layoutPath']?.toString() ?? '';
+    final bool isPremiumTemplate = template['premium'] == true;
+    return logEvent(
+      eventName: 'template_selected',
+      parameters: {
+        'template_id': _trimParam(layoutPath.split('/').last.replaceAll('.json', '')),
+        'template_name': _trimParam(template['name']?.toString() ?? ''),
+        'category': _trimParam(template['category']?.toString() ?? ''),
+        'is_premium_template': isPremiumTemplate.toString(),
+        // true when the tap opened the premium screen instead of the editor
+        'locked': (isPremiumTemplate && !userIsPremium).toString(),
+        'source': source,
+      },
+    );
+  }
+
+  /// User picked a certificate category.
+  /// [source]: home_see_all | browse_chip
+  static Future<void> logCategorySelected({
+    required String category,
+    required String source,
+  }) {
+    return logEvent(
+      eventName: 'category_selected',
+      parameters: {
+        'category': _trimParam(category),
+        'source': source,
+      },
+    );
+  }
+
+  // Firebase rejects string parameter values longer than 100 characters.
+  static String _trimParam(String value) => value.length > 100 ? value.substring(0, 100) : value;
+
 
   /// Sets a user property
   static Future<void> setUserProperty({
