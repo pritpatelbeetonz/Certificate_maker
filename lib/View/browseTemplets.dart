@@ -285,12 +285,14 @@ class _BrowsetempletsState extends State<Browsetemplets> {
                               final String displaySubtitle = item['category'] ?? '';
 
                               return GestureDetector(
-                                onTap: () {
+                                onTap: () async {
                                   if (item['premium'] == true && AdsVariable.isPurchase != true) {
-                                    Get.to(() => PremiumCreditView(
+                                    final bool? purchased = await Get.to(() => PremiumCreditView(
                                           onboarding: false,
-                                          onDone: () => Get.back(),
+                                          onDone: () {},
                                         ));
+                                    // Refresh so the premium crowns disappear after a purchase
+                                    if (purchased == true && mounted) setState(() {});
                                   } else {
                                     AdsVariable.onShowAds(context, onComplete: () {
                                       Get.to(() => EditCertificatePage(

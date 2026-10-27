@@ -1,25 +1,25 @@
-import 'dart:math';
-import 'dart:ui' as ui;
+import 'dart:io';
 import 'package:certificate_maker/View/HomePage.dart';
 import 'package:certificate_maker/for_ads/ads/app_open_ad.dart';
 import 'package:certificate_maker/for_ads/ads/life_cycle.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import '../for_ads/ads/ads_variable.dart';
 import '../for_ads/utils/app_constants.dart';
 import '../for_ads/utils/firebase_analysis.dart';
 import 'privacy_policy_screen.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import '../for_ads/utils/shared_prefrence_service.dart';
+
+// Apple's standard EULA. Replace with your own Terms of Use URL if you publish one.
+const String _termsOfUseUrl = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
 class PremiumCreditView extends StatefulWidget {
   final bool onboarding;
@@ -32,20 +32,18 @@ class PremiumCreditView extends StatefulWidget {
 }
 
 class _PremiumCreditViewState extends State<PremiumCreditView> {
-  int selectedPlan = 0; // 0 = Annual, 1 = Monthly
-  Map<String, Package>? packageEntry;
-  Package? selectedPackage;
-  bool isContinue = false;
-  bool tryAgain = false;
-  int discount = 50;
-  String price1 = "₹49"; // Monthly
-  String price2 = "₹299"; // Annual
-  String symbol = "₹";
-  String priceprweek = "₹25";
+  int selectedPlan = 0; // 0 = Annual, 1 = Weekly
+  Package? annualPackage;
+  Package? weeklyPackage;
+  bool _isLoadingPlans = true;
+  bool _isPurchasing = false;
 
   AppOpenAdManager appOpenAdManager = AppOpenAdManager();
   late AppLifecycleReactor _appLifecycleReactor;
   bool _hasInternet = true;
+
+  Package? get selectedPackage => selectedPlan == 0 ? annualPackage : weeklyPackage;
+  bool get _hasPlans => annualPackage != null || weeklyPackage != null;
 
   @override
   void initState() {
@@ -53,6 +51,13 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
       FirebaseAnalyticsService.logEvent(eventName: 'PREMIUM_SCREEN_FROM_INTRO_SCREEN');
     } else {
       FirebaseAnalyticsService.logEvent(eventName: 'PREMIUM_SCREEN_FROM_OTHER_PAGES');
+    }
+
+    // Show the packages cached at splash right away, then refresh from the store.
+    final cached = GlobalVariables.availablePackages?.values.toList() ?? [];
+    if (cached.isNotEmpty) {
+      _applyPackages(cached);
+      _isLoadingPlans = false;
     }
 
     isInternetConnected();
@@ -143,7 +148,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                   ),
                                   SizedBox(height: 8.h),
                                   Text(
-                                    "Premium\nTempletss",
+                                    "Premium\nTemplates",
                                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp),
                                   ),
                                 ],
@@ -170,37 +175,40 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                       ),
                       SizedBox(height: 24.h),
 
-                      if (_hasInternet) ...[
+                      if (_hasInternet && (_isLoadingPlans || _hasPlans)) ...[
                         // 4. Subscription Plan Cards Row
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 20.w),
                           child: Row(
                             children: [
-                              // Annual Plan
-                              Expanded(
-                                child: _planCard(
-                                  index: 0,
-                                  title: "Annual Plan",
-                                  price: price2,
-                                  subtitle: "$priceprweek / Weekly",
-                                  hasRibbon: true,
-                                  ribbonText: "SAVE $discount%",
-                                  packgaedata: PackageType.annual,
-                                ),
-                              ),
-
-                              SizedBox(width: 12.w),
-                              // Weekly Plan
-                              Expanded(
-                                child: _planCard(
-                                  index: 1,
-                                  title: "Weekly Plan",
-                                  price: price1,
-                                  subtitle: "Cancel Anytime",
-                                  hasRibbon: false,
-                                  packgaedata: PackageType.weekly,
-                                ),
-                              ),
+                              if (_isLoadingPlans && !_hasPlans) ...[
+                                Expanded(child: _planCardShimmer()),
+                                SizedBox(width: 12.w),
+                                Expanded(child: _planCardShimmer()),
+                              ] else ...[
+                                if (annualPackage != null)
+                                  Expanded(
+                                    child: _planCard(
+                                      index: 0,
+                                      title: "Annual Plan",
+                                      price: annualPackage!.storeProduct.priceString,
+                                      period: '/year',
+                                      subtitle: _annualPerWeekPrice() != null ? "${_annualPerWeekPrice()} / week" : "Best Value",
+                                      ribbonText: _savePercent() > 0 ? "SAVE ${_savePercent()}%" : null,
+                                    ),
+                                  ),
+                                if (annualPackage != null && weeklyPackage != null) SizedBox(width: 12.w),
+                                if (weeklyPackage != null)
+                                  Expanded(
+                                    child: _planCard(
+                                      index: 1,
+                                      title: "Weekly Plan",
+                                      price: weeklyPackage!.storeProduct.priceString,
+                                      period: '/week',
+                                      subtitle: "Cancel Anytime",
+                                    ),
+                                  ),
+                              ],
                             ],
                           ),
                         ),
@@ -210,45 +218,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 20.w),
                           child: GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                barrierDismissible: false,
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    backgroundColor: Colors.transparent,
-                                    elevation: 0,
-                                    contentPadding: EdgeInsets.zero,
-                                    content: Center(
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 30.w),
-                                        decoration: BoxDecoration(color: const Color(0xFF141416), borderRadius: BorderRadius.circular(16.r)),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            SizedBox(
-                                              width: 24.w,
-                                              height: 24.w,
-                                              child: const CircularProgressIndicator(
-                                                strokeWidth: 3,
-                                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6F5BFF)),
-                                              ),
-                                            ),
-                                            SizedBox(width: 16.w),
-                                            Text(
-                                              "Loading...",
-                                              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: 'Inter'),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-
-                              _getPremiumVersion();
-                            },
+                            onTap: _getPremiumVersion,
                             child: Container(
                               height: 56.h,
                               width: double.infinity,
@@ -259,7 +229,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                 boxShadow: [BoxShadow(color: const Color(0xFF6F5BFF).withOpacity(0.6), blurRadius: 24, spreadRadius: 2)],
                               ),
                               child: Text(
-                                "Upgrade to Premium",
+                                _hasFreeTrial(selectedPackage) ? "Start Free Trial" : "Upgrade to Premium",
                                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white, fontFamily: 'Inter'),
                               ),
                             ),
@@ -281,13 +251,15 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                 const Icon(Icons.wifi_off_rounded, color: Colors.white54, size: 40),
                                 SizedBox(height: 12.h),
                                 Text(
-                                  "Plans are unavailable offline",
+                                  _hasInternet ? "Plans are unavailable right now" : "Plans are unavailable offline",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
                                 ),
                                 SizedBox(height: 6.h),
                                 Text(
-                                  "Please connect to the internet to purchase premium subscriptions.",
+                                  _hasInternet
+                                      ? "We couldn't load the subscription plans. Please try again."
+                                      : "Please connect to the internet to purchase premium subscriptions.",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(color: Colors.white54, fontSize: 13.sp, fontFamily: 'Inter'),
                                 ),
@@ -313,25 +285,6 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                           ),
                         ),
                       ],
-                      //SizedBox(height: 5.h),
-                      // GestureDetector(
-                      //   onTap: () {
-                      //     _showTesterLoginDialog(context);
-                      //   },
-                      //   child: Padding(
-                      //     padding: EdgeInsets.symmetric(vertical: 8.h),
-                      //     child: Text(
-                      //       "I am Tester",
-                      //       style: TextStyle(
-                      //         fontSize: 14.sp,
-                      //         fontWeight: FontWeight.w500,
-                      //         color: const Color(0xFF4200AD),
-                      //         fontFamily: 'Inter',
-                      //         //decoration: TextDecoration.underline,
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
                       SizedBox(height: 5.h),
 
                       // 6. Terms & Privacy policy footer
@@ -348,8 +301,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                 style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline, fontWeight: FontWeight.w600),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    // Open terms
-                                    _launchURL('https://www.google.com');
+                                    _launchURL(_termsOfUseUrl);
                                   },
                               ),
                               const TextSpan(text: ' & '),
@@ -362,7 +314,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                     Get.to(() => const PrivacyPolicyView());
                                   },
                               ),
-                              const TextSpan(text: '\nsubscription auto renew, cancel anytime.'),
+                              TextSpan(text: '\n${_renewalTerms()}'),
                             ],
                           ),
                         ),
@@ -397,19 +349,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () async {
-                        try {
-                          CustomerInfo restoredInfo = await Purchases.restorePurchases();
-                          if (restoredInfo.entitlements.all[entitlementKey]?.isActive == true) {
-                            Fluttertoast.showToast(msg: "Purchases Restored Successfully!");
-                            await initPlatformState();
-                          } else {
-                            Fluttertoast.showToast(msg: "No active purchases found.");
-                          }
-                        } catch (e) {
-                          Fluttertoast.showToast(msg: "Failed to restore: $e");
-                        }
-                      },
+                      onTap: _restorePurchases,
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                         decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(16.r)),
@@ -429,25 +369,31 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
     );
   }
 
-  Future<void> fetchData() async {
-    final packages = GlobalVariables.availablePackages?.values.toList() ?? [];
-    if (packages.isNotEmpty) {
-      selectedPackage = _firstWhereOrNull(packages, (test) => test.packageType == PackageType.annual) ?? packages.first;
+  /// Keeps only the two plans sold on this screen: Annual and Weekly.
+  void _applyPackages(List<Package> packages) {
+    annualPackage = _firstWhereOrNull(packages, (p) => p.packageType == PackageType.annual);
+    weeklyPackage = _firstWhereOrNull(packages, (p) => p.packageType == PackageType.weekly);
+    if (annualPackage == null && weeklyPackage != null) {
+      selectedPlan = 1;
+    } else if (weeklyPackage == null) {
+      selectedPlan = 0;
     }
   }
 
   Future<void> PackageData() async {
-    Offerings? offerings;
+    if (mounted && !_hasPlans) {
+      setState(() => _isLoadingPlans = true);
+    }
     try {
-      offerings = await Purchases.getOfferings();
-      GlobalVariables.availablePackages = {for (var package in offerings.current?.availablePackages ?? []) package.identifier: package};
+      final offerings = await Purchases.getOfferings();
+      final packages = offerings.current?.availablePackages ?? [];
+      GlobalVariables.availablePackages = {for (var package in packages) package.identifier: package};
 
       if (mounted) {
         setState(() {
           _hasInternet = true;
+          _applyPackages(packages);
         });
-        fetchData();
-        getprice();
       }
     } on PlatformException catch (_) {
       if (mounted) {
@@ -455,11 +401,16 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
           _hasInternet = false;
         });
       }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingPlans = false);
+      }
     }
   }
 
   void isInternetConnected() async {
     final result = await Connectivity().checkConnectivity();
+    if (!mounted) return;
     if (result.contains(ConnectivityResult.none)) {
       setState(() {
         _hasInternet = false;
@@ -472,69 +423,154 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
     }
   }
 
-  void _getPremiumVersion() async {
-    if (selectedPackage == null) {
-      Navigator.pop(context);
+  void _showLoadingDialog() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            contentPadding: EdgeInsets.zero,
+            content: Center(
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 30.w),
+                decoration: BoxDecoration(color: const Color(0xFF141416), borderRadius: BorderRadius.circular(16.r)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 24.w,
+                      height: 24.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6F5BFF)),
+                      ),
+                    ),
+                    SizedBox(width: 16.w),
+                    Text(
+                      "Loading...",
+                      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: 'Inter'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _hideLoadingDialog() {
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+
+  Future<void> _getPremiumVersion() async {
+    if (_isPurchasing) return;
+    final package = selectedPackage;
+    if (package == null) {
       Fluttertoast.showToast(msg: "Store is currently unavailable. Try again later.");
       return;
     }
 
-    bool purchaseSucceeded = false;
-    try {
-      final purchaseResult = await Purchases.purchase(PurchaseParams.package(selectedPackage!));
-      final customerInfo = purchaseResult.customerInfo;
+    _isPurchasing = true;
+    _showLoadingDialog();
 
-      appData.entitlementIsActive = customerInfo.entitlements.all[entitlementKey]?.isActive ?? false;
-      purchaseSucceeded = appData.entitlementIsActive;
+    bool purchaseCompleted = false;
+    bool entitlementActive = false;
+    bool alreadyOwned = false;
+    try {
+      final purchaseResult = await Purchases.purchase(PurchaseParams.package(package));
+      purchaseCompleted = true;
+      entitlementActive = purchaseResult.customerInfo.entitlements.all[entitlementKey]?.isActive ?? false;
     } on PlatformException catch (e) {
-      final errorCode = PurchasesErrorHelper.getErrorCode(e);
-      if (kDebugMode) {
-        print('Purchase Error: $errorCode');
+      switch (PurchasesErrorHelper.getErrorCode(e)) {
+        case PurchasesErrorCode.purchaseCancelledError:
+          break;
+        case PurchasesErrorCode.paymentPendingError:
+          Fluttertoast.showToast(msg: "Payment is pending approval. Premium will unlock once it's approved.");
+          break;
+        case PurchasesErrorCode.productAlreadyPurchasedError:
+          alreadyOwned = true;
+          break;
+        case PurchasesErrorCode.networkError:
+          Fluttertoast.showToast(msg: "Check your internet connection and try again.");
+          break;
+        default:
+          Fluttertoast.showToast(msg: "Purchase failed. Please try again.");
       }
     } finally {
-      // 1. Always dismiss the loading dialog first
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
+      _isPurchasing = false;
+      _hideLoadingDialog();
     }
 
-    // 2. Perform navigation & state updates cleanly after dialog is dismissed
-    if (purchaseSucceeded) {
-      await initPlatformState();
+    if (entitlementActive) {
+      await _activatePremium(fromPurchase: true);
+    } else if (alreadyOwned) {
+      await _restorePurchases();
+    } else if (purchaseCompleted) {
+      Fluttertoast.showToast(msg: "Purchase received, but premium isn't active yet. Tap Restore to try again.");
     }
   }
 
-  Future<void> initPlatformState() async {
-    final customerInfo = await Purchases.getCustomerInfo();
-    if (customerInfo.entitlements.all[entitlementKey] != null && customerInfo.entitlements.all[entitlementKey]!.isActive == true) {
-      AdsVariable.resetAdIds();
-      AdsVariable.isPurchase = true;
-      await SharedPrefService.sharedPreferences.setBool('is_premium_active', true);
+  Future<void> _restorePurchases() async {
+    if (_isPurchasing) return;
+    _isPurchasing = true;
+    _showLoadingDialog();
 
-      final String planName = (selectedPlan == 0) ? 'Annual' : 'Weekly';
+    bool restored = false;
+    bool failed = false;
+    try {
+      final restoredInfo = await Purchases.restorePurchases();
+      restored = restoredInfo.entitlements.all[entitlementKey]?.isActive == true;
+    } catch (_) {
+      failed = true;
+    } finally {
+      _isPurchasing = false;
+      _hideLoadingDialog();
+    }
 
-      if (selectedPlan == 0) {
-        FirebaseAnalyticsService.logEvent(eventName: 'YEAR_PLAN_PURCHASE');
-      } else {
-        FirebaseAnalyticsService.logEvent(eventName: 'MONTH_PLAN_PURCHASE');
-      }
+    if (restored) {
+      Fluttertoast.showToast(msg: "Premium restored!", backgroundColor: const Color(0xFF6F5BFF), textColor: Colors.white);
+      await _activatePremium(fromPurchase: false);
+    } else {
+      Fluttertoast.showToast(msg: failed ? "Restore failed. Please try again." : "No active subscription found.");
+    }
+  }
+
+  /// Unlocks premium and closes the screen. Revenue analytics are logged only for a
+  /// new purchase, never for a restore.
+  Future<void> _activatePremium({required bool fromPurchase}) async {
+    AdsVariable.resetAdIds();
+    AdsVariable.isPurchase = true;
+    await SharedPrefService.sharedPreferences.setBool('is_premium_active', true);
+
+    if (fromPurchase) {
+      final bool isAnnual = selectedPlan == 0;
+      FirebaseAnalyticsService.logEvent(eventName: isAnnual ? 'YEAR_PLAN_PURCHASE' : 'WEEK_PLAN_PURCHASE');
 
       // iOS-only standard GA4 purchase event with full parameters
-      if (selectedPackage != null) {
-        FirebaseAnalyticsService.logIosPurchase(package: selectedPackage!, planName: planName);
+      final package = selectedPackage;
+      if (package != null) {
+        FirebaseAnalyticsService.logIosPurchase(package: package, planName: isAnnual ? 'Annual' : 'Weekly');
       }
 
       Fluttertoast.showToast(msg: 'Successfully upgraded to Premium!', backgroundColor: const Color(0xFF6F5BFF), textColor: Colors.white);
-
-      if (widget.onboarding) {
-        Get.offAll(() => Homepage());
-        widget.onDone();
-      } else {
-        Navigator.of(context).pop();
-        widget.onDone();
-      }
     } else {
-      AdsVariable.isPurchase = false;
+      FirebaseAnalyticsService.logEvent(eventName: 'PREMIUM_RESTORED');
+    }
+
+    if (!mounted) return;
+    if (widget.onboarding) {
+      Get.offAll(() => Homepage());
+    } else {
+      // The caller gets `true` back and refreshes its premium badges.
+      Navigator.of(context).pop(true);
     }
   }
 
@@ -545,36 +581,38 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
     return null;
   }
 
-  void getprice() {
-    if (GlobalVariables.availablePackages != null) {
-      final monthlyPkg =
-          _firstWhereOrNull(GlobalVariables.availablePackages!.values, (test) => test.packageType == PackageType.monthly) ??
-          _firstWhereOrNull(GlobalVariables.availablePackages!.values, (test) => test.packageType == PackageType.weekly);
+  /// Annual price divided by 52, written in the same currency format as the store price.
+  String? _annualPerWeekPrice() {
+    final annual = annualPackage?.storeProduct;
+    if (annual == null || annual.price <= 0) return null;
+    final double perWeek = annual.price / 52;
+    final String amount = perWeek.toStringAsFixed(perWeek < 10 ? 2 : 0);
+    final match = RegExp(r'\d[\d.,\s ]*\d|\d').firstMatch(annual.priceString);
+    if (match == null) return "${annual.currencyCode} $amount";
+    return annual.priceString.replaceRange(match.start, match.end, amount);
+  }
 
-      final annualPkg = _firstWhereOrNull(GlobalVariables.availablePackages!.values, (test) => test.packageType == PackageType.annual);
+  /// How much cheaper Annual is than paying Weekly for 52 weeks.
+  int _savePercent() {
+    final annual = annualPackage?.storeProduct.price;
+    final weekly = weeklyPackage?.storeProduct.price;
+    if (annual == null || weekly == null || weekly <= 0) return 0;
+    return ((1 - annual / (weekly * 52)) * 100).round();
+  }
 
-      if (monthlyPkg != null) {
-        price1 = monthlyPkg.storeProduct.priceString;
-      }
-      if (annualPkg != null) {
-        price2 = annualPkg.storeProduct.priceString;
+  bool _hasFreeTrial(Package? package) {
+    final intro = package?.storeProduct.introductoryPrice;
+    return intro != null && intro.price == 0;
+  }
 
-        final double yearlyVal = annualPkg.storeProduct.price;
-        final double monthlyAvg = yearlyVal / 12.0;
-        symbol = price1.substring(0, 1);
-        priceprweek = "$symbol${monthlyAvg.toStringAsFixed(0)}";
-      }
-
-      if (monthlyPkg != null && annualPkg != null) {
-        final double monthlyVal = monthlyPkg.storeProduct.price;
-        final double yearlyVal = annualPkg.storeProduct.price;
-        if (monthlyVal > 0) {
-          double fullYearCost = monthlyVal * 12;
-          double discountVal = ((fullYearCost - yearlyVal) / fullYearCost) * 100;
-          discount = discountVal.round();
-        }
-      }
-    }
+  String _renewalTerms() {
+    final plans = <String>[
+      if (annualPackage != null) 'Annual ${annualPackage!.storeProduct.priceString}/year',
+      if (weeklyPackage != null) 'Weekly ${weeklyPackage!.storeProduct.priceString}/week',
+    ];
+    final String store = Platform.isIOS ? 'App Store' : 'Google Play';
+    final String prices = plans.isEmpty ? '' : '${plans.join(' or ')}. ';
+    return '${prices}Subscription auto-renews until cancelled in your $store settings.';
   }
 
   Future<void> _launchURL(String url) async {
@@ -584,20 +622,13 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
     }
   }
 
-  Widget _featureRow(String subtitle) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4.w),
-      child: Row(
-        children: [
-          //Image.asset("assets/Premium/Frame.png", width: 22.w, height: 22.h),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              subtitle,
-              style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
-            ),
-          ),
-        ],
+  Widget _planCardShimmer() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE5E5E7),
+      highlightColor: const Color(0xFFF5F5F7),
+      child: Container(
+        height: 150.h,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.r)),
       ),
     );
   }
@@ -606,11 +637,9 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
     required int index,
     required String title,
     required String price,
+    required String period,
     required String subtitle,
-    required bool hasRibbon,
     String? ribbonText,
-    String? badgeText,
-    required PackageType packgaedata,
   }) {
     final bool selected = selectedPlan == index;
 
@@ -618,16 +647,6 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
       onTap: () {
         setState(() {
           selectedPlan = index;
-          final packages = GlobalVariables.availablePackages;
-          if (packages != null) {
-            var match = packages.values.where((test) => test.packageType == packgaedata).toList();
-            if (match.isEmpty && packgaedata == PackageType.weekly) {
-              match = packages.values.where((test) => test.packageType == PackageType.monthly).toList();
-            }
-            if (match.isNotEmpty) {
-              selectedPackage = match.first;
-            }
-          }
         });
       },
       child: Container(
@@ -635,7 +654,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: selected ? const Color(0xFF4200AD) : Color(0xFFE5E5E7), width: selected ? 2.w : 2.w),
+          border: Border.all(color: selected ? const Color(0xFF4200AD) : Color(0xFFE5E5E7), width: 2.w),
           boxShadow: selected ? [BoxShadow(color: const Color(0xFF2265FB).withOpacity(0.6), blurRadius: 15, spreadRadius: 1)] : null,
         ),
         child: ClipRRect(
@@ -647,43 +666,50 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                 padding: EdgeInsets.fromLTRB(16.w, 40.h, 16.w, 16.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       title,
                       style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500, color: Colors.black, fontFamily: 'Inter'),
                     ),
                     Spacer(),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: price.replaceAll(RegExp(r'/(year|month|week)'), ''),
-                            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: Colors.black, fontFamily: 'Inter'),
-                          ),
-                          TextSpan(
-                            text: index == 0 ? '/year' : '/week',
-                            style: TextStyle(color: Colors.black45, fontSize: 13.sp, fontWeight: FontWeight.w400, fontFamily: 'Inter'),
-                          ),
-                        ],
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: price,
+                              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: Colors.black, fontFamily: 'Inter'),
+                            ),
+                            TextSpan(
+                              text: period,
+                              style: TextStyle(color: Colors.black45, fontSize: 13.sp, fontWeight: FontWeight.w400, fontFamily: 'Inter'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Spacer(),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: selected ? const Color(0xFF4200AD) : Colors.black38,
-                        fontFamily: 'Inter',
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: selected ? const Color(0xFF4200AD) : Colors.black38,
+                          fontFamily: 'Inter',
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // 50% OFF diagonal ribbon banner (top right)
-              if (hasRibbon && ribbonText != null)
+              // SAVE X% ribbon (top left)
+              if (ribbonText != null)
                 Positioned(
                   top: 10.h,
                   left: 10.w,
@@ -701,24 +727,6 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                     ),
                   ),
                 ),
-
-              // BEST VALUE pill badge (top right)
-              if (!hasRibbon && badgeText != null)
-                Positioned(
-                  right: 0.w,
-                  top: 0.h,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(4.r)),
-                    ),
-                    child: Text(
-                      badgeText,
-                      style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Inter'),
-                    ),
-                  ),
-                ),
               Positioned(
                 right: 10.w,
                 top: 10.h,
@@ -730,164 +738,4 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
       ),
     );
   }
-
-  void _showTesterLoginDialog(BuildContext context) {
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.8),
-      builder: (context) {
-        bool obscurePassword = true;
-
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: const Color(0xFF101012),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.r),
-                side: BorderSide(color: Colors.white.withOpacity(0.08), width: 1.0),
-              ),
-              title: Text(
-                'Tester Login',
-                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: 'Inter'),
-              ),
-              content: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: emailController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        labelStyle: const TextStyle(color: Colors.white54),
-                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.2))),
-                        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6F5BFF))),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Email is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16.h),
-                    TextFormField(
-                      controller: passwordController,
-                      obscureText: obscurePassword,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        labelStyle: const TextStyle(color: Colors.white54),
-                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.2))),
-                        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6F5BFF))),
-                        suffixIcon: IconButton(
-                          splashRadius: 20,
-                          icon: Icon(obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: Colors.white54),
-                          onPressed: () {
-                            setState(() {
-                              obscurePassword = !obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Password is required';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              actionsPadding: EdgeInsets.only(bottom: 16.h, right: 16.w, left: 16.w),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: Colors.white54, fontFamily: 'Inter'),
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6F5BFF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                  ),
-                  onPressed: () async {
-                    if (formKey.currentState?.validate() ?? false) {
-                      final email = emailController.text.trim();
-                      final password = passwordController.text.trim();
-                      debugPrint("tester Email :- $email");
-                      debugPrint("tester Email :- $password");
-                      debugPrint("firebase Email :- $email");
-                      debugPrint("firebase Email :- $email");
-
-                      try {
-                        final testEmail = AdsVariable.testEmail.trim();
-                        final testPassword = AdsVariable.testPassword.trim();
-                        debugPrint("firebase Email :- $testEmail");
-                        debugPrint("firebase Email :- $testPassword");
-                        if (email == testEmail && password == testPassword) {
-                          Navigator.pop(context);
-
-                          // Enable Premium
-                          AdsVariable.resetAdIds();
-                          AdsVariable.isPurchase = true;
-
-                          await SharedPrefService.sharedPreferences.setBool('is_tester_premium', true);
-
-                          Fluttertoast.showToast(
-                            msg: 'Tester premium successfully activated!',
-                            backgroundColor: const Color(0xFF6F5BFF),
-                            textColor: Colors.white,
-                          );
-
-                          if (widget.onboarding) {
-                            Get.offAll(() => Homepage());
-                            widget.onDone();
-                          } else {
-                            Navigator.of(context).pop();
-                            widget.onDone();
-                          }
-                        } else {
-                          Fluttertoast.showToast(msg: 'Incorrect email or password.', backgroundColor: Colors.redAccent, textColor: Colors.white);
-                        }
-                      } catch (e) {
-                        Fluttertoast.showToast(msg: 'Error verifying credentials: $e', backgroundColor: Colors.redAccent, textColor: Colors.white);
-                      }
-                    }
-                  },
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
 }
-
-class AppData {
-  static final AppData _appData = AppData._internal();
-
-  bool entitlementIsActive = false;
-  String appUserID = '';
-
-  factory AppData() {
-    return _appData;
-  }
-
-  AppData._internal();
-}
-
-final appData = AppData();

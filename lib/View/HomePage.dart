@@ -177,7 +177,7 @@ class _HomepageState extends State<Homepage> {
           ),
         ),
         SizedBox(
-          height: 120.h,
+          height: 120.w,
           child: _isLoadingTemplates
               ? const Center(child: CircularProgressIndicator())
               : categoryTemplates.isEmpty
@@ -198,12 +198,14 @@ class _HomepageState extends State<Homepage> {
                         return Padding(
                           padding: EdgeInsets.only(right: 12.w),
                           child: GestureDetector(
-                            onTap: () {
+                            onTap: () async {
                               if (item['premium'] == true && AdsVariable.isPurchase != true) {
-                                Get.to(() => PremiumCreditView(
+                                final bool? purchased = await Get.to(() => PremiumCreditView(
                                       onboarding: false,
-                                      onDone: () => Get.back(),
+                                      onDone: () {},
                                     ));
+                                // Refresh so the premium crowns disappear after a purchase
+                                if (purchased == true && mounted) setState(() {});
                               } else {
                                 AdsVariable.onShowAds(context, onComplete: () {
                                   Get.to(() => EditCertificatePage(
@@ -227,7 +229,7 @@ class _HomepageState extends State<Homepage> {
                                       thumbnailPath: rawThumb,
                                       fit: BoxFit.cover,
                                       width: 175.w,
-                                      height: 120.h,
+                                      height: 120.w,
                                     ),
                                   ),
                                   if (item['premium'] == true && AdsVariable.isPurchase != true)
@@ -433,7 +435,7 @@ class _HomepageState extends State<Homepage> {
             if (_bannerCertificates.isNotEmpty)
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 220.h,
+                  height: 220.w,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       // Only react to REAL user drag, not programmatic animateToPage
@@ -477,7 +479,7 @@ class _HomepageState extends State<Homepage> {
                                 scale: scale,
                                 alignment: Alignment.center,
                                 child: Container(
-                                  margin: EdgeInsets.only(top: 6.h, bottom: 18.h, left: 4.w, right: 4.w),
+                                  margin: EdgeInsets.only(top: 6.w, bottom: 18.w, left: 4.w, right: 4.w),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16.r),
                                     boxShadow: [
@@ -497,12 +499,14 @@ class _HomepageState extends State<Homepage> {
                               );
                             },
                             child: GestureDetector(
-                              onTap: () {
+                              onTap: () async {
                                 if (item['premium'] == true && AdsVariable.isPurchase != true) {
-                                  Get.to(() => PremiumCreditView(
+                                  final bool? purchased = await Get.to(() => PremiumCreditView(
                                         onboarding: false,
-                                        onDone: () => Get.back(),
+                                        onDone: () {},
                                       ));
+                                  // Refresh so the premium crowns disappear after a purchase
+                                  if (purchased == true && mounted) setState(() {});
                                 } else {
                                   AdsVariable.onShowAds(context, onComplete: () {
                                     Get.to(() => EditCertificatePage(
@@ -520,7 +524,7 @@ class _HomepageState extends State<Homepage> {
                                       thumbnailPath: rawThumb,
                                       fit: BoxFit.cover,
                                       width: 280.w,
-                                      height: 220.h,
+                                      height: 220.w,
                                     ),
                                     if (item['premium'] == true && AdsVariable.isPurchase != true)
                                       Positioned(

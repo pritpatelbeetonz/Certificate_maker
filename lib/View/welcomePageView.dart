@@ -224,7 +224,7 @@ class WelPageviewState extends State<WelPageview> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Container(
-            height: 190.h,
+            height: 170.h,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -267,7 +267,7 @@ class WelPageviewState extends State<WelPageview> {
 
                 //dots
                 Padding(
-                  padding: EdgeInsets.only(bottom: 15.h),
+                  padding: EdgeInsets.only(bottom: 10.h),
                   child: GestureDetector(
                     onTap: () {
                       if (currentIndex == dataLength - 1) {
