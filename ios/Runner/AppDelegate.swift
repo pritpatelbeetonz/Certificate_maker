@@ -21,6 +21,16 @@ var nativeBGColor: String = "#141414"
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
+        #if DEBUG
+        // Firebase DebugView: send Analytics events instantly in debug builds only.
+        // Same as Xcode launch argument -FIRDebugEnabled, but also works with `flutter run`.
+        var launchArguments = ProcessInfo.processInfo.arguments
+        if !launchArguments.contains("-FIRDebugEnabled") {
+            launchArguments.append("-FIRDebugEnabled")
+            ProcessInfo.processInfo.setValue(launchArguments, forKey: "arguments")
+        }
+        #endif
+
         // Firebase Config
         if FirebaseApp.app() == nil {
             FirebaseApp.configure()
