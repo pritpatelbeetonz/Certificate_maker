@@ -10,16 +10,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import '../for_ads/ads/ads_variable.dart';
 import '../for_ads/utils/app_constants.dart';
 import '../for_ads/utils/firebase_analysis.dart';
 import 'privacy_policy_screen.dart';
+import 'terms_and_condition_screen.dart';
 import '../for_ads/utils/shared_prefrence_service.dart';
-
-// Apple's standard EULA. Replace with your own Terms of Use URL if you publish one.
-const String _termsOfUseUrl = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
 class PremiumCreditView extends StatefulWidget {
   final bool onboarding;
@@ -301,7 +298,7 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
                                 style: const TextStyle(color: Colors.black, decoration: TextDecoration.underline, fontWeight: FontWeight.w600),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    _launchURL(_termsOfUseUrl);
+                                    Get.to(() => const TermsAndConditionView());
                                   },
                               ),
                               const TextSpan(text: ' & '),
@@ -606,20 +603,8 @@ class _PremiumCreditViewState extends State<PremiumCreditView> {
   }
 
   String _renewalTerms() {
-    final plans = <String>[
-      if (annualPackage != null) 'Annual ${annualPackage!.storeProduct.priceString}/year',
-      if (weeklyPackage != null) 'Weekly ${weeklyPackage!.storeProduct.priceString}/week',
-    ];
     final String store = Platform.isIOS ? 'App Store' : 'Google Play';
-    final String prices = plans.isEmpty ? '' : '${plans.join(' or ')}. ';
-    return '${prices}Subscription auto-renews until cancelled in your $store settings.';
-  }
-
-  Future<void> _launchURL(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    return 'Subscription auto-renews until cancelled in your $store settings.';
   }
 
   Widget _planCardShimmer() {
