@@ -7,9 +7,9 @@ showLog(String msg) {
 }
 
 //TO DO: add the Apple API key for your app from the RevenueCat dashboard: https://app.revenuecat.com
-const appleApiKey = 'appl_hSpRgMMTSYmhWlXkqgLxHRYgozr';
+const appleApiKey = 'appl_GsTyKGxOtmADhqOOBHVccwBnmAl';
 
-const String iosAppId = '6751265116';
+const String iosAppId = '6825793157';
 
 //TO DO: add the Google API key for your app from the RevenueCat dashboard: https://app.revenuecat.com
 const googleApiKey = 'goog_aJDsFyaWEyFCGDRgVOjYqcdbzbH';
@@ -17,7 +17,7 @@ const googleApiKey = 'goog_aJDsFyaWEyFCGDRgVOjYqcdbzbH';
 //TO DO: add the Amazon API key for your app from the RevenueCat dashboard: https://app.revenuecat.com
 const amazonApiKey = '';
 
-const entitlementKey = 'SzDemoProAccess';
+const entitlementKey = 'CertificateProAccess';
 
 class GlobalVariables {
   static Map<String, Package>? availablePackages;
